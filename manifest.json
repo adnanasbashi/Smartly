@@ -1,13 +1,14 @@
 {
-  "name": "Smartly | Smart Solutions for Everyday Life",
+  "id": "/",
+  "name": "Smartly — Smart Solutions for Everyday Life",
   "short_name": "Smartly",
-  "description": "Smart tools, unique products and practical solutions for everyday life.",
+  "description": "Unique smart tools, quality products and practical solutions for everyday life.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f7f4ed",
   "theme_color": "#53654a",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icon-192.png",
