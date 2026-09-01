@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en" dir="ltr">
-<<link rel="icon" type="image/svg+xml" href="/icon-192.svg">>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Smartly | Smart Solutions for Everyday Life</title>
@@ -40,7 +40,7 @@ button{cursor:pointer}
   min-height:430px;
   border-radius:24px;
   overflow:hidden;
-  background:linear-gradient(135deg,#123B5D,#1E6FA8,#159A9C);
+  background:linear-gradient(135deg,rgba(18,59,93,.96),rgba(30,111,168,.88),rgba(21,154,156,.72)),url("/hero.jpg") center/cover;
   display:flex;
   align-items:center
 }
@@ -109,6 +109,8 @@ button{cursor:pointer}
   .hero-copy{padding:25px}
   .actions{margin-left:auto}
 }
+
+.userarea{position:relative}.userbtn{border:0;background:#fff;font-weight:700;color:var(--navy);padding:10px 8px;cursor:pointer}.userdrop{position:absolute;right:0;top:42px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:190px;padding:8px;z-index:80}.userdrop button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:10px;border-radius:8px;cursor:pointer}.userdrop button:hover{background:#f2f6f8}.install{display:none}
 </style>
 </head>
 
@@ -136,7 +138,7 @@ Lebanon delivery • Pickup available • Syria orders handled by WhatsApp • D
 
 <div class="actions">
 <button class="pill" onclick="toggleLang()">EN / العربية</button>
-<button class="pill hide-sm" onclick="authModal()">👤 Login</button>
+<span id="userArea"></span><button id="authBtn" class="pill hide-sm" onclick="authModal()">👤 Login</button>
 <button class="cart" onclick="cartModal()">🛒 <span id="count">0</span></button>
 </div>
 
@@ -421,6 +423,7 @@ Payment methods are configurable by the admin: cash on delivery, pickup, bank tr
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/config.js"></script>
 
 <script>
 
@@ -428,16 +431,8 @@ Payment methods are configurable by the admin: cash on delivery, pickup, bank tr
    STEP 4 — SUPABASE CONNECTION
    ========================================================= */
 
-const SUPABASE_URL="https://nqwsowkcazkfpqmwmsqw.supabase.co";
-
-const SUPABASE_KEY="sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
-
-const sb=window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-
-const WA="9613080365";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const WA=SMARTLY_WHATSAPP;
 
 let products=[];
 let cart={};
@@ -1259,140 +1254,156 @@ function specialOrder(){
 }
 
 
-function authModal(){
-
+function authModal(mode="login"){
+  const isCreate=mode==="create";
   openModal(`
-    <h2>Login / Create account</h2>
-
-    <p>
-      Use email/password or connect a social account after the providers are enabled in Supabase.
-    </p>
-
-    <div class="field">
-      <label>Email</label>
-      <input id="ae" type="email">
+    <h2>${isCreate?'Create your Smartly account':'Login to Smartly'}</h2>
+    <div class="row" style="margin-bottom:12px">
+      <button class="pill full" onclick="authModal('login')">Login</button>
+      <button class="pill full primary" onclick="authModal('create')">Create new account</button>
     </div>
-
-    <div class="field">
-      <label>Password</label>
-      <input id="ap" type="password">
-    </div>
-
-    <button
-      class="btn primary full"
-      onclick="emailLogin()"
-    >
-      Login / Create account
-    </button>
-
-    <div class="row" style="margin-top:10px">
-
-      <button
-        class="pill full"
-        onclick="social('google')"
-      >
-        Google
-      </button>
-
-      <button
-        class="pill full"
-        onclick="social('apple')"
-      >
-        Apple
-      </button>
-
-      <button
-        class="pill full"
-        onclick="social('facebook')"
-      >
-        Facebook
-      </button>
-
-    </div>
+    ${isCreate ? `
+      <div class="formgrid">
+        <div class="field"><label>Full name *</label><input id="suName" required></div>
+        <div class="field"><label>Age *</label><input id="suAge" type="number" min="13" max="120" required></div>
+        <div class="field"><label>Email *</label><input id="suEmail" type="email" required></div>
+        <div class="field"><label>Country *</label><select id="suCountry"></select></div>
+        <div class="field"><label>Country code *</label><input id="suCode" readonly></div>
+        <div class="field"><label>Phone number *</label><input id="suPhone" type="tel" required></div>
+        <div class="field"><label>Alternative phone</label><input id="suAlt" type="tel"></div>
+        <div class="field"><label>City / Area</label><input id="suCity"></div>
+        <div class="field"><label>Street *</label><input id="suStreet" required></div>
+        <div class="field"><label>Building *</label><input id="suBuilding" required></div>
+        <div class="field"><label>Floor</label><input id="suFloor"></div>
+        <div class="field"><label>Password *</label><input id="suPass" type="password" minlength="6" required></div>
+        <div class="field"><label>Confirm password *</label><input id="suPass2" type="password" minlength="6" required></div>
+      </div>
+      <div class="field"><label>Location details / landmark</label><textarea id="suLocation"></textarea></div>
+      <button class="btn primary full" onclick="createAccount()">Create account</button>
+      <p class="muted">You can share your GPS location after the account is created from My Account.</p>
+    ` : `
+      <div class="field"><label>Email</label><input id="ae" type="email"></div>
+      <div class="field"><label>Password</label><input id="ap" type="password"></div>
+      <button class="btn primary full" onclick="emailLogin()">Login</button>
+      <div style="text-align:center;margin:12px 0">OR</div>
+      <div class="row">
+        <button class="pill full" onclick="social('google')">Continue with Gmail</button>
+        <button class="pill full" onclick="social('azure')">Continue with Outlook</button>
+      </div>
+      <p class="muted">Gmail uses Google's secure sign-in. Outlook uses Microsoft/Azure sign-in.</p>
+    `}
   `);
+  if(isCreate){
+    const sel=document.getElementById('suCountry');
+    sel.innerHTML=countries.map(c=>`<option value="${esc(c.name||c.name_en)}" data-code="${esc(c.phone_code||'')}">${esc(c.name||c.name_en)} (${esc(c.phone_code||'')})</option>`).join('');
+    sel.onchange=()=>document.getElementById('suCode').value=sel.selectedOptions[0]?.dataset.code||'';
+    if(sel.options.length){sel.selectedIndex=0;sel.onchange()}
+  }
 }
-
 
 async function emailLogin(){
-
-  let email=
-    document.getElementById("ae")
-    .value
-    .trim();
-
-  let password=
-    document.getElementById("ap")
-    .value;
-
-  if(!email||!password)
-    return toast(
-      "Email and password required"
-    );
-
-
-  let r=
-    await sb.auth.signUp({
-      email,
-      password
-    });
-
-
-  if(
-    r.error&&
-    r.error.message
-      .toLowerCase()
-      .includes("already")
-  ){
-
-    r=
-      await sb.auth.signInWithPassword({
-        email,
-        password
-      });
-
-  }
-
-
-  toast(
-    r.error
-    ?
-    r.error.message
-    :
-    "Account/login successful"
-  );
-
-
-  if(!r.error)
-    closeModal();
+  const email=document.getElementById('ae').value.trim(), password=document.getElementById('ap').value;
+  if(!email||!password)return toast('Email and password are required');
+  const r=await sb.auth.signInWithPassword({email,password});
+  if(r.error)return toast(r.error.message);
+  closeModal(); await updateAuthUI(); toast('Login successful');
 }
 
+async function createAccount(){
+  const name=document.getElementById('suName').value.trim(), age=Number(document.getElementById('suAge').value), email=document.getElementById('suEmail').value.trim();
+  const country=document.getElementById('suCountry').value, code=document.getElementById('suCode').value, phone=document.getElementById('suPhone').value.trim();
+  const alt=document.getElementById('suAlt').value.trim(), city=document.getElementById('suCity').value.trim(), street=document.getElementById('suStreet').value.trim(), building=document.getElementById('suBuilding').value.trim(), floor=document.getElementById('suFloor').value.trim(), loc=document.getElementById('suLocation').value.trim();
+  const pass=document.getElementById('suPass').value, pass2=document.getElementById('suPass2').value;
+  if(!name||!age||!email||!country||!code||!phone||!street||!building||!pass||!pass2)return toast('Please complete all required fields');
+  if(pass!==pass2)return toast('Passwords do not match');
+  const r=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name,age:String(age),country,country_code:code,phone,alternative_phone:alt,city_area:city,street,building,floor,location_text:loc}}});
+  if(r.error)return toast(r.error.message);
+  if(r.data.session){await upsertProfile(r.data.user);closeModal();await updateAuthUI();toast('Account created');}
+  else {closeModal();toast('Account created. Check your email to confirm your account, then login.');}
+}
 
 async function social(provider){
-
-  let r=
-    await sb.auth.signInWithOAuth({
-      provider,
-      options:{
-        redirectTo:location.origin
-      }
-    });
-
-
-  if(r.error)
-    toast(r.error.message);
+  const r=await sb.auth.signInWithOAuth({provider,options:{redirectTo:location.origin}});
+  if(r.error)toast(r.error.message);
 }
 
+async function upsertProfile(user){
+  if(!user)return;
+  const m=user.user_metadata||{};
+  const row={user_id:user.id,full_name:m.full_name||user.email?.split('@')[0]||'Customer',age:m.age?Number(m.age):null,email:user.email,country:m.country||null,country_code:m.country_code||null,phone:m.phone||'',alternative_phone:m.alternative_phone||null,street:m.street||null,building:m.building||null,floor:m.floor||null,city_area:m.city_area||null,location_text:m.location_text||null,latitude:m.latitude?Number(m.latitude):null,longitude:m.longitude?Number(m.longitude):null,updated_at:new Date().toISOString()};
+  const {error}=await sb.from('customer_profiles').upsert(row,{onConflict:'user_id'}); if(error)console.warn('Profile update:',error.message);
+}
+
+async function updateAuthUI(){
+  const {data:{user}}=await sb.auth.getUser();
+  const ua=document.getElementById('userArea'), ab=document.getElementById('authBtn');
+  if(!ua||!ab)return;
+  if(user){
+    const name=user.user_metadata?.full_name || user.email?.split('@')[0] || 'Customer';
+    ab.style.display='none'; ua.className='userarea'; ua.innerHTML=`<button class="userbtn" onclick="toggleUserMenu()">Hello, ${esc(name)} ▾</button><div id="userDrop" class="userdrop" style="display:none"><button onclick="accountModal()">My Account</button><button onclick="showMyOrders()">My Orders</button><button onclick="signOutCustomer()">Logout</button></div>`;
+  }else{ua.innerHTML='';ab.style.display='inline-block';}
+}
+function toggleUserMenu(){const x=document.getElementById('userDrop');if(x)x.style.display=x.style.display==='none'?'block':'none'}
+async function signOutCustomer(){await sb.auth.signOut();await updateAuthUI();toast('You are logged out')}
+async function accountModal(){
+  const {data:{user}}=await sb.auth.getUser(); if(!user)return authModal();
+  let {data:p}=await sb.from('customer_profiles').select('*').eq('user_id',user.id).maybeSingle();
+  p=p||{}; const name=p.full_name||user.user_metadata?.full_name||'';
+  openModal(`<h2>My Account</h2><p><b>Hello, ${esc(name)}</b></p><div class="formgrid"><div class="field"><label>Full name</label><input id="prName" value="${esc(name)}"></div><div class="field"><label>Age</label><input id="prAge" type="number" value="${esc(p.age||'')}"></div><div class="field"><label>Email</label><input value="${esc(user.email||'')}" disabled></div><div class="field"><label>Country</label><select id="prCountry"></select></div><div class="field"><label>Country code</label><input id="prCode" value="${esc(p.country_code||'')}" readonly></div><div class="field"><label>Phone *</label><input id="prPhone" value="${esc(p.phone||'')}"></div><div class="field"><label>Alternative phone</label><input id="prAlt" value="${esc(p.alternative_phone||'')}"></div><div class="field"><label>City / Area</label><input id="prCity" value="${esc(p.city_area||'')}"></div><div class="field"><label>Street</label><input id="prStreet" value="${esc(p.street||'')}"></div><div class="field"><label>Building</label><input id="prBuilding" value="${esc(p.building||'')}"></div><div class="field"><label>Floor</label><input id="prFloor" value="${esc(p.floor||'')}"></div></div><div class="field"><label>Location / landmark</label><textarea id="prLoc">${esc(p.location_text||'')}</textarea></div><button class="btn primary full" onclick="shareAccountLocation()">📍 Share My Location</button><button class="btn dark full" style="margin-top:8px" onclick="saveProfile()">Save Account</button><button class="btn red full" style="margin-top:8px" onclick="signOutCustomer();closeModal()">Logout</button>`);
+  const sel=document.getElementById('prCountry'); sel.innerHTML=countries.map(c=>`<option value="${esc(c.name||c.name_en)}" data-code="${esc(c.phone_code||'')}">${esc(c.name||c.name_en)}</option>`).join(''); sel.value=p.country||countries[0]?.name||''; sel.onchange=()=>document.getElementById('prCode').value=sel.selectedOptions[0]?.dataset.code||''; sel.onchange();
+  window.currentProfileLocation={lat:p.latitude,lng:p.longitude};
+}
+async function saveProfile(){
+  const {data:{user}}=await sb.auth.getUser(); if(!user)return;
+  const row={user_id:user.id,full_name:document.getElementById('prName').value.trim(),age:Number(document.getElementById('prAge').value||0)||null,email:user.email,country:document.getElementById('prCountry').value,country_code:document.getElementById('prCode').value,phone:document.getElementById('prPhone').value.trim(),alternative_phone:document.getElementById('prAlt').value.trim(),city_area:document.getElementById('prCity').value.trim(),street:document.getElementById('prStreet').value.trim(),building:document.getElementById('prBuilding').value.trim(),floor:document.getElementById('prFloor').value.trim(),location_text:document.getElementById('prLoc').value.trim(),latitude:window.currentProfileLocation?.lat||null,longitude:window.currentProfileLocation?.lng||null,updated_at:new Date().toISOString()};
+  if(!row.full_name||!row.phone)return toast('Full name and phone are required'); const r=await sb.from('customer_profiles').upsert(row,{onConflict:'user_id'}); if(r.error)return toast(r.error.message); await sb.auth.updateUser({data:{full_name:row.full_name}}); closeModal();await updateAuthUI();toast('Account saved');
+}
+function shareAccountLocation(){if(!navigator.geolocation)return toast('Location sharing is not supported by this browser');navigator.geolocation.getCurrentPosition(pos=>{window.currentProfileLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};const x=document.getElementById('prLoc');if(x)x.value=(x.value?x.value+' | ':'')+`GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;toast('Location captured')},()=>toast('Please allow location access in your browser'))}
+async function showMyOrders(){const {data:{user}}=await sb.auth.getUser();if(!user)return;const {data,error}=await sb.from('orders').select('*').eq('user_id',user.id).order('created_at',{ascending:false});if(error)return toast(error.message);openModal('<h2>My Orders</h2>'+(data?.length?data.map(o=>`<div class="feature"><b>${esc(o.order_number)}</b><p>Status: ${esc(o.status)}<br>Total: $${Number(o.total||0).toFixed(2)}<br>Fulfillment: ${esc(o.fulfillment_method||'Delivery')}<br>Payment: ${esc(o.payment_method||'')}</p></div>`).join(''):'<p>No orders yet.</p>'))}
+
+async function loadPaymentMethods(){const {data}=await sb.from('payment_methods').select('*').eq('active',true).order('sort_order');window.smartlyPayments=data||[]}
+
+async function cartModal(){
+  await loadPaymentMethods();
+  const lines=Object.entries(cart).map(([id,q])=>{const p=products.find(x=>String(x.id)===id);return p?`<p><b>${esc(p.name_en||p.name_ar)}</b> × ${q} — $${(Number(p.retail_price||0)*q).toFixed(2)}</p>`:''}).join('');
+  const {data:{user}}=await sb.auth.getUser(); let profile=null;if(user){profile=(await sb.from('customer_profiles').select('*').eq('user_id',user.id).maybeSingle()).data}
+  openModal(`<h2>Your cart</h2>${lines||'<p>Cart is empty.</p>'}<hr><h3>Customer information</h3><div class="formgrid"><div class="field"><label>Full name *</label><input id="cn" value="${esc(profile?.full_name||'')}"></div><div class="field"><label>Country *</label><select id="cc"></select></div><div class="field"><label>Country code</label><input id="cCode" readonly value="${esc(profile?.country_code||'')}"></div><div class="field"><label>Phone *</label><input id="cp" value="${esc(profile?.phone||'')}"></div><div class="field"><label>Alternative phone</label><input id="cap" value="${esc(profile?.alternative_phone||'')}"></div><div class="field"><label>Email</label><input id="ce" type="email" value="${esc(user?.email||profile?.email||'')}"></div><div class="field"><label>Fulfillment *</label><select id="fm"><option>Delivery</option><option>Pickup</option></select></div><div class="field"><label>Payment method *</label><select id="pm">${(window.smartlyPayments||[]).map(x=>`<option>${esc(x.name)}</option>`).join('')||'<option>Cash on Delivery</option><option>Whish Money</option><option>OMT</option><option>Pickup</option>'}</select></div><div class="field"><label>City / Area</label><input id="cCity" value="${esc(profile?.city_area||'')}"></div><div class="field"><label>Street *</label><input id="cStreet" value="${esc(profile?.street||'')}"></div><div class="field"><label>Building *</label><input id="cBuilding" value="${esc(profile?.building||'')}"></div><div class="field"><label>Floor</label><input id="cFloor" value="${esc(profile?.floor||'')}"></div></div><div class="field"><label>Exact location / landmark *</label><textarea id="cl">${esc(profile?.location_text||'')}</textarea></div><button class="btn" onclick="shareCheckoutLocation()">📍 Share My Location</button><p class="muted">Delivery date is not selected here. Our team confirms the delivery date with you on WhatsApp. Minimum requested delivery is 3 days after the order.</p><button class="btn primary full" onclick="checkout()">Continue on WhatsApp</button>`);
+  const sel=document.getElementById('cc');sel.innerHTML=countries.map(c=>`<option value="${esc(c.name||c.name_en)}" data-code="${esc(c.phone_code||'')}">${esc(c.name||c.name_en)} (${esc(c.phone_code||'')})</option>`).join('');sel.value=profile?.country||countries[0]?.name||'';sel.onchange=()=>document.getElementById('cCode').value=sel.selectedOptions[0]?.dataset.code||'';sel.onchange();if(profile?.country)sel.value=profile.country;
+}
+function shareCheckoutLocation(){if(!navigator.geolocation)return toast('Location sharing is not supported');navigator.geolocation.getCurrentPosition(pos=>{window.checkoutCoords={lat:pos.coords.latitude,lng:pos.coords.longitude};const x=document.getElementById('cl');if(x)x.value=(x.value?x.value+' | ':'')+`GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;toast('Location captured')},()=>toast('Please allow location access'))}
+async function checkout(){
+  const n=document.getElementById('cn')?.value.trim(), p=document.getElementById('cp')?.value.trim(), loc=document.getElementById('cl')?.value.trim(); if(!n||!p||!loc)return toast('Name, phone and exact location are required');
+  const items=[];let total=0;for(const [id,q] of Object.entries(cart)){const x=products.find(y=>String(y.id)===id);if(x){total+=Number(x.retail_price||0)*q;items.push({product_id:x.id,quantity:q,unit_price:x.retail_price})}}
+  const {data:{user}}=await sb.auth.getUser();const order_number='ORD-'+Date.now();const row={order_number,user_id:user?.id||null,name:n,phone:p,alternative_phone:document.getElementById('cap').value,email:document.getElementById('ce').value,country:document.getElementById('cc').value,country_code:document.getElementById('cCode').value,location:loc,street:document.getElementById('cStreet').value,building:document.getElementById('cBuilding').value,floor:document.getElementById('cFloor').value,latitude:window.checkoutCoords?.lat||null,longitude:window.checkoutCoords?.lng||null,fulfillment_method:document.getElementById('fm').value,payment_method:document.getElementById('pm').value,subtotal:total,total,status:'pending'};
+  const r=await sb.from('orders').insert(row).select().single();if(r.error)return toast('Order could not be saved: '+r.error.message);const ir=await sb.from('order_items').insert(items.map(x=>({...x,order_id:r.data.id})));if(ir.error)console.warn('Order items:',ir.error.message);
+  const msg=`Hello Smartly, I want to order. Order: ${order_number}; Name: ${n}; Phone: ${p}; Alternative: ${document.getElementById('cap').value}; Country: ${row.country} ${row.country_code}; Location: ${loc}; Fulfillment: ${row.fulfillment_method}; Payment: ${row.payment_method}; Total: $${total.toFixed(2)}. Please confirm the delivery date on WhatsApp (minimum 3 days).`;
+  window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');cart={};document.getElementById('count').textContent='0';closeModal();toast('Order saved. WhatsApp opened.');
+}
+
+async function specialOrder(){
+  const item=document.getElementById('spItem').value.trim(),n=document.getElementById('spName').value.trim(),p=document.getElementById('spPhone').value.trim(),country=document.getElementById('spCountry').value;const file=document.getElementById('spPhoto')?.files?.[0];if(!item||!n||!p)return toast('Item, name and phone are required');let image_url=null;
+  if(file){const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=Date.now()+'-'+safe;const up=await sb.storage.from('special-requests').upload(path,file,{upsert:false});if(up.error)return toast('Picture upload failed: '+up.error.message);image_url=sb.storage.from('special-requests').getPublicUrl(path).data.publicUrl}
+  const {data:{user}}=await sb.auth.getUser();const ins=await sb.from('special_requests').insert({user_id:user?.id||null,name:n,phone:p,country,item_description:item,image_url,status:'pending'}).select().maybeSingle();if(ins.error)return toast('Request could not be saved: '+ins.error.message);
+  const msg=`Hello Smartly, special request. Item/link: ${item}; Name: ${n}; Phone: ${p}; Country: ${country}; Picture: ${image_url||'none'}; Special order lead time: 2–4 weeks. Delivery date will be confirmed by our team on WhatsApp.`;window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');toast('Special request saved');
+}
+
+async function reserve(id){const p=products.find(x=>String(x.id)===String(id));if(!p)return;openModal(`<h2>Reserve ${esc(p.name_en||p.name_ar)}</h2><p>This helps us know how many units to order.</p><div class="field"><label>Name *</label><input id="rn"></div><div class="field"><label>Phone *</label><input id="rp"></div><div class="field"><label>Quantity *</label><input id="rq" type="number" min="1" value="1"></div><button class="btn primary full" onclick="saveReservation('${esc(id)}')">Reserve</button>`)}
+async function saveReservation(id){const n=document.getElementById('rn').value.trim(),p=document.getElementById('rp').value.trim(),q=Math.max(1,Number(document.getElementById('rq').value||1));if(!n||!p)return toast('Name and phone are required');const {data:{user}}=await sb.auth.getUser();const r=await sb.from('reservations').insert({product_id:id,user_id:user?.id||null,name:n,phone:p,quantity:q,status:'pending'});if(r.error)return toast('Reservation failed: '+r.error.message);closeModal();toast('Reservation saved');}
+
+
+function renderNatural(){
+  const el=document.getElementById('naturalGrid'); if(!el)return;
+  const arr=products.filter(p=>p.is_natural&&p.active);
+  el.innerHTML=arr.length?arr.map(p=>`<article class="card"><div class="pic">${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.name_en||'Natural product')}">`:'🌿'}<span class="badge">${Number(p.stock_quantity||0)?esc(p.stock_quantity+' in stock'):'Reserve available'}</span></div><div class="body"><h3>${esc(p.name_en||'Natural product')}</h3><p class="muted">${esc(p.description_en||'')}</p><div class="price">$${Number(p.retail_price||0).toFixed(2)}</div><button class="btn primary full" onclick="${Number(p.stock_quantity||0)?`add('${esc(p.id)}')`:`reserve('${esc(p.id)}')`}">${Number(p.stock_quantity||0)?'Add to cart':'Reserve one'}</button></div></article>`).join(''):'<div class="notice">Natural products and herbs will appear here.</div>';
+}
+
+async function bootSmartlyAdditions(){renderNatural();await updateAuthUI();sb.auth.onAuthStateChange(()=>setTimeout(updateAuthUI,0));}
 
 /* =========================================================
    START APPLICATION
    ========================================================= */
 
-load().catch(
-  e=>console.error(
-    "Application startup error:",
-    e
-  )
-);
+load().then(bootSmartlyAdditions).catch(e=>console.error("Application startup error:",e));
 
 
 /* Service Worker */
@@ -1409,4 +1420,3 @@ if("serviceWorker"in navigator){
 
 </body>
 </html>
-```
