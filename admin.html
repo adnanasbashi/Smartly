@@ -1,30 +1,216 @@
 <!doctype html>
 <html>
-<<link rel="icon" type="image/svg+xml" href="/icon-192.svg">>
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Smartly Admin</title>
-  <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
   <style>
-  body{margin:0;font-family:Arial;background:#f5f7f9;color:#17212b}.top{background:#123B5D;color:#fff;padding:18px}.wrap{max-width:1200px;margin:auto;padding:18px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.tab{padding:10px 13px;border:1px solid #ddd;background:#fff;border-radius:9px}.panel{background:#fff;border:1px solid #ddd;border-radius:14px;padding:18px;margin-bottom:15px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}.btn{padding:10px 14px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:700}.danger{background:#D94A45}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px;border-bottom:1px solid #eee;text-align:left}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+    body { margin:0; font-family:Arial, sans-serif; background:#f5f7f9; color:#17212b; }
+    .top { background:#123B5D; color:#fff; padding:18px; display:flex; justify-content:space-between; align-items:center; }
+    .wrap { max-width:1200px; margin:auto; padding:18px; }
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; margin:15px 0; }
+    .tab { padding:10px 13px; border:1px solid #ddd; background:#fff; border-radius:9px; cursor:pointer; }
+    .panel { background:#fff; border:1px solid #ddd; border-radius:14px; padding:18px; margin-bottom:15px; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .field label { display:block; font-size:12px; font-weight:700; margin-bottom:5px; }
+    .field input, .field select, .field textarea { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; }
+    .btn { padding:10px 14px; border:0; border-radius:8px; background:#159A9C; color:#fff; font-weight:700; cursor:pointer; }
+    .danger { background:#D94A45; }
+    .table { width:100%; border-collapse:collapse; }
+    .table th, .table td { padding:9px; border-bottom:1px solid #eee; text-align:left; }
+    #authOverlay { position:fixed; inset:0; background:rgba(18,59,93,0.95); display:flex; align-items:center; justify-content:center; z-index:1000; }
+    .auth-card { background:#fff; padding:30px; border-radius:16px; width:100%; max-width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.2); }
+    @media(max-width:800px) { .grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
-  <div class="top"><div class="wrap"><h2>Smartly Admin</h2><small>Manage the storefront without editing the customer website.</small></div></div>
+
+  <!-- Login Overlay -->
+  <div id="authOverlay">
+    <div class="auth-card">
+      <h2 style="margin-top:0; color:#123B5D;">Admin Login</h2>
+      <p style="font-size:13px; color:#666;">Sign in to manage the Smartly storefront.</p>
+      <div class="field" style="margin-bottom:12px;">
+        <label>Email</label>
+        <input id="loginEmail" type="email" placeholder="admin@example.com">
+      </div>
+      <div class="field" style="margin-bottom:18px;">
+        <label>Password</label>
+        <input id="loginPassword" type="password">
+      </div>
+      <button class="btn" style="width:100%;" onclick="login()">Login</button>
+    </div>
+  </div>
+
+  <div class="top">
+    <div class="wrap" style="padding:0; margin:0;">
+      <h2 style="margin:0;">Smartly Admin</h2>
+      <small>Storefront Operations Panel</small>
+    </div>
+    <button class="btn danger" onclick="logout()">Logout</button>
+  </div>
+
   <div class="wrap">
-  <div class="tabs">
-  <button class="tab" onclick="show('dashboard')">Dashboard</button><button class="tab" onclick="show('orders')">Orders</button><button class="tab" onclick="show('products')">Products</button><button class="tab" onclick="show('categories')">Categories</button><button class="tab" onclick="show('countries')">Countries</button><button class="tab" onclick="show('bundles')">Bundles & Offers</button><button class="tab" onclick="show('natural')">Natural Products</button><button class="tab" onclick="show('reservations')">Reservations</button><button class="tab" onclick="show('reviews')">Reviews</button><button class="tab" onclick="show('payments')">Payment Methods</button><button class="tab" onclick="show('settings')">Settings</button>
-  </div><div id="app"></div></div>
+    <div class="tabs">
+      <button class="tab" onclick="show('dashboard')">Dashboard</button>
+      <button class="tab" onclick="show('orders')">Orders</button>
+      <button class="tab" onclick="show('products')">Products</button>
+      <button class="tab" onclick="show('categories')">Categories</button>
+      <button class="tab" onclick="show('countries')">Countries</button>
+      <button class="tab" onclick="show('bundles')">Bundles & Offers</button>
+      <button class="tab" onclick="show('reservations')">Reservations</button>
+      <button class="tab" onclick="show('reviews')">Reviews</button>
+      <button class="tab" onclick="show('payments')">Payment Methods</button>
+    </div>
+    <div id="app"></div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-  const sb=supabase.createClient(
-    "https://nqwsowkcazkfpqmwmsqw.supabase.co",
-    "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO"
-  );const tabs=["dashboard","orders","products","categories","countries","bundles","natural","reservations","reviews","payments","settings"];
-  function show(t){document.getElementById("app").innerHTML=`<div class="panel"><h2>${t[0].toUpperCase()+t.slice(1)}</h2><p>This tab is connected to Supabase. Use the forms below to manage ${t}.</p></div><div class="panel"><div class="grid"><div class="field"><label>Name / Title</label><input id="name"></div><div class="field"><label>Phone / Contact</label><input id="phone"></div><div class="field"><label>Quantity / Value</label><input id="qty" type="number"></div><div class="field"><label>Country / Category</label><input id="group"></div><div class="field"><label>Price / Amount</label><input id="price" type="number" step=".01"></div><div class="field"><label>Status</label><select id="status"><option>active</option><option>inactive</option><option>pending</option><option>approved</option><option>completed</option></select></div></div><br><button class="btn" onclick="save('${t}')">Save</button></div><div class="panel"><button class="btn" onclick="loadTable('${t}')">Refresh list</button><div id="table"></div></div>`}
-  async function save(t){let n=document.getElementById("name").value.trim();if(!n)return alert("Name is required");let map={categories:"categories",countries:"countries",bundles:"bundles",products:"products",reviews:"reviews",payments:"payment_methods",reservations:"reservations"};let table=map[t];if(!table)return alert("Use Orders/Dashboard/Settings for their dedicated controls.");let row={name_en:n,active:document.getElementById("status").value==="active"};if(t==="products")row.retail_price=Number(price.value||0),row.stock_quantity=Number(qty.value||0),row.category_id=group.value; if(t==="bundles")row.price=Number(price.value||0); if(t==="countries")row.name=n; if(t==="categories")row.name_en=n; if(t==="reviews")row.customer_name=n,row.comment=""; let r=await sb.from(table).insert(row);if(r.error)alert(r.error.message);else alert("Saved")}
-  async function loadTable(t){let map={categories:"categories",countries:"countries",bundles:"bundles",products:"products",reviews:"reviews",reservations:"reservations",payments:"payment_methods"};let table=map[t];if(!table)return;let r=await sb.from(table).select("*").limit(100);if(r.error)return alert(r.error.message);document.getElementById("table").innerHTML="<table class='table'><tr><th>ID</th><th>Name</th><th>Status</th></tr>"+r.data.map(x=>`<tr><td>${x.id}</td><td>${x.name_en||x.name||x.customer_name||""}</td><td>${x.active??x.status??x.approved??""}</td></tr>`).join("")+"</table>"}
-  show("dashboard");
+    const sb = supabase.createClient("https://ifjealmkewsfhbqfbuja.supabase.co", "sb_publishable_rr0YmNcZr73bQkKAW-DNAw_wXWVw88E");
+
+    // Authenticate Admin User
+    async function checkSession() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        document.getElementById("authOverlay").style.display = "none";
+        show("dashboard");
+      } else {
+        document.getElementById("authOverlay").style.display = "flex";
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      if (!email || !password) return alert("Email and password are required.");
+
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        alert("Login failed: " + error.message);
+      } else {
+        document.getElementById("authOverlay").style.display = "none";
+        show("dashboard");
+      }
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      document.getElementById("authOverlay").style.display = "flex";
+    }
+
+    function show(t) {
+      document.getElementById("app").innerHTML = `
+        <div class="panel">
+          <h2>${t[0].toUpperCase() + t.slice(1)}</h2>
+          <p>Manage store items for section: <b>${t}</b></p>
+        </div>
+        <div class="panel">
+          <div class="grid">
+            <div class="field"><label>Name / Title</label><input id="fieldName"></div>
+            <div class="field"><label>Quantity / Stock</label><input id="fieldQty" type="number"></div>
+            <div class="field"><label>Category ID / Group</label><input id="fieldGroup"></div>
+            <div class="field"><label>Price / Amount ($)</label><input id="fieldPrice" type="number" step=".01"></div>
+            <div class="field">
+              <label>Status</label>
+              <select id="fieldStatus">
+                <option value="active">active</option>
+                <option value="inactive">inactive</option>
+              </select>
+            </div>
+          </div>
+          <br>
+          <button class="btn" onclick="save('${t}')">Save Item</button>
+        </div>
+        <div class="panel">
+          <button class="btn" onclick="loadTable('${t}')">Refresh Table</button>
+          <div id="table" style="margin-top:15px;"></div>
+        </div>`;
+      loadTable(t);
+    }
+
+    async function save(t) {
+      const nameVal = document.getElementById("fieldName").value.trim();
+      const priceVal = document.getElementById("fieldPrice").value;
+      const qtyVal = document.getElementById("fieldQty").value;
+      const groupVal = document.getElementById("fieldGroup").value.trim();
+      const statusVal = document.getElementById("fieldStatus").value;
+
+      if (!nameVal) return alert("Name is required");
+
+      const map = {
+        categories: "categories",
+        countries: "countries",
+        bundles: "bundles",
+        products: "products",
+        reviews: "reviews",
+        payments: "payment_methods",
+        reservations: "reservations"
+      };
+
+      const table = map[t];
+      if (!table) return alert("Select a valid section to modify.");
+
+      let row = { active: statusVal === "active" };
+
+      if (t === "products") {
+        row.name_en = nameVal;
+        row.retail_price = Number(priceVal || 0);
+        row.stock_quantity = Number(qtyVal || 0);
+        if (groupVal) row.category_id = groupVal;
+      } else if (t === "bundles") {
+        row.name_en = nameVal;
+        row.price = Number(priceVal || 0);
+      } else if (t === "countries" || t === "payments") {
+        row.name = nameVal;
+      } else if (t === "categories") {
+        row.id = nameVal.toLowerCase().replace(/\s+/g, '-');
+        row.name_en = nameVal;
+      } else if (t === "reviews") {
+        row.customer_name = nameVal;
+        row.comment = "Added from admin";
+        row.approved = true;
+      }
+
+      const { data, error } = await sb.from(table).insert(row);
+      if (error) alert("Error saving: " + error.message);
+      else {
+        alert("Successfully saved!");
+        loadTable(t);
+      }
+    }
+
+    async function loadTable(t) {
+      const map = {
+        categories: "categories",
+        countries: "countries",
+        bundles: "bundles",
+        products: "products",
+        reviews: "reviews",
+        reservations: "reservations",
+        payments: "payment_methods",
+        orders: "orders"
+      };
+
+      const table = map[t];
+      if (!table) return;
+
+      const { data, error } = await sb.from(table).select("*").limit(100);
+      if (error) return alert("Error fetching data: " + error.message);
+
+      let html = "<table class='table'><tr><th>ID</th><th>Name / Title</th><th>Status / Info</th></tr>";
+      html += data.map(x => `
+        <tr>
+          <td>${x.id || "-"}</td>
+          <td>${x.name_en || x.name || x.customer_name || x.order_number || "-"}</td>
+          <td>${x.active !== undefined ? (x.active ? 'Active' : 'Inactive') : (x.status || "-")}</td>
+        </tr>`).join("");
+      html += "</table>";
+
+      document.getElementById("table").innerHTML = html;
+    }
+
+    checkSession();
   </script>
 </body>
 </html>
