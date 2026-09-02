@@ -25,8 +25,30 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
+<script>
+  // Initialize Supabase Client
+  const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
+  
+  // Notice we use 'sb' here so it matches 'sb.auth...'
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function emailLogin() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      const { data, error } = await sb.auth.signInWithPassword({
+          email: email,
+          password: password
+      });
+
+      if (error) {
+          alert(error.message);
+      } else {
+          window.location.reload();
+      }
+  }
+</script>
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const T={products:'products',categories:'categories',countries:'countries',bundles:'bundles',payments:'payment_methods',orders:'orders',order_items:'order_items',reservations:'reservations',reviews:'reviews',special:'special_requests',customers:'customer_profiles',admins:'admin_users',settings:'site_settings'};
 let current='dashboard', categories=[], countries=[];
