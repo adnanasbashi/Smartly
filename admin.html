@@ -70,6 +70,36 @@ const T = {
   settings: 'site_settings'
 };
 
+const COUNTRY_LIST = [
+  { code: 'LB', name: 'Lebanon' },
+  { code: 'SY', name: 'Syria' },
+  { code: 'JO', name: 'Jordan' },
+  { code: 'AE', name: 'United Arab Emirates' },
+  { code: 'SA', name: 'Saudi Arabia' },
+  { code: 'EG', name: 'Egypt' },
+  { code: 'QA', name: 'Qatar' },
+  { code: 'KW', name: 'Kuwait' },
+  { code: 'BH', name: 'Bahrain' },
+  { code: 'OM', name: 'Oman' },
+  { code: 'IQ', name: 'Iraq' },
+  { code: 'PS', name: 'Palestine' },
+  { code: 'TR', name: 'Turkey' },
+  { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'FR', name: 'France' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'CN', name: 'China' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'IN', name: 'India' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'RU', name: 'Russia' },
+  { code: 'ZA', name: 'South Africa' }
+];
+
 let current = 'dashboard', categories = [], countries = [];
 let editingId = null;
 
@@ -307,15 +337,21 @@ async function editCategory(id){
 async function countriesPage(){
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Countries</h2><div class="grid">${formField('co_name','Country Name')}${formField('co_code','Country Code')}${formField('co_phone','Phone Code')}${formField('co_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="co_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCountry()">Save Country</button><button class="tab hidden" id="cancelBtn" onclick="countriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
-  loadGeneric('countries', ['id','name','country_code','phone_code','active','sort_order']);
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Countries</h2><div class="grid">${formField('co_name','Country Name')}<div class="field"><label>Country Code</label><select id="co_code" onchange="autoFillCountryName(this.value)"><option value="">Select Country Code</option>${COUNTRY_LIST.map(c=>`<option value="${esc(c.code)}">${esc(c.code)} - ${esc(c.name)}</option>`).join('')}</select></div>${formField('co_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="co_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCountry()">Save Country</button><button class="tab hidden" id="cancelBtn" onclick="countriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  loadGeneric('countries', ['id','name','country_code','active','sort_order']);
+}
+
+function autoFillCountryName(code){
+  const found = COUNTRY_LIST.find(c => c.code === code);
+  if(found && !co_name.value.trim()){
+    co_name.value = found.name;
+  }
 }
 
 async function saveCountry(){
   const row = {
     name: co_name.value.trim(),
     country_code: co_code.value.trim(),
-    phone_code: co_phone.value.trim(),
     active: co_active.value === 'true',
     sort_order: Number(co_sort.value || 0)
   };
@@ -328,7 +364,7 @@ async function saveCountry(){
   formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Country updated.' : 'Country saved.');
   if(!r.error) {
     if(editingId) countriesPage();
-    else loadGeneric('countries', ['id','name','country_code','phone_code','active','sort_order']);
+    else loadGeneric('countries', ['id','name','country_code','active','sort_order']);
   }
 }
 
@@ -339,7 +375,6 @@ async function editCountry(id){
   editingId = item.id;
   co_name.value = item.name || '';
   co_code.value = item.country_code || '';
-  co_phone.value = item.phone_code || '';
   co_sort.value = item.sort_order || 0;
   co_active.value = item.active ? 'true' : 'false';
 
