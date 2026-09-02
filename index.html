@@ -76,14 +76,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// 1. Configuration & Initializations
 const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
 const WA = "9613080365";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let products=[], cart={}, categories=[], countries=[], bundles=[], reviews=[];
+let products=[], cart={}, categories=[], countries=[], bundles=[], reviews=[], payments=[];
 const fallbackCats=[['home','Home','🏠'],['kitchen','Kitchen','🍳'],['cleaning','Cleaning','🧽'],['smart','Smart Home','💡'],['wellness','Wellness','💆'],['natural','Natural','🌿'],['car','Car & Travel','🚗']];
 
 function toast(x){
@@ -117,18 +116,21 @@ function toggleLang(){
 }
 
 async function load(){
-  const [c,p,co,b,r] = await Promise.all([
+  const [c,p,co,b,r,pay] = await Promise.all([
     sb.from('categories').select('*').eq('active',true).order('sort_order'),
     sb.from('products').select('*').eq('active',true).order('sort_order'),
     sb.from('countries').select('*').eq('active',true).order('sort_order'),
     sb.from('bundles').select('*').eq('active',true).order('sort_order'),
-    sb.from('reviews').select('*').eq('approved',true).order('created_at',{ascending:false})
+    sb.from('reviews').select('*').eq('approved',true).order('created_at',{ascending:false}),
+    sb.from('payment_methods').select('*').eq('active',true).order('sort_order')
   ]);
+  
   categories = c.data?.length ? c.data : fallbackCats.map((x,i)=>({id:x[0],name_en:x[1],icon:x[2],sort_order:i}));
   products = p.data || [];
   countries = co.data || [{name:'Lebanon'},{name:'Syria'}];
   bundles = b.data || [];
   reviews = r.data || [];
+  payments = pay.data?.length ? pay.data : [{name:'Cash on Delivery'},{name:'Pickup'},{name:'Bank Transfer'}];
   
   renderCats();
   renderProducts();
@@ -225,7 +227,7 @@ function cartModal(){
       <div class="field"><label>Alternative phone</label><input id="cap"></div>
       <div class="field"><label>Email</label><input id="ce" type="email"></div>
       <div class="field"><label>Country</label><select id="cc">${countries.map(c=>`<option>${esc(c.name||c.name_en)}</option>`).join('')}</select></div>
-      <div class="field"><label>Payment method</label><select id="pm"><option>Cash on Delivery</option><option>Pickup</option><option>Bank Transfer</option></select></div>
+      <div class="field"><label>Payment method</label><select id="pm">${payments.map(p=>`<option value="${esc(p.name||p.name_en)}">${esc(p.name||p.name_en)}</option>`).join('')}</select></div>
     </div>
     <div class="field"><label>Exact location</label><textarea id="cl" placeholder="Area, building, street, landmark"></textarea></div>
     <br>
