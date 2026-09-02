@@ -71,6 +71,7 @@ const T = {
 };
 
 let current = 'dashboard', categories = [], countries = [];
+let editingId = null;
 
 const tabs = [
   ['dashboard','Dashboard'],
@@ -138,6 +139,7 @@ function renderTabs(){
 
 function show(t){
   current = t;
+  editingId = null;
   renderTabs();
   const app = document.getElementById('app');
   if(t==='dashboard') return dashboard();
@@ -172,7 +174,7 @@ function formField(id,label,type='text',extra=''){
 
 async function loadRefs(){
   const [c,co] = await Promise.all([
-    sb.from('categories').select('id,name_en').order('sort_order'),
+    sb.from('categories').select('id,name,name_en').order('sort_order'),
     sb.from('countries').select('id,name,name_en').order('sort_order')
   ]);
   categories = c.data || [];
@@ -181,8 +183,9 @@ async function loadRefs(){
 
 async function productsPage(natural=false){
   await loadRefs();
+  editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2>${natural?'Natural Products':'Products'}</h2><div class="grid">${formField('p_name_en','Name EN')}${formField('p_name_ar','Name AR')}<div class="field"><label>Category</label><select id="p_category"><option value="">Select category</option>${categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name_en||c.name)}</option>`).join('')}</select></div>${formField('p_desc_en','Description EN')}${formField('p_desc_ar','Description AR')}${formField('p_price','Retail Price','number','step="0.01"')}${formField('p_stock','Stock Quantity','number','min="0"')}${formField('p_sort','Sort Order','number','value="0"')}<div class="field"><label>Image</label><input id="p_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="p_active"><option value="true">Yes</option><option value="false">No</option></select></div><div class="field"><label>Natural Product</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div></div><br><div class="actions"><button class="btn" onclick="saveProduct()">Save Product</button><button class="tab" onclick="loadProducts()">Refresh</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">${natural?'Natural Products':'Products'}</h2><div class="grid">${formField('p_name_en','Name EN')}${formField('p_name_ar','Name AR')}<div class="field"><label>Category</label><select id="p_category"><option value="">Select category</option>${categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name_en||c.name)}</option>`).join('')}</select></div>${formField('p_desc_en','Description EN')}${formField('p_desc_ar','Description AR')}${formField('p_price','Retail Price','number','step="0.01"')}${formField('p_stock','Stock Quantity','number','min="0"')}${formField('p_sort','Sort Order','number','value="0"')}<div class="field"><label>Image</label><input id="p_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="p_active"><option value="true">Yes</option><option value="false">No</option></select></div><div class="field"><label>Natural Product</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveProduct()">Save Product</button><button class="tab hidden" id="cancelBtn" onclick="productsPage(${natural})">Cancel Edit</button><button class="tab" onclick="loadProducts()">Refresh</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
   loadProducts();
 }
 
@@ -210,9 +213,41 @@ async function saveProduct(){
     sort_order: Number(p_sort.value || 0)
   };
   if(image_url) row.image_url = image_url;
-  const r = await sb.from('products').insert(row);
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg('Product saved successfully.');
-  if(!r.error) loadProducts();
+  
+  let r;
+  if(editingId) {
+    r = await sb.from('products').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('products').insert(row);
+  }
+
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Product updated successfully.' : 'Product saved successfully.');
+  if(!r.error) {
+    if(editingId) productsPage(current === 'natural');
+    else loadProducts();
+  }
+}
+
+async function editProduct(id){
+  const r = await sb.from('products').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  p_name_en.value = item.name_en || '';
+  p_name_ar.value = item.name_ar || '';
+  p_category.value = item.category_id || '';
+  p_desc_en.value = item.description_en || '';
+  p_desc_ar.value = item.description_ar || '';
+  p_price.value = item.retail_price || 0;
+  p_stock.value = item.stock_quantity || 0;
+  p_sort.value = item.sort_order || 0;
+  p_active.value = item.active ? 'true' : 'false';
+  p_natural.value = item.is_natural ? 'true' : 'false';
+  
+  document.getElementById('formTitle').innerText = 'Edit Product';
+  document.getElementById('saveBtn').innerText = 'Update Product';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function loadProducts(){
@@ -221,48 +256,103 @@ async function loadProducts(){
   if(natural) q.eq('is_natural', true);
   const r = await q;
   if(r.error) return table.innerHTML = msg(r.error.message, true);
-  table.innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Natural</th><th>Active</th><th>Action</th></tr>${(r.data||[]).map(x=>`<tr><td>${esc(x.name_en||x.name_ar)}</td><td>${esc(x.category_id)}</td><td>$${Number(x.retail_price||0).toFixed(2)}</td><td>${x.stock_quantity??0}</td><td>${x.is_natural?'Yes':'No'}</td><td>${x.active?'Yes':'No'}</td><td><button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button></td></tr>`).join('')}</table></div>`;
+  table.innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Natural</th><th>Active</th><th>Action</th></tr>${(r.data||[]).map(x=>`<tr><td>${esc(x.name_en||x.name_ar)}</td><td>${esc(x.category_id)}</td><td>$${Number(x.retail_price||0).toFixed(2)}</td><td>${x.stock_quantity??0}</td><td>${x.is_natural?'Yes':'No'}</td><td>${x.active?'Yes':'No'}</td><td><button class="btn" onclick="editProduct('${esc(x.id)}')">Edit</button> <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button></td></tr>`).join('')}</table></div>`;
 }
 
 async function categoriesPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2>Categories</h2><div class="grid">${formField('c_en','Name EN')}${formField('c_ar','Name AR')}${formField('c_icon','Icon')}${formField('c_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="c_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><button class="btn" onclick="saveCategory()">Save Category</button><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Categories</h2><div class="grid">${formField('c_en','Name EN')}${formField('c_ar','Name AR')}${formField('c_icon','Icon')}${formField('c_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="c_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCategory()">Save Category</button><button class="tab hidden" id="cancelBtn" onclick="categoriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
   loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']);
 }
 
 async function saveCategory(){
-  const r = await sb.from('categories').insert({
+  const row = {
     name_en: c_en.value.trim(),
     name_ar: c_ar.value.trim(),
     icon: c_icon.value.trim(),
     active: c_active.value === 'true',
     sort_order: Number(c_sort.value || 0)
-  });
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg('Category saved.');
-  if(!r.error) loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']);
+  };
+  let r;
+  if(editingId) {
+    r = await sb.from('categories').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('categories').insert(row);
+  }
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Category updated.' : 'Category saved.');
+  if(!r.error) {
+    if(editingId) categoriesPage();
+    else loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']);
+  }
+}
+
+async function editCategory(id){
+  const r = await sb.from('categories').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  c_en.value = item.name_en || '';
+  c_ar.value = item.name_ar || '';
+  c_icon.value = item.icon || '';
+  c_sort.value = item.sort_order || 0;
+  c_active.value = item.active ? 'true' : 'false';
+
+  document.getElementById('formTitle').innerText = 'Edit Category';
+  document.getElementById('saveBtn').innerText = 'Update Category';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function countriesPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2>Countries</h2><div class="grid">${formField('co_name','Country Name')}${formField('co_code','Country Code')}${formField('co_phone','Phone Code')}${formField('co_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="co_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><button class="btn" onclick="saveCountry()">Save Country</button><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Countries</h2><div class="grid">${formField('co_name','Country Name')}${formField('co_code','Country Code')}${formField('co_phone','Phone Code')}${formField('co_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="co_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCountry()">Save Country</button><button class="tab hidden" id="cancelBtn" onclick="countriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
   loadGeneric('countries', ['id','name','country_code','phone_code','active','sort_order']);
 }
 
 async function saveCountry(){
-  const r = await sb.from('countries').insert({
+  const row = {
     name: co_name.value.trim(),
     country_code: co_code.value.trim(),
     phone_code: co_phone.value.trim(),
     active: co_active.value === 'true',
     sort_order: Number(co_sort.value || 0)
-  });
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg('Country saved.');
-  if(!r.error) loadGeneric('countries', ['id','name','country_code','phone_code','active','sort_order']);
+  };
+  let r;
+  if(editingId) {
+    r = await sb.from('countries').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('countries').insert(row);
+  }
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Country updated.' : 'Country saved.');
+  if(!r.error) {
+    if(editingId) countriesPage();
+    else loadGeneric('countries', ['id','name','country_code','phone_code','active','sort_order']);
+  }
+}
+
+async function editCountry(id){
+  const r = await sb.from('countries').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  co_name.value = item.name || '';
+  co_code.value = item.country_code || '';
+  co_phone.value = item.phone_code || '';
+  co_sort.value = item.sort_order || 0;
+  co_active.value = item.active ? 'true' : 'false';
+
+  document.getElementById('formTitle').innerText = 'Edit Country';
+  document.getElementById('saveBtn').innerText = 'Update Country';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function bundlesPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2>Bundles & Offers</h2><div class="grid">${formField('b_en','Name EN')}${formField('b_ar','Name AR')}${formField('b_price','Price','number','step="0.01"')}${formField('b_sort','Sort Order','number','value="0"')}<div class="field"><label>Description EN</label><textarea id="b_desc_en"></textarea></div><div class="field"><label>Description AR</label><textarea id="b_desc_ar"></textarea></div><div class="field"><label>Image</label><input id="b_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="b_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><button class="btn" onclick="saveBundle()">Save Bundle</button><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Bundles & Offers</h2><div class="grid">${formField('b_en','Name EN')}${formField('b_ar','Name AR')}${formField('b_price','Price','number','step="0.01"')}${formField('b_sort','Sort Order','number','value="0"')}<div class="field"><label>Description EN</label><textarea id="b_desc_en"></textarea></div><div class="field"><label>Description AR</label><textarea id="b_desc_ar"></textarea></div><div class="field"><label>Image</label><input id="b_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="b_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveBundle()">Save Bundle</button><button class="tab hidden" id="cancelBtn" onclick="bundlesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
   loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']);
 }
 
@@ -285,26 +375,80 @@ async function saveBundle(){
     sort_order: Number(b_sort.value || 0)
   };
   if(image_url) row.image_url = image_url;
-  const r = await sb.from('bundles').insert(row);
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg('Bundle saved.');
-  if(!r.error) loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']);
+  
+  let r;
+  if(editingId) {
+    r = await sb.from('bundles').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('bundles').insert(row);
+  }
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Bundle updated.' : 'Bundle saved.');
+  if(!r.error) {
+    if(editingId) bundlesPage();
+    else loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']);
+  }
+}
+
+async function editBundle(id){
+  const r = await sb.from('bundles').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  b_en.value = item.name_en || '';
+  b_ar.value = item.name_ar || '';
+  b_desc_en.value = item.description_en || '';
+  b_desc_ar.value = item.description_ar || '';
+  b_price.value = item.price || 0;
+  b_sort.value = item.sort_order || 0;
+  b_active.value = item.active ? 'true' : 'false';
+
+  document.getElementById('formTitle').innerText = 'Edit Bundle';
+  document.getElementById('saveBtn').innerText = 'Update Bundle';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function paymentsPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2>Payment Methods</h2><div class="grid">${formField('pm_name','Payment Method')}${formField('pm_desc','Description')}${formField('pm_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="pm_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><button class="btn" onclick="savePayment()">Save Payment Method</button><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Payment Methods</h2><div class="grid">${formField('pm_name','Payment Method')}${formField('pm_desc','Description')}${formField('pm_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="pm_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="savePayment()">Save Payment Method</button><button class="tab hidden" id="cancelBtn" onclick="paymentsPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
   loadGeneric('payment_methods', ['id','name','name_en','description','active','sort_order']);
 }
 
 async function savePayment(){
-  const r = await sb.from('payment_methods').insert({
+  const row = {
     name: pm_name.value.trim(),
     description: pm_desc.value.trim(),
     active: pm_active.value === 'true',
     sort_order: Number(pm_sort.value || 0)
-  });
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg('Payment method saved.');
-  if(!r.error) loadGeneric('payment_methods', ['id','name','name_en','description','active','sort_order']);
+  };
+  let r;
+  if(editingId) {
+    r = await sb.from('payment_methods').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('payment_methods').insert(row);
+  }
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Payment method updated.' : 'Payment method saved.');
+  if(!r.error) {
+    if(editingId) paymentsPage();
+    else loadGeneric('payment_methods', ['id','name','name_en','description','active','sort_order']);
+  }
+}
+
+async function editPayment(id){
+  const r = await sb.from('payment_methods').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  pm_name.value = item.name || '';
+  pm_desc.value = item.description || '';
+  pm_sort.value = item.sort_order || 0;
+  pm_active.value = item.active ? 'true' : 'false';
+
+  document.getElementById('formTitle').innerText = 'Edit Payment Method';
+  document.getElementById('saveBtn').innerText = 'Update Payment Method';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function ordersPage(){
@@ -340,29 +484,58 @@ async function specialPage(){
 }
 
 async function customersPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2>Customers</h2><div class="grid">${formField('cu_name','Name')}${formField('cu_phone','Phone')}${formField('cu_alt','Alternative Phone')}${formField('cu_email','Email','email')}${formField('cu_country','Country')}${formField('cu_location','Location')}</div><br><button class="btn" onclick="saveCustomer()">Save Customer</button><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Customers</h2><div class="grid">${formField('cu_name','Name')}${formField('cu_phone','Phone')}${formField('cu_alt','Alternative Phone')}${formField('cu_email','Email','email')}${formField('cu_country','Country')}${formField('cu_location','Location')}</div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCustomer()">Save Customer</button><button class="tab hidden" id="cancelBtn" onclick="customersPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
   loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']);
 }
 
 async function saveCustomer(){
-  const r = await sb.from('customer_profiles').insert({
+  const row = {
     name: cu_name.value.trim(),
     phone: cu_phone.value.trim(),
     alternative_phone: cu_alt.value.trim(),
     email: cu_email.value.trim(),
     country: cu_country.value.trim(),
     location: cu_location.value.trim()
-  });
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg('Customer saved.');
-  if(!r.error) loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']);
+  };
+  let r;
+  if(editingId) {
+    r = await sb.from('customer_profiles').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('customer_profiles').insert(row);
+  }
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Customer updated.' : 'Customer saved.');
+  if(!r.error) {
+    if(editingId) customersPage();
+    else loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']);
+  }
+}
+
+async function editCustomer(id){
+  const r = await sb.from('customer_profiles').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  cu_name.value = item.name || '';
+  cu_phone.value = item.phone || '';
+  cu_alt.value = item.alternative_phone || '';
+  cu_email.value = item.email || '';
+  cu_country.value = item.country || '';
+  cu_location.value = item.location || '';
+
+  document.getElementById('formTitle').innerText = 'Edit Customer';
+  document.getElementById('saveBtn').innerText = 'Update Customer';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function settingsPage(){
+  editingId = null;
   const app = document.getElementById('app');
   const r = await sb.from('site_settings').select('*').order('setting_key');
   if(r.error) return app.innerHTML = '<div class="panel">' + msg(r.error.message, true) + '</div>';
-  app.innerHTML = `<div class="panel"><h2>Site Settings</h2><div class="grid">${formField('s_key','Setting Key')}${formField('s_value','Setting Value')}</div><br><button class="btn" onclick="saveSetting()">Save Setting</button><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Site Settings</h2><div class="grid">${formField('s_key','Setting Key')}${formField('s_value','Setting Value')}</div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveSetting()">Save Setting</button><button class="tab hidden" id="cancelBtn" onclick="settingsPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
   table.innerHTML = genericTable(r.data || [], ['id','setting_key','setting_value','updated_at'], false, 'site_settings');
 }
 
@@ -370,13 +543,33 @@ async function saveSetting(){
   const key = s_key.value.trim();
   if(!key) return formMsg.innerHTML = msg('Setting key is required.', true);
   const value = s_value.value.trim();
-  const existing = await sb.from('site_settings').select('id').eq('setting_key', key).limit(1).maybeSingle();
   let r;
-  if(existing.error) r = existing;
-  else if(existing.data?.id) r = await sb.from('site_settings').update({setting_value: value, updated_at: new Date().toISOString()}).eq('id', existing.data.id);
-  else r = await sb.from('site_settings').insert({setting_key: key, setting_value: value, updated_at: new Date().toISOString()});
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg('Setting saved.');
+
+  if(editingId) {
+    r = await sb.from('site_settings').update({setting_key: key, setting_value: value, updated_at: new Date().toISOString()}).eq('id', editingId);
+  } else {
+    const existing = await sb.from('site_settings').select('id').eq('setting_key', key).limit(1).maybeSingle();
+    if(existing.error) r = existing;
+    else if(existing.data?.id) r = await sb.from('site_settings').update({setting_value: value, updated_at: new Date().toISOString()}).eq('id', existing.data.id);
+    else r = await sb.from('site_settings').insert({setting_key: key, setting_value: value, updated_at: new Date().toISOString()});
+  }
+
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Setting updated.' : 'Setting saved.');
   if(!r.error) settingsPage();
+}
+
+async function editSetting(id){
+  const r = await sb.from('site_settings').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  s_key.value = item.setting_key || '';
+  s_value.value = item.setting_value || '';
+
+  document.getElementById('formTitle').innerText = 'Edit Setting';
+  document.getElementById('saveBtn').innerText = 'Update Setting';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function loadGeneric(table, cols){
@@ -385,8 +578,19 @@ async function loadGeneric(table, cols){
   document.getElementById('table').innerHTML = genericTable(r.data || [], cols, true, table);
 }
 
+function getEditFunction(table){
+  if(table === 'categories') return 'editCategory';
+  if(table === 'countries') return 'editCountry';
+  if(table === 'bundles') return 'editBundle';
+  if(table === 'payment_methods') return 'editPayment';
+  if(table === 'customer_profiles') return 'editCustomer';
+  if(table === 'site_settings') return 'editSetting';
+  return null;
+}
+
 function genericTable(data, cols, del, table){
-  return `<div class="table-wrap"><table class="table"><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}${del?'<th>Action</th>':''}</tr>${data.map(x=>`<tr>${cols.map(c=>`<td>${esc(typeof x[c]==='boolean'?(x[c]?'Yes':'No'):x[c])}</td>`).join('')}${del?`<td><button class="btn danger" onclick="deleteRow('${table}','${esc(x.id)}')">Delete</button></td>`:''}</tr>`).join('')}</table></div>`;
+  const editFn = getEditFunction(table);
+  return `<div class="table-wrap"><table class="table"><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}<th>Action</th></tr>${data.map(x=>`<tr>${cols.map(c=>`<td>${esc(typeof x[c]==='boolean'?(x[c]?'Yes':'No'):x[c])}</td>`).join('')}<td>${editFn ? `<button class="btn" onclick="${editFn}('${esc(x.id)}')">Edit</button> ` : ''}${del ? `<button class="btn danger" onclick="deleteRow('${table}','${esc(x.id)}')">Delete</button>` : ''}</td></tr>`).join('')}</table></div>`;
 }
 
 async function deleteRow(table, id){
