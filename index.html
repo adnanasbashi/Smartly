@@ -3,427 +3,339 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Smartly | Smart Solutions for Everyday Life</title>
-<meta name="description" content="Smart tools, unique products, natural goods, bundles and everyday solutions with quality service.">
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/icon-192.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icon-192.svg">
-<meta name="theme-color" content="#123B5D">
-<meta name="mobile-web-app-capable" content="yes">
+<title>Smartly Admin | Storefront Management</title>
 <style>
-:root{--navy:#123B5D;--blue:#1E6FA8;--teal:#159A9C;--red:#D94A45;--gold:#E6A83B;--cream:#F7F5EF;--white:#fff;--ink:#17212b;--muted:#68727d;--line:#e4e7ea;--shadow:0 12px 35px rgba(18,59,93,.10)}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--cream);color:var(--ink)}a{text-decoration:none;color:inherit}button,input,select,textarea{font:inherit}button{cursor:pointer}.wrap{max-width:1180px;margin:auto;padding:0 18px}.top{background:var(--navy);color:#fff;text-align:center;padding:9px;font-size:13px}.nav{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--line)}.navin{min-height:70px;display:flex;align-items:center;gap:18px}.logo{font-size:25px;font-weight:900;color:var(--navy);white-space:nowrap}.logo span{color:var(--teal)}.links{display:flex;gap:16px;flex:1}.links a{font-size:14px;color:#45515c}.actions{display:flex;gap:7px;align-items:center}.pill,.btn{border-radius:10px;padding:10px 13px;border:1px solid var(--line);background:#fff}.btn{font-weight:700}.primary{background:var(--teal);border-color:var(--teal);color:#fff}.dark{background:var(--navy);border-color:var(--navy);color:#fff}.red{background:var(--red);border-color:var(--red);color:#fff}.cart{background:var(--navy);color:#fff;border:0;border-radius:10px;padding:11px 14px}.hero{padding:28px 0}.hero-box{min-height:430px;border-radius:24px;overflow:hidden;background:linear-gradient(90deg,rgba(18,59,93,.95),rgba(18,59,93,.55)),url('/hero.jpg') center/cover;display:flex;align-items:center}.hero-copy{max-width:650px;color:#fff;padding:50px}.hero h1{font-size:48px;line-height:1.02;margin:12px 0}.hero p{font-size:17px;line-height:1.6;color:#eaf2f7}.eyebrow{display:inline-block;background:#e7f4f3;color:#116f70;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}.hero .eyebrow{background:rgba(255,255,255,.16);color:#fff}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.section{padding:45px 0}.head{text-align:center;max-width:700px;margin:0 auto 25px}.head h2{font-size:31px;margin:8px}.head p{color:var(--muted);line-height:1.6}.cat,.card,.feature,.bundle{background:#fff;border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.cat{padding:20px;text-align:center}.cat b{display:block;margin-top:7px}.products{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{overflow:hidden}.pic{height:190px;background:#edf2f5;display:flex;align-items:center;justify-content:center;font-size:58px;position:relative}.pic img{width:100%;height:100%;object-fit:cover}.badge{position:absolute;top:10px;left:10px;background:#fff;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:700}.body{padding:15px}.body h3{margin:6px 0}.muted{color:var(--muted);font-size:13px}.price{font-size:21px;font-weight:900;margin:10px 0}.row{display:flex;gap:7px}.qty{width:65px;padding:9px;border:1px solid var(--line);border-radius:8px}.full{width:100%}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.feature,.bundle{padding:20px}.bundle{border-top:4px solid var(--gold)}.natural{background:#eef7f1}.notice{background:#fff5df;border:1px solid #ecd39b;padding:12px;border-radius:10px;font-size:13px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff}.field textarea{min-height:90px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:15px}.modal.show{display:flex}.box{background:#fff;width:min(850px,100%);max-height:92vh;overflow:auto;border-radius:18px;padding:23px}.close{float:right;border:0;background:none;font-size:25px}.footer{background:var(--navy);color:#fff;padding:40px 0}.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:25px}.footer a{display:block;color:#dbe6ed;margin:8px 0}.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,120px);background:var(--navy);color:#fff;padding:12px 18px;border-radius:999px;transition:.25s;z-index:200}.toast.show{transform:translate(-50%,0)}.mobile{display:none}.admin-table{width:100%;border-collapse:collapse;margin-top:15px}.admin-table th,.admin-table td{padding:10px;border:1px solid var(--line);text-align:left;font-size:14px}@media(max-width:900px){.links{display:none}.mobile{display:block}.products,.grid{grid-template-columns:repeat(2,1fr)}.features,.footer-grid{grid-template-columns:1fr}.hero h1{font-size:37px}.hero-copy{padding:32px}}@media(max-width:520px){.formgrid{grid-template-columns:1fr}.products,.grid{grid-template-columns:1fr 1fr}.logo{font-size:21px}.hero-box{min-height:480px}.hero h1{font-size:31px}.hero-copy{padding:25px}}
+:root{--navy:#123B5D;--blue:#1E6FA8;--teal:#159A9C;--red:#D94A45;--gold:#E6A83B;--cream:#F7F5EF;--white:#fff;--ink:#17212b;--muted:#68727d;--line:#e4e7ea;--shadow:0 12px 35px rgba(18,59,93,.10)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7f9;color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:20px;font-weight:800}
+header small{display:block;font-size:12px;color:#a0b0c0;font-weight:400}
+.btn-signout{background:var(--teal);color:#fff;border:0;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer}
+.container{max-width:1200px;margin:24px auto;padding:0 16px}
+.nav-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.tab-btn{background:#fff;border:1px solid var(--line);padding:9px 15px;border-radius:8px;cursor:pointer;font-weight:600;color:#45515c}
+.tab-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;margin-bottom:24px;box-shadow:0 4px 12px rgba(0,0,0,.03)}
+.card h2{margin-top:0;font-size:22px;color:var(--navy)}
+.form-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin-bottom:20px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:bold;color:#45515c}
+.field input, .field select, .field textarea{padding:10px;border:1px solid var(--line);border-radius:6px;font-size:14px}
+.field textarea{resize:vertical;min-height:38px}
+.btn-group{display:flex;gap:10px}
+.btn-primary{background:var(--teal);color:#fff;border:0;padding:10px 18px;border-radius:6px;font-weight:bold;cursor:pointer}
+.btn-secondary{background:#e4e7ea;color:#17212b;border:0;padding:10px 18px;border-radius:6px;font-weight:bold;cursor:pointer}
+.btn-danger{background:var(--red);color:#fff;border:0;padding:6px 12px;border-radius:6px;font-weight:bold;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th, td{text-align:left;padding:12px;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--muted);font-size:12px;text-transform:uppercase}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,120px);background:var(--navy);color:#fff;padding:12px 20px;border-radius:999px;transition:.25s;z-index:200}
+.toast.show{transform:translate(-50%,0)}
+@media(max-width:800px){.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="top">Lebanon delivery • Pickup available • Syria orders handled by WhatsApp • Damaged-item returns within 2 days</div>
-<nav class="nav">
-  <div class="wrap navin">
-    <div class="logo">Smartly <span>ذكي</span></div>
-    <div class="links">
-      <a href="#shop">Shop</a>
-      <a href="#categories">Categories</a>
-      <a href="#natural">Natural</a>
-      <a href="#bundles">Bundles & Offers</a>
-      <a href="#special">Special Request</a>
-      <a href="#reviews">Reviews</a>
-    </div>
-    <button class="pill mobile" onclick="toggleMenu()">☰</button>
-    <div class="actions">
-      <button class="pill" onclick="toggleLang()">EN / العربية</button>
-      <div id="userArea">
-        <button class="pill" onclick="authModal()">👤 Login / Register</button>
-      </div>
-      <button class="pill dark" onclick="adminModal()">⚙️ Admin</button>
-      <button class="cart" onclick="cartModal()">🛒 <span id="count">0</span></button>
-    </div>
-  </div>
-</nav>
 
-<div id="mobileMenu" style="display:none;background:#fff;border-bottom:1px solid var(--line);padding:12px">
-  <div class="wrap">
-    <a href="#shop">Shop</a> · <a href="#categories">Categories</a> · <a href="#natural">Natural</a> · <a href="#bundles">Offers</a> · <a href="#special">Special Request</a>
+<header>
+  <div>
+    <h1>Smartly Admin</h1>
+    <small>Storefront management</small>
   </div>
+  <button class="btn-signout" onclick="logout()">Sign out</button>
+</header>
+
+<div class="container">
+  <div class="nav-tabs" id="tabs">
+    <button class="tab-btn" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('orders')">Orders</button>
+    <button class="tab-btn active" onclick="switchTab('products')">Products</button>
+    <button class="tab-btn" onclick="switchTab('categories')">Categories</button>
+    <button class="tab-btn" onclick="switchTab('countries')">Countries</button>
+    <button class="tab-btn" onclick="switchTab('bundles')">Bundles & Offers</button>
+    <button class="tab-btn" onclick="switchTab('natural')">Natural Products</button>
+    <button class="tab-btn" onclick="switchTab('payments')">Payment Methods</button>
+    <button class="tab-btn" onclick="switchTab('reservations')">Reservations</button>
+    <button class="tab-btn" onclick="switchTab('reviews')">Reviews</button>
+    <button class="tab-btn" onclick="switchTab('special')">Special Requests</button>
+    <button class="tab-btn" onclick="switchTab('customers')">Customers</button>
+    <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+  </div>
+
+  <div id="tab-content"></div>
 </div>
 
-<main>
-<section class="hero"><div class="wrap"><div class="hero-box"><div class="hero-copy"><span class="eyebrow">SMART TOOLS • UNIQUE PRODUCTS • QUALITY SERVICE</span><h1>Smart solutions for everyday life.</h1><p>Discover useful tools, home solutions, natural products, herbs, bundles and unique finds selected for quality, usefulness and service.</p><div class="row"><a class="btn primary" href="#shop">Shop now</a><a class="btn red" href="#special">Can't find it?</a></div></div></div></div></section>
-
-<section id="categories" class="section"><div class="wrap"><div class="head"><span class="eyebrow">EXPLORE</span><h2>Shop by category</h2><p>Categories are controlled from the admin panel.</p></div><div class="grid" id="cats"></div></div></section>
-
-<section id="shop" class="section"><div class="wrap"><div class="head"><span class="eyebrow">SMART PICKS</span><h2>Unique products & everyday solutions</h2><p>Live stock, reserve unavailable items, and order through WhatsApp.</p></div><div class="row" style="margin-bottom:18px"><input id="search" class="pill" style="flex:1" placeholder="Search products..." oninput="renderProducts()"><select id="sort" class="pill" onchange="renderProducts()"><option value="featured">Featured</option><option value="low">Price low-high</option><option value="high">Price high-low</option></select></div><div class="products" id="products"></div></div></section>
-
-<section id="natural" class="section natural"><div class="wrap"><div class="head"><span class="eyebrow">NATURAL</span><h2>Natural products, food & herbs</h2><p>Curated natural products, herbs and food items managed from the admin panel.</p></div><div class="features"><div class="feature"><b>🌿 Herbs</b><p>Selected herbs and natural ingredients.</p></div><div class="feature"><b>🥜 Natural food</b><p>Useful, quality-focused natural food products.</p></div><div class="feature"><b>🍯 Wellness pantry</b><p>Products chosen for everyday use.</p></div></div></div></section>
-
-<section id="bundles" class="section"><div class="wrap"><div class="head"><span class="eyebrow">OFFERS</span><h2>Bundles & special offers</h2><p>Admin can create and activate bundles and promotions.</p></div><div class="grid" id="bundlesGrid"></div></div></section>
-
-<section id="special" class="section"><div class="wrap"><div class="head"><span class="eyebrow">SPECIAL REQUEST</span><h2>Can't find the item? We'll source it.</h2><p>Send a description, link or picture. Special orders normally require 2–4 weeks.</p></div><div class="feature"><div class="formgrid"><div><div class="field"><label>Product / link</label><textarea id="spItem"></textarea></div><div class="field"><label>Picture</label><input id="spPhoto" type="file" accept="image/*"></div></div><div><div class="field"><label>Name</label><input id="spName"></div><div class="field"><label>Phone / WhatsApp</label><input id="spPhone"></div><div class="field"><label>Country</label><select id="spCountry"></select></div><button class="btn primary full" onclick="specialOrder()">Send request on WhatsApp</button></div></div></div></div></section>
-
-<section id="reviews" class="section"><div class="wrap"><div class="head"><span class="eyebrow">REVIEWS</span><h2>What customers say</h2><p>Reviews are managed from the admin panel.</p></div><div class="grid" id="reviewsGrid"></div></div></section>
-
-<section class="section"><div class="wrap"><div class="features"><div class="feature"><b>🚚 Delivery</b><p>Our team confirms the delivery date with you on WhatsApp. Requested dates start at least 3 days ahead.</p></div><div class="feature"><b>📍 Exact location</b><p>Customers enter their exact delivery location instead of selecting a fixed delivery date.</p></div><div class="feature"><b>💳 Payment</b><p>Payment methods are configurable by the admin.</p></div></div></div></section>
-
-<section id="policy" class="section"><div class="wrap"><div class="head"><h2>Customer policy</h2></div><div class="notice"><b>Returns:</b> damaged or materially incorrect stocked items must be reported within 2 days of delivery. <b>Special orders:</b> sourcing normally takes 2–4 weeks and terms are confirmed before approval.</div></div></section>
-</main>
-
-<footer class="footer">
-  <div class="wrap footer-grid">
-    <div><h2>Smartly ذكي</h2><p>Smart tools and solutions for everyday activities.</p></div>
-    <div><b>Shop</b><a href="#shop">Products</a><a href="#categories">Categories</a><a href="#bundles">Offers</a></div>
-    <div><b>Customer</b><a href="#policy">Returns</a><a href="#special">Special requests</a><a href="#reviews">Reviews</a></div>
-    <div><b>Contact</b><a href="tel:+9613080365">+961 3 080 365</a><a href="https://wa.me/9613080365" target="_blank">WhatsApp</a><a href="mailto:adnanasbashi@gmail.com">Email</a></div>
-  </div>
-</footer>
-
-<div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
-const WA = "9613080365";
-
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let products=[], cart={}, categories=[], countries=[], bundles=[], reviews=[], payments=[], currentUser=null;
-const fallbackCats=[['home','Home','🏠'],['kitchen','Kitchen','🍳'],['cleaning','Cleaning','🧽'],['smart','Smart Home','💡'],['wellness','Wellness','💆'],['natural','Natural','🌿'],['car','Car & Travel','🚗']];
+let currentTab = 'products';
+let products = [], categories = [];
 
-function toast(x){
-  const t=document.getElementById('toast');
-  t.textContent=x;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2400);
+  setTimeout(()=>t.classList.remove('show'), 2400);
 }
 
-function esc(x){
-  return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function esc(str){
+  return String(str??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 }
 
-function openModal(h){
-  modalContent.innerHTML=h;
-  modal.classList.add('show');
-}
-
-function closeModal(){
-  modal.classList.remove('show');
-}
-
-function toggleMenu(){
-  mobileMenu.style.display=mobileMenu.style.display==='none'?'block':'none';
-}
-
-function toggleLang(){
-  toast("Arabic language option coming soon!");
-}
-
-async function load(){
-  const { data: { session } } = await sb.auth.getSession();
-  if(session?.user) {
-    currentUser = session.user;
-    renderUserNav();
-  }
-
-  sb.auth.onAuthStateChange((_event, session) => {
-    currentUser = session?.user || null;
-    renderUserNav();
-  });
-
-  const [c,p,co,b,r,pay] = await Promise.all([
-    sb.from('categories').select('*').eq('active',true).order('sort_order'),
+async function init(){
+  const [pRes, cRes] = await Promise.all([
     sb.from('products').select('*').order('sort_order'),
-    sb.from('countries').select('*').eq('active',true).order('sort_order'),
-    sb.from('bundles').select('*').eq('active',true).order('sort_order'),
-    sb.from('reviews').select('*').eq('approved',true).order('created_at',{ascending:false}),
-    sb.from('payment_methods').select('*').eq('active',true).order('sort_order')
+    sb.from('categories').select('*').order('sort_order')
   ]);
-  
-  categories = c.data?.length ? c.data : fallbackCats.map((x,i)=>({id:x[0],name_en:x[1],icon:x[2],sort_order:i}));
-  products = p.data || [];
-  countries = co.data || [{name:'Lebanon'},{name:'Syria'}];
-  bundles = b.data || [];
-  reviews = r.data || [];
-  payments = pay.data?.length ? pay.data : [{name:'Cash on Delivery'},{name:'Pickup'},{name:'Bank Transfer'}];
-  
-  renderCats();
-  renderProducts();
-  renderBundles();
-  renderReviews();
-  fillCountries();
+  products = pRes.data || [];
+  categories = cRes.data || [];
+  renderTab();
 }
 
-function renderUserNav(){
-  const el = document.getElementById('userArea');
-  if(currentUser){
-    const name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Customer';
-    el.innerHTML = `<span style="font-size:14px;font-weight:bold;margin-right:8px">Hello, ${esc(name)}</span><button class="pill dark" onclick="logout()">Logout</button>`;
-  } else {
-    el.innerHTML = `<button class="pill" onclick="authModal()">👤 Login / Register</button>`;
-  }
-}
-
-async function logout(){
-  await sb.auth.signOut();
-  currentUser = null;
-  renderUserNav();
-  toast('Logged out successfully');
-}
-
-function renderCats(){
-  cats.innerHTML = categories.map(c=>`<button class="cat" onclick="filterCat('${esc(c.id)}')">${esc(c.icon||'✨')}<b>${esc(c.name_en||c.name)}</b></button>`).join('');
-}
-
-function filterCat(id){
-  search.value = id;
-  renderProducts();
-}
-
-function renderProducts(){
-  const q = search.value.toLowerCase().trim(), s = sort.value;
-  let arr = products.filter(p=>p.active !== false && (!q || String(p.name_en||'').toLowerCase().includes(q) || String(p.description_en||'').toLowerCase().includes(q) || String(p.category_id||'').toLowerCase().includes(q)));
-  if(s==='low') arr.sort((a,b)=>(a.retail_price||0)-(b.retail_price||0));
-  if(s==='high') arr.sort((a,b)=>(b.retail_price||0)-(a.retail_price||0));
-  
-  const productsEl = document.getElementById('products');
-  productsEl.innerHTML = arr.length ? arr.map(p=>{
-    const stock = Number(p.stock_quantity||0);
-    return `<article class="card">
-      <div class="pic">${p.image_url ? `<img src="${esc(p.image_url)}">` : '🧰'}
-        <span class="badge">${stock > 0 ? stock+' in stock' : 'Out of stock'}</span>
-      </div>
-      <div class="body">
-        <small class="muted">${esc(p.category_id||'')}</small>
-        <h3>${esc(p.name_en||p.name_ar||'Product')}</h3>
-        <p class="muted">${esc(p.description_en||'')}</p>
-        <div class="price">$${Number(p.retail_price||0).toFixed(2)}</div>
-        <div class="row">
-          <input class="qty" id="qty-${esc(p.id)}" type="number" min="1" value="1">
-          <button class="btn primary full" onclick="add('${esc(p.id)}')">${stock > 0 ? 'Add to cart' : 'Reserve one'}</button>
-        </div>
-      </div>
-    </article>`;
-  }).join('') : '<div class="notice">No products found.</div>';
-}
-
-function add(id){
-  const p = products.find(x=>String(x.id)===String(id));
-  if(!p) return;
-  const q = Math.max(1, parseInt(document.getElementById('qty-'+id)?.value) || 1);
-  cart[id] = (cart[id]||0) + q;
-  count.textContent = Object.values(cart).reduce((a,b)=>a+b,0);
-  toast('Added to cart');
-}
-
-function cartModal(){
-  const lines = Object.entries(cart).map(([id,q])=>{
-    const p = products.find(x=>String(x.id)===id);
-    return p ? `<p><b>${esc(p.name_en||p.name_ar)}</b> × ${q} — $${(Number(p.retail_price||0)*q).toFixed(2)}</p>` : '';
-  }).join('');
-  
-  openModal(`
-    <h2>Your cart</h2>
-    ${lines || '<p>Cart is empty.</p>'}
-    <hr>
-    <h3>Customer information</h3>
-    <div class="formgrid">
-      <div class="field"><label>Name</label><input id="cn" value="${esc(currentUser?.user_metadata?.full_name||'')}"></div>
-      <div class="field"><label>Phone</label><input id="cp"></div>
-      <div class="field"><label>Alternative phone</label><input id="cap"></div>
-      <div class="field"><label>Email</label><input id="ce" type="email" value="${esc(currentUser?.email||'')}"></div>
-      <div class="field"><label>Country</label><select id="cc">${countries.map(c=>`<option>${esc(c.name||c.name_en)}</option>`).join('')}</select></div>
-      <div class="field"><label>Payment method</label><select id="pm">${payments.map(p=>`<option value="${esc(p.name||p.name_en)}">${esc(p.name||p.name_en)}</option>`).join('')}</select></div>
-    </div>
-    <div class="field">
-      <label>Exact location</label>
-      <div style="display:flex;gap:8px;margin-bottom:6px">
-        <button class="pill" type="button" onclick="shareLocation()">📍 Share Current Location on Maps</button>
-      </div>
-      <textarea id="cl" placeholder="Area, building, street, landmark, or Google Maps link"></textarea>
-    </div>
-    <br>
-    <button class="btn primary full" onclick="checkout()">Continue on WhatsApp</button>
-  `);
-}
-
-function shareLocation(){
-  if(!navigator.geolocation) return toast('Geolocation is not supported by your browser');
-  toast('Locating...');
-  navigator.geolocation.getCurrentPosition(pos => {
-    const link = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
-    const cl = document.getElementById('cl');
-    cl.value = (cl.value ? cl.value + "\n" : "") + link;
-    toast('Location added to address!');
-  }, err => {
-    toast('Unable to retrieve location: ' + err.message);
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(tab));
   });
+  renderTab();
 }
 
-async function checkout(){
-  const n = cn.value.trim(), p = cp.value.trim(), loc = cl.value.trim();
-  if(!n || !p || !loc) return toast('Name, phone and exact location are required');
-  
-  let total = 0, items = [];
-  for(const [id,q] of Object.entries(cart)){
-    const x = products.find(y=>String(y.id)===id);
-    if(x){
-      total += Number(x.retail_price||0) * q;
-      items.push({product_id: x.id, quantity: q, unit_price: x.retail_price});
-    }
+function renderTab(){
+  const container = document.getElementById('tab-content');
+  if(currentTab === 'products'){
+    renderProductsTab(container);
+  } else if(currentTab === 'categories'){
+    renderCategoriesTab(container);
+  } else {
+    container.innerHTML = `<div class="card"><h2>${currentTab.toUpperCase()}</h2><p style="color:var(--muted)">Section view standard implementation active.</p></div>`;
   }
-  if(!items.length) return toast('Your cart is empty');
-  
-  const order_number = 'ORD-' + Date.now();
-  const o = await sb.from('orders').insert({
-    order_number, name:n, phone:p, alternative_phone:cap.value, email:ce.value, country:cc.value, location:loc, payment_method:pm.value, total, status:'pending'
-  }).select().single();
-  
-  if(o.error) return toast(o.error.message);
-  
-  const oi = await sb.from('order_items').insert(items.map(x=>({...x, order_id: o.data.id})));
-  if(oi.error) return toast(oi.error.message);
-
-  for(const item of items){
-    const prod = products.find(p => p.id === item.product_id);
-    if(prod){
-      const updatedStock = Math.max(0, Number(prod.stock_quantity || 0) - item.quantity);
-      await sb.from('products').update({ stock_quantity: updatedStock }).eq('id', item.product_id);
-      prod.stock_quantity = updatedStock;
-    }
-  }
-  renderProducts();
-  
-  const text = `Hello Smartly, I want to order. Order: ${order_number}; Name: ${n}; Phone: ${p}; Alternative: ${cap.value}; Country: ${cc.value}; Location: ${loc}; Payment: ${pm.value}; Total: $${total.toFixed(2)}`;
-  window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(text), '_blank');
-  
-  cart = {};
-  count.textContent = '0';
-  closeModal();
-  toast('Order saved and stock updated');
 }
 
-function fillCountries(){
-  spCountry.innerHTML = countries.map(c=>`<option>${esc(c.name||c.name_en)}</option>`).join('');
-}
-
-function adminModal(){
-  openModal(`
-    <h2>Admin Dashboard</h2>
-    <div style="display:flex;gap:8px;margin-bottom:15px">
-      <button class="pill primary" onclick="renderAdminProducts()">Products</button>
-      <button class="pill" onclick="openAddCategoryModal()">+ Add Category</button>
+function renderProductsTab(container){
+  const catOptions = categories.map(c => `<option value="${esc(c.id)}">${esc(c.name_en || c.name)}</option>`).join('');
+  
+  container.innerHTML = `
+    <div class="card">
+      <h2>Products</h2>
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <div class="form-grid">
+          <div class="field">
+            <label>Name EN</label>
+            <input type="text" id="p_name_en" required>
+          </div>
+          <div class="field">
+            <label>Name AR</label>
+            <input type="text" id="p_name_ar">
+          </div>
+          <div class="field">
+            <label>Category</label>
+            <select id="p_category">
+              <option value="">Select category</option>
+              ${catOptions}
+            </select>
+          </div>
+          <div class="field">
+            <label>Description EN</label>
+            <textarea id="p_desc_en"></textarea>
+          </div>
+          <div class="field">
+            <label>Description AR</label>
+            <textarea id="p_desc_ar"></textarea>
+          </div>
+          <div class="field">
+            <label>Retail Price</label>
+            <input type="number" step="0.01" id="p_price" required>
+          </div>
+          <div class="field">
+            <label>Stock Quantity</label>
+            <input type="number" id="p_stock" value="0">
+          </div>
+          <div class="field">
+            <label>Sort Order</label>
+            <input type="number" id="p_sort" value="0">
+          </div>
+          <div class="field">
+            <label>Image</label>
+            <input type="file" id="p_image" accept="image/*">
+          </div>
+          <div class="field">
+            <label>Active</label>
+            <select id="p_active">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Natural Product</label>
+            <select id="p_natural">
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn-primary">Save Product</button>
+          <button type="button" class="btn-secondary" onclick="resetProductForm()">Refresh</button>
+        </div>
+      </form>
     </div>
-    <div id="adminContent"></div>
-  `);
-  renderAdminProducts();
-}
 
-function renderAdminProducts(){
-  const html = `
-    <h3>Products Management</h3>
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${products.map(p => `
+    <div class="card">
+      <table>
+        <thead>
           <tr>
-            <td>${esc(p.id)}</td>
-            <td>${esc(p.name_en||p.name_ar||'Product')}</td>
-            <td>$${Number(p.retail_price||0).toFixed(2)}</td>
-            <td>${Number(p.stock_quantity||0)}</td>
-            <td>
-              <button class="pill primary" onclick="editProduct('${esc(p.id)}')">Edit</button>
-            </td>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Natural</th>
+            <th>Active</th>
+            <th>Action</th>
           </tr>
-        `).join('')}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${products.map(p => `
+            <tr>
+              <td><b>${esc(p.name_en || p.name_ar || 'Untitled')}</b></td>
+              <td>${esc(p.category_id || '-')}</td>
+              <td>$${Number(p.retail_price||0).toFixed(2)}</td>
+              <td>${Number(p.stock_quantity||0)}</td>
+              <td>${p.is_natural ? 'Yes' : 'No'}</td>
+              <td>${p.active !== false ? 'Yes' : 'No'}</td>
+              <td>
+                <button class="btn-danger" onclick="deleteProduct('${esc(p.id)}')">Delete</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
   `;
-  document.getElementById('adminContent').innerHTML = html;
 }
 
-function openAddCategoryModal(){
-  openModal(`
-    <h2>Add New Category</h2>
-    <div class="field"><label>Category Name</label><input id="newCatName" placeholder="e.g. Tools"></div><br>
-    <div class="field"><label>Icon (Emoji)</label><input id="newCatIcon" placeholder="e.g. 🛠️"></div><br>
-    <button class="btn primary full" onclick="submitNewCategory()">Save Category</button>
-  `);
+function renderCategoriesTab(container){
+  container.innerHTML = `
+    <div class="card">
+      <h2>Categories</h2>
+      <form onsubmit="saveCategory(event)">
+        <div class="form-grid">
+          <div class="field">
+            <label>Category Name EN</label>
+            <input type="text" id="c_name_en" required>
+          </div>
+          <div class="field">
+            <label>Icon / Emoji</label>
+            <input type="text" id="c_icon" placeholder="e.g. 🛠️">
+          </div>
+          <div class="field">
+            <label>Sort Order</label>
+            <input type="number" id="c_sort" value="0">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary">Save Category</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Icon</th>
+            <th>Name</th>
+            <th>Sort Order</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${categories.map(c => `
+            <tr>
+              <td>${esc(c.icon || '📦')}</td>
+              <td><b>${esc(c.name_en || c.name)}</b></td>
+              <td>${Number(c.sort_order||0)}</td>
+              <td>
+                <button class="btn-danger" onclick="deleteCategory('${esc(c.id)}')">Delete</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
-async function submitNewCategory(){
-  const name_en = document.getElementById('newCatName').value.trim();
-  const icon = document.getElementById('newCatIcon').value.trim() || '📦';
-  if(!name_en) return toast('Please enter a category name');
-
-  const newCat = {
-    id: 'cat_' + Date.now(),
-    name_en,
-    icon,
-    active: true,
-    sort_order: categories.length + 1
+async function saveProduct(e){
+  e.preventDefault();
+  const payload = {
+    name_en: document.getElementById('p_name_en').value,
+    name_ar: document.getElementById('p_name_ar').value,
+    category_id: document.getElementById('p_category').value || null,
+    description_en: document.getElementById('p_desc_en').value,
+    description_ar: document.getElementById('p_desc_ar').value,
+    retail_price: parseFloat(document.getElementById('p_price').value) || 0,
+    stock_quantity: parseInt(document.getElementById('p_stock').value) || 0,
+    sort_order: parseInt(document.getElementById('p_sort').value) || 0,
+    active: document.getElementById('p_active').value === 'true',
+    is_natural: document.getElementById('p_natural').value === 'true'
   };
 
-  const { error } = await sb.from('categories').insert(newCat);
+  const { error } = await sb.from('products').insert([payload]);
   if(error) return toast(error.message);
 
-  toast('Category added!');
-  closeModal();
-  load();
+  toast('Product saved!');
+  resetProductForm();
+  init();
 }
 
-function editProduct(id){
-  const p = products.find(x => String(x.id) === String(id));
-  if(!p) return;
-  openModal(`
-    <h2>Edit Product</h2>
-    <div class="field"><label>Name (EN)</label><input id="epName" value="${esc(p.name_en||'')}"></div><br>
-    <div class="field"><label>Price ($)</label><input id="epPrice" type="number" step="0.01" value="${Number(p.retail_price||0)}"></div><br>
-    <div class="field"><label>Stock Quantity</label><input id="epStock" type="number" value="${Number(p.stock_quantity||0)}"></div><br>
-    <button class="btn primary full" onclick="saveProduct('${esc(p.id)}')">Save Changes</button>
-  `);
-}
-
-async function saveProduct(id){
-  const name_en = epName.value.trim();
-  const retail_price = parseFloat(epPrice.value) || 0;
-  const stock_quantity = parseInt(epStock.value) || 0;
-
-  const { error } = await sb.from('products').update({ name_en, retail_price, stock_quantity }).eq('id', id);
+async function deleteProduct(id){
+  if(!confirm('Are you sure you want to delete this product?')) return;
+  const { error } = await sb.from('products').delete().eq('id', id);
   if(error) return toast(error.message);
-  
-  toast('Product updated successfully');
-  closeModal();
-  load();
+  toast('Product deleted');
+  init();
 }
 
-function renderBundles(){
-  const bGrid = document.getElementById('bundlesGrid');
-  bGrid.innerHTML = bundles.length ? bundles.map(b=>`
-    <div class="bundle">
-      <h3>${esc(b.title||b.name||'Bundle')}</h3>
-      <p class="muted">${esc(b.description||'')}</p>
-      <div class="price">$${Number(b.price||0).toFixed(2)}</div>
-    </div>
-  `).join('') : '<p class="muted">No special offers available.</p>';
+async function saveCategory(e){
+  e.preventDefault();
+  const payload = {
+    id: 'cat_' + Date.now(),
+    name_en: document.getElementById('c_name_en').value,
+    icon: document.getElementById('c_icon').value || '📦',
+    sort_order: parseInt(document.getElementById('c_sort').value) || 0,
+    active: true
+  };
+
+  const { error } = await sb.from('categories').insert([payload]);
+  if(error) return toast(error.message);
+
+  toast('Category saved!');
+  init();
 }
 
-function renderReviews(){
-  const rGrid = document.getElementById('reviewsGrid');
-  rGrid.innerHTML = reviews.length ? reviews.map(r=>`
-    <div class="feature">
-      <b>${esc(r.customer_name||'Customer')}</b>
-      <p>"${esc(r.comment||'')}"</p>
-    </div>
-  `).join('') : '<p class="muted">No reviews yet.</p>';
+async function deleteCategory(id){
+  if(!confirm('Delete this category?')) return;
+  const { error } = await sb.from('categories').delete().eq('id', id);
+  if(error) return toast(error.message);
+  toast('Category deleted');
+  init();
 }
 
-load().catch(e => toast(e.message));
+function resetProductForm(){
+  const f = document.getElementById('productForm');
+  if(f) f.reset();
+}
+
+function logout(){
+  sb.auth.signOut().then(() => {
+    window.location.href = '/index.html';
+  });
+}
+
+init();
 </script>
 </body>
 </html>
