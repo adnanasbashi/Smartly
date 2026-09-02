@@ -216,28 +216,6 @@ function add(id){
   toast('Added to cart');
 }
 
-function reserve(id){
-  const p = products.find(x=>String(x.id)===String(id));
-  openModal(`
-    <h2>Reserve ${esc(p.name_en||p.name_ar)}</h2>
-    <p>Tell us who you are and we will add your reservation to the demand list.</p>
-    <div class="field"><label>Name</label><input id="rn" value="${esc(currentUser?.user_metadata?.full_name||'')}"></div><br>
-    <div class="field"><label>Phone</label><input id="rp"></div><br>
-    <button class="btn primary full" onclick="saveReservation('${esc(id)}')">Reserve one</button>
-  `);
-}
-
-async function saveReservation(id){
-  const n = rn.value.trim(), p = rp.value.trim();
-  if(!n || !p) return toast('Name and phone are required');
-  const r = await sb.from('reservations').insert({product_id:id, name:n, phone:p, quantity:1, status:'pending'});
-  if(r.error) toast(r.error.message);
-  else {
-    closeModal();
-    toast('Reservation request saved');
-  }
-}
-
 function cartModal(){
   const lines = Object.entries(cart).map(([id,q])=>{
     const p = products.find(x=>String(x.id)===id);
@@ -257,10 +235,29 @@ function cartModal(){
       <div class="field"><label>Country</label><select id="cc">${countries.map(c=>`<option>${esc(c.name||c.name_en)}</option>`).join('')}</select></div>
       <div class="field"><label>Payment method</label><select id="pm">${payments.map(p=>`<option value="${esc(p.name||p.name_en)}">${esc(p.name||p.name_en)}</option>`).join('')}</select></div>
     </div>
-    <div class="field"><label>Exact location</label><textarea id="cl" placeholder="Area, building, street, landmark"></textarea></div>
+    <div class="field">
+      <label>Exact location</label>
+      <div style="display:flex;gap:8px;margin-bottom:6px">
+        <button class="pill" type="button" onclick="shareLocation()">📍 Share Current Location on Maps</button>
+      </div>
+      <textarea id="cl" placeholder="Area, building, street, landmark, or Google Maps link"></textarea>
+    </div>
     <br>
     <button class="btn primary full" onclick="checkout()">Continue on WhatsApp</button>
   `);
+}
+
+function shareLocation(){
+  if(!navigator.geolocation) return toast('Geolocation is not supported by your browser');
+  toast('Locating...');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const link = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+    const cl = document.getElementById('cl');
+    cl.value = (cl.value ? cl.value + "\n" : "") + link;
+    toast('Location added to address!');
+  }, err => {
+    toast('Unable to retrieve location: ' + err.message);
+  });
 }
 
 async function checkout(){
@@ -287,7 +284,6 @@ async function checkout(){
   const oi = await sb.from('order_items').insert(items.map(x=>({...x, order_id: o.data.id})));
   if(oi.error) return toast(oi.error.message);
 
-  // Deduct purchased items directly from live stock
   for(const item of items){
     const prod = products.find(p => p.id === item.product_id);
     if(prod){
@@ -311,152 +307,32 @@ function fillCountries(){
   spCountry.innerHTML = countries.map(c=>`<option>${esc(c.name||c.name_en)}</option>`).join('');
 }
 
-function renderBundles(){
-  bundlesGrid.innerHTML = bundles.length ? bundles.map(b=>`
-    <div class="bundle">
-      ${b.image_url ? `<img src="${esc(b.image_url)}" style="width:100%;height:150px;object-fit:cover;border-radius:12px">` : ''}
-      <h3>${esc(b.name_en||b.name_ar)}</h3>
-      <p class="muted">${esc(b.description_en||'')}</p>
-      <b>$${Number(b.price||0).toFixed(2)}</b>
-    </div>
-  `).join('') : '<div class="notice">Bundles and offers will appear here.</div>';
-}
-
-function renderReviews(){
-  reviewsGrid.innerHTML = reviews.length ? reviews.map(r=>`
-    <div class="review">
-      <b>★★★★★</b>
-      <h3>${esc(r.customer_name)}</h3>
-      <small>${esc(r.product_name||'Customer')}</small>
-      <p>${esc(r.comment)}</p>
-    </div>
-  `).join('') : '<div class="notice">Verified customer reviews will appear here.</div>';
-}
-
-async function specialOrder(){
-  const item = spItem.value.trim(), n = spName.value.trim(), p = spPhone.value.trim();
-  if(!item || !n || !p) return toast('Item, name and phone are required');
-  
-  const msg = `Hello Smartly, special request. Item/link: ${item}; Name: ${n}; Phone: ${p}; Country: ${spCountry.value}; Special order lead time: 2–4 weeks.`;
-  const r = await sb.from('special_requests').insert({name:n, phone:p, country:spCountry.value, item, status:'pending'});
-  
-  if(r.error) return toast(r.error.message);
-  window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(msg), '_blank');
-  toast('Request saved');
-}
-
-function authModal(){
+function editProduct(id){
+  const p = products.find(x => String(x.id) === String(id));
+  if(!p) return;
   openModal(`
-    <div style="display:flex;gap:10px;border-bottom:1px solid var(--line);margin-bottom:15px">
-      <button class="tab-btn active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
-      <button class="tab-btn" id="tabCreate" onclick="switchAuthTab('create')">Create Account</button>
-    </div>
-
-    <!-- LOGIN FORM -->
-    <div id="formLogin">
-      <h2>Welcome Back</h2>
-      <p>Log in with your username or email address.</p>
-      <form onsubmit="event.preventDefault(); handleLogin();">
-        <div class="field">
-          <label>Username or Email</label>
-          <input id="loginUser" type="text" placeholder="username or email@example.com" autocomplete="username" required>
-        </div><br>
-        <div class="field">
-          <label>Password</label>
-          <input id="loginPass" type="password" autocomplete="current-password" required>
-        </div><br>
-        <button type="submit" class="btn primary full">Login</button>
-      </form>
-    </div>
-
-    <!-- CREATE ACCOUNT FORM -->
-    <div id="formCreate" style="display:none">
-      <h2>Create an Account</h2>
-      <p>Register with Google/Gmail or any standard email.</p>
-      
-      <button class="btn full google-btn" onclick="loginWithGoogle()">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-        Sign up with Google (Gmail)
-      </button>
-
-      <div style="text-align:center;margin:15px 0;color:var(--muted);font-weight:bold">— OR —</div>
-
-      <form onsubmit="event.preventDefault(); handleRegister();">
-        <div class="field">
-          <label>Full Name</label>
-          <input id="regName" type="text" placeholder="John Doe" required>
-        </div><br>
-        <div class="field">
-          <label>Email Address</label>
-          <input id="regEmail" type="email" placeholder="name@domain.com" required>
-        </div><br>
-        <div class="field">
-          <label>Password</label>
-          <input id="regPass" type="password" minlength="6" required>
-        </div><br>
-        <button type="submit" class="btn dark full">Create Account</button>
-      </form>
-    </div>
+    <h2>Edit Product</h2>
+    <div class="field"><label>Name (EN)</label><input id="epName" value="${esc(p.name_en||'')}"></div><br>
+    <div class="field"><label>Price ($)</label><input id="epPrice" type="number" step="0.01" value="${Number(p.retail_price||0)}"></div><br>
+    <div class="field"><label>Stock Quantity</label><input id="epStock" type="number" value="${Number(p.stock_quantity||0)}"></div><br>
+    <button class="btn primary full" onclick="saveProduct('${esc(p.id)}')">Save Changes</button>
   `);
 }
 
-function switchAuthTab(tab){
-  if(tab === 'login'){
-    tabLogin.classList.add('active');
-    tabCreate.classList.remove('active');
-    formLogin.style.display = 'block';
-    formCreate.style.display = 'none';
-  } else {
-    tabCreate.classList.add('active');
-    tabLogin.classList.remove('active');
-    formCreate.style.display = 'block';
-    formLogin.style.display = 'none';
-  }
-}
+async function saveProduct(id){
+  const name_en = epName.value.trim();
+  const retail_price = parseFloat(epPrice.value) || 0;
+  const stock_quantity = parseInt(epStock.value) || 0;
 
-async function handleLogin(){
-  const userOrEmail = loginUser.value.trim();
-  const password = loginPass.value;
-  const email = userOrEmail.includes('@') ? userOrEmail : `${userOrEmail}@smartly.local`;
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  const { error } = await sb.from('products').update({ name_en, retail_price, stock_quantity }).eq('id', id);
   if(error) return toast(error.message);
   
-  currentUser = data.user;
-  renderUserNav();
+  toast('Product updated successfully');
   closeModal();
-  toast('Logged in successfully');
-}
-
-async function handleRegister(){
-  const name = regName.value.trim();
-  const email = regEmail.value.trim();
-  const password = regPass.value;
-
-  const { data, error } = await sb.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: name } }
-  });
-
-  if(error) return toast(error.message);
-  
-  currentUser = data.user;
-  renderUserNav();
-  closeModal();
-  toast('Account created successfully');
-}
-
-async function loginWithGoogle(){
-  const { error } = await sb.auth.signInWithOAuth({ provider: 'google' });
-  if(error) toast(error.message);
+  load();
 }
 
 load().catch(e => toast(e.message));
-
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/service-worker.js').catch(console.error);
-}
 </script>
 </body>
 </html>
