@@ -28,7 +28,8 @@
 <div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div><div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL="https://ifjealmkewsfhbqfbuja.supabase.co",SUPABASE_KEY="sb_publishable_rr0YmNcZr73bQkKAW-DNAw_wXWVw88E",sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),WA="9613080365";
+const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
 let products=[],cart={},categories=[],countries=[],bundles=[],reviews=[];
 const fallbackCats=[['home','Home','🏠'],['kitchen','Kitchen','🍳'],['cleaning','Cleaning','🧽'],['smart','Smart Home','💡'],['wellness','Wellness','💆'],['natural','Natural','🌿'],['car','Car & Travel','🚗']];
 function toast(x){const t=document.getElementById('toast');t.textContent=x;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function openModal(h){modalContent.innerHTML=h;modal.classList.add('show')}function closeModal(){modal.classList.remove('show')}function toggleMenu(){mobileMenu.style.display=mobileMenu.style.display==='none'?'block':'none'}function toggleLang(){document.documentElement.lang=document.documentElement.lang==='en'?'ar':'en';document.documentElement.dir=document.documentElement.lang==='ar'?'rtl':'ltr';toast(document.documentElement.lang==='ar'?'تم تغيير اللغة':'Language changed')}
