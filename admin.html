@@ -47,28 +47,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// 1. Correct Supabase Configuration
 const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
 
-// 2. Initialize Supabase Client
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-const T = {
-  products: 'products',
-  categories: 'categories',
-  countries: 'countries',
-  bundles: 'bundles',
-  payments: 'payment_methods',
-  orders: 'orders',
-  order_items: 'order_items',
-  reservations: 'reservations',
-  reviews: 'reviews',
-  special: 'special_requests',
-  customers: 'customer_profiles',
-  admins: 'admin_users',
-  settings: 'site_settings'
-};
 
 const COUNTRY_LIST = [
   { code: 'LB', name: 'Lebanon' },
@@ -488,10 +470,76 @@ async function editPayment(id){
 
 async function ordersPage(){
   const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Orders</h2><div id="table"></div></div>';
+  app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Orders</h2><button class="btn" onclick="ordersPage()">Refresh Orders</button></div><div class="panel"><div id="table"></div></div>';
   const r = await sb.from('orders').select('*').order('created_at', {ascending:false}).limit(200);
   if(r.error) return table.innerHTML = msg(r.error.message, true);
-  table.innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Order</th><th>Customer</th><th>Phone</th><th>Total</th><th>Payment</th><th>Status</th><th>Created</th><th>Action</th></tr>${(r.data||[]).map(x=>`<tr><td>${esc(x.order_number||x.id)}</td><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>$${Number(x.total||0).toFixed(2)}</td><td>${esc(x.payment_method)}</td><td><select onchange="updateField('orders','${esc(x.id)}','status',this.value)"><option ${x.status==='pending'?'selected':''}>pending</option><option ${x.status==='confirmed'?'selected':''}>confirmed</option><option ${x.status==='preparing'?'selected':''}>preparing</option><option ${x.status==='out_for_delivery'?'selected':''}>out_for_delivery</option><option ${x.status==='completed'?'selected':''}>completed</option><option ${x.status==='cancelled'?'selected':''}>cancelled</option></select></td><td>${esc(x.created_at)}</td><td><button class="btn" onclick="viewRecord('orders','${esc(x.id)}')">View</button></td></tr>`).join('')}</table></div>`;
+  
+  table.innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Order</th><th>Customer</th><th>Phone</th><th>Subtotal</th><th>Delivery Fee</th><th>Total</th><th>Payment</th><th>Status</th><th>Created</th><th>Action</th></tr>${(r.data||[]).map(x=>{
+    const subtotal = Number(x.subtotal || x.total || 0);
+    const deliveryFee = Number(x.delivery_fee || 0);
+    const grandTotal = subtotal + deliveryFee;
+    return `<tr>
+      <td>${esc(x.order_number||x.id)}</td>
+      <td>${esc(x.name)}</td>
+      <td>${esc(x.phone)}</td>
+      <td>$${subtotal.toFixed(2)}</td>
+      <td>$<input type="number" step="0.01" style="width:70px;padding:4px;" value="${deliveryFee}" onchange="updateDeliveryFee('${esc(x.id)}', ${subtotal}, this.value)"></td>
+      <td><b>$${grandTotal.toFixed(2)}</b></td>
+      <td>${esc(x.payment_method)}</td>
+      <td>
+        <select onchange="handleOrderStatusChange('${esc(x.id)}', '${esc(x.status)}', this.value)">
+          <option value="pending" ${x.status==='pending'?'selected':''}>pending</option>
+          <option value="confirmed" ${x.status==='confirmed'?'selected':''}>confirmed</option>
+          <option value="preparing" ${x.status==='preparing'?'selected':''}>preparing</option>
+          <option value="out_for_delivery" ${x.status==='out_for_delivery'?'selected':''}>out_for_delivery</option>
+          <option value="completed" ${x.status==='completed'?'selected':''}>completed</option>
+          <option value="cancelled" ${x.status==='cancelled'?'selected':''}>cancelled</option>
+        </select>
+      </td>
+      <td>${esc(x.created_at)}</td>
+      <td><button class="btn" onclick="viewRecord('orders','${esc(x.id)}')">View</button></td>
+    </tr>`;
+  }).join('')}</table></div>`;
+}
+
+async function updateDeliveryFee(orderId, subtotal, feeValue){
+  const fee = Number(feeValue || 0);
+  const total = subtotal + fee;
+  const r = await sb.from('orders').update({ delivery_fee: fee, total: total }).eq('id', orderId);
+  if(r.error) alert('Error updating delivery fee: ' + r.error.message);
+  else ordersPage();
+}
+
+async function handleOrderStatusChange(orderId, oldStatus, newStatus){
+  if(oldStatus === newStatus) return;
+
+  const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
+  if(r.error) return alert('Failed to update order status: ' + r.error.message);
+
+  if(newStatus === 'confirmed' && oldStatus !== 'confirmed'){
+    await adjustOrderInventory(orderId, 'decrease');
+  } else if(newStatus === 'cancelled' && oldStatus === 'confirmed'){
+    await adjustOrderInventory(orderId, 'increase');
+  }
+
+  ordersPage();
+}
+
+async function adjustOrderInventory(orderId, mode){
+  const itemsRes = await sb.from('order_items').select('product_id, quantity').eq('order_id', orderId);
+  if(itemsRes.error || !itemsRes.data) return;
+
+  for(const item of itemsRes.data){
+    if(!item.product_id) continue;
+    const prodRes = await sb.from('products').select('stock_quantity').eq('id', item.product_id).single();
+    if(prodRes.data){
+      let newStock = Number(prodRes.data.stock_quantity || 0);
+      if(mode === 'decrease') newStock -= item.quantity;
+      if(mode === 'increase') newStock += item.quantity;
+      if(newStock < 0) newStock = 0;
+      await sb.from('products').update({ stock_quantity: newStock }).eq('id', item.product_id);
+    }
+  }
 }
 
 async function reservationsPage(){
@@ -646,7 +694,6 @@ async function viewRecord(table, id){
   alert(JSON.stringify(r.data, null, 2));
 }
 
-// Check session on page load
 guard();
 </script>
 </body>
