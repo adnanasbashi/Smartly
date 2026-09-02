@@ -91,6 +91,7 @@ const tabs = [
   ['products','Products'],
   ['categories','Categories'],
   ['countries','Countries'],
+  ['delivery','Delivery Fees'],
   ['bundles','Bundles & Offers'],
   ['natural','Natural Products'],
   ['payments','Payment Methods'],
@@ -158,6 +159,7 @@ function show(t){
   if(t==='products'||t==='natural') return productsPage(t==='natural');
   if(t==='categories') return categoriesPage();
   if(t==='countries') return countriesPage();
+  if(t==='delivery') return deliveryFeesPage();
   if(t==='bundles') return bundlesPage();
   if(t==='payments') return paymentsPage();
   if(t==='orders') return ordersPage();
@@ -366,6 +368,51 @@ async function editCountry(id){
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
+async function deliveryFeesPage(){
+  editingId = null;
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="panel"><h2 id="formTitle">Delivery Fees by Location/Distance</h2><div class="grid">${formField('df_location','Location / Region Name')}${formField('df_fee','Delivery Fee Amount ($)','number','step="0.01"')}${formField('df_min_distance','Min Distance (km)','number','step="0.1" value="0"')}${formField('df_max_distance','Max Distance (km)','number','step="0.1"')}<div class="field"><label>Active</label><select id="df_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveDeliveryFee()">Save Delivery Fee Rate</button><button class="tab hidden" id="cancelBtn" onclick="deliveryFeesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  loadGeneric('delivery_fees', ['id','location_name','fee_amount','min_distance_km','max_distance_km','active']);
+}
+
+async function saveDeliveryFee(){
+  const row = {
+    location_name: df_location.value.trim(),
+    fee_amount: Number(df_fee.value || 0),
+    min_distance_km: Number(df_min_distance.value || 0),
+    max_distance_km: df_max_distance.value ? Number(df_max_distance.value) : null,
+    active: df_active.value === 'true'
+  };
+  let r;
+  if(editingId) {
+    r = await sb.from('delivery_fees').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('delivery_fees').insert(row);
+  }
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Delivery fee rate updated.' : 'Delivery fee rate saved.');
+  if(!r.error) {
+    if(editingId) deliveryFeesPage();
+    else loadGeneric('delivery_fees', ['id','location_name','fee_amount','min_distance_km','max_distance_km','active']);
+  }
+}
+
+async function editDeliveryFee(id){
+  const r = await sb.from('delivery_fees').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data;
+  editingId = item.id;
+  df_location.value = item.location_name || '';
+  df_fee.value = item.fee_amount || 0;
+  df_min_distance.value = item.min_distance_km || 0;
+  df_max_distance.value = item.max_distance_km || '';
+  df_active.value = item.active ? 'true' : 'false';
+
+  document.getElementById('formTitle').innerText = 'Edit Delivery Fee Rate';
+  document.getElementById('saveBtn').innerText = 'Update Rate';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
 async function bundlesPage(){
   editingId = null;
   const app = document.getElementById('app');
@@ -471,20 +518,18 @@ async function editPayment(id){
 async function ordersPage(){
   const app = document.getElementById('app');
   app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Orders</h2><button class="btn" onclick="ordersPage()">Refresh Orders</button></div><div class="panel"><div id="table"></div></div>';
-  const r = await sb.from('orders').select('*').order('created_at', {ascending:false}).limit(200);
+  const r = await sb.from('orders').select('*, order_items(quantity)').order('created_at', {ascending:false}).limit(200);
   if(r.error) return table.innerHTML = msg(r.error.message, true);
   
-  table.innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Order</th><th>Customer</th><th>Phone</th><th>Subtotal</th><th>Delivery Fee</th><th>Total</th><th>Payment</th><th>Status</th><th>Created</th><th>Action</th></tr>${(r.data||[]).map(x=>{
-    const subtotal = Number(x.subtotal || x.total || 0);
-    const deliveryFee = Number(x.delivery_fee || 0);
-    const grandTotal = subtotal + deliveryFee;
+  table.innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Order</th><th>Customer</th><th>Phone</th><th>Total Items</th><th>Total Amount</th><th>Payment</th><th>Status</th><th>Created</th><th>Action</th></tr>${(r.data||[]).map(x=>{
+    const totalItems = (x.order_items || []).reduce((sum, item) => sum + (item.quantity || 0), 0) || x.total_items || 0;
+    const totalAmount = Number(x.total || 0);
     return `<tr>
       <td>${esc(x.order_number||x.id)}</td>
       <td>${esc(x.name)}</td>
       <td>${esc(x.phone)}</td>
-      <td>$${subtotal.toFixed(2)}</td>
-      <td>$<input type="number" step="0.01" style="width:70px;padding:4px;" value="${deliveryFee}" onchange="updateDeliveryFee('${esc(x.id)}', ${subtotal}, this.value)"></td>
-      <td><b>$${grandTotal.toFixed(2)}</b></td>
+      <td><b>${totalItems}</b></td>
+      <td>$${totalAmount.toFixed(2)}</td>
       <td>${esc(x.payment_method)}</td>
       <td>
         <select onchange="handleOrderStatusChange('${esc(x.id)}', '${esc(x.status)}', this.value)">
@@ -500,14 +545,6 @@ async function ordersPage(){
       <td><button class="btn" onclick="viewRecord('orders','${esc(x.id)}')">View</button></td>
     </tr>`;
   }).join('')}</table></div>`;
-}
-
-async function updateDeliveryFee(orderId, subtotal, feeValue){
-  const fee = Number(feeValue || 0);
-  const total = subtotal + fee;
-  const r = await sb.from('orders').update({ delivery_fee: fee, total: total }).eq('id', orderId);
-  if(r.error) alert('Error updating delivery fee: ' + r.error.message);
-  else ordersPage();
 }
 
 async function handleOrderStatusChange(orderId, oldStatus, newStatus){
@@ -664,6 +701,7 @@ async function loadGeneric(table, cols){
 function getEditFunction(table){
   if(table === 'categories') return 'editCategory';
   if(table === 'countries') return 'editCountry';
+  if(table === 'delivery_fees') return 'editDeliveryFee';
   if(table === 'bundles') return 'editBundle';
   if(table === 'payment_methods') return 'editPayment';
   if(table === 'customer_profiles') return 'editCustomer';
