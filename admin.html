@@ -188,6 +188,7 @@ async function reservationsPage(){
   app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Out-of-Stock Reservations</h2><button class="btn" onclick="reservationsPage()">Refresh</button></div><div class="panel"><div id="table">Loading...</div></div>';
   
   const r = await sb.from('reservations').select('*').order('created_at', {ascending:false}).limit(200);
+  const table = document.getElementById('table');
   if(r.error) return table.innerHTML = msg(r.error.message, true);
   if(!r.data || !r.data.length) return table.innerHTML = '<p class="muted">No reservations submitted yet.</p>';
 
@@ -228,6 +229,7 @@ async function reviewsPage(){
   app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Reviews Moderation</h2><button class="btn" onclick="reviewsPage()">Refresh</button></div><div class="panel"><div id="table">Loading...</div></div>';
   
   const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
+  const table = document.getElementById('table');
   if(r.error) return table.innerHTML = msg(r.error.message, true);
   if(!r.data || !r.data.length) return table.innerHTML = '<p class="muted">No reviews submitted yet.</p>';
 
@@ -265,6 +267,7 @@ async function specialPage(){
   app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Special Custom Sourcing Requests</h2><button class="btn" onclick="specialPage()">Refresh</button></div><div class="panel"><div id="table">Loading...</div></div>';
   
   const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
+  const table = document.getElementById('table');
   if(r.error) return table.innerHTML = msg(r.error.message, true);
   if(!r.data || !r.data.length) return table.innerHTML = '<p class="muted">No special requests found.</p>';
 
@@ -305,6 +308,7 @@ async function ordersPage(){
   app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Orders</h2><button class="btn" onclick="ordersPage()">Refresh</button></div><div class="panel"><div id="table">Loading...</div></div>';
   
   const r = await sb.from('orders').select('*').order('created_at', {ascending:false}).limit(200);
+  const table = document.getElementById('table');
   if(r.error) return table.innerHTML = msg(r.error.message, true);
   if(!r.data || !r.data.length) return table.innerHTML = '<p class="muted">No orders found.</p>';
 
@@ -312,7 +316,7 @@ async function ordersPage(){
     <tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr>
     ${r.data.map(x=>`<tr>
       <td><small>${new Date(x.created_at||Date.now()).toLocaleDateString()}</small></td>
-      <td><b>#${esc(x.id.slice(0,8))}</b></td>
+      <td><b>#${esc(x.id ? String(x.id).slice(0,8) : 'N/A')}</b></td>
       <td>${esc(x.customer_name||x.name||'Customer')}</td>
       <td>$${esc(x.total_price||x.total||0)}</td>
       <td><span class="badge ${esc(x.status||'pending')}">${esc(x.status||'pending')}</span></td>
@@ -330,10 +334,9 @@ async function updateOrderStatus(id, status){
   else ordersPage();
 }
 
-// GENERIC STUBS & PLACEHOLDERS FOR OTHER TABS
+// OTHER TAB HANDLERS
 async function productsPage(isNatural = false) {
-  const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2>${isNatural ? 'Natural Products' : 'Products'} Management</h2><p class="muted">Manage your store products catalog.</p></div>`;
+  document.getElementById('app').innerHTML = `<div class="panel"><h2>${isNatural ? 'Natural Products' : 'Products'} Management</h2><p class="muted">Manage your store products catalog.</p></div>`;
 }
 async function categoriesPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Categories</h2><p class="muted">Manage product categories.</p></div>`; }
 async function countriesPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Countries</h2><p class="muted">Manage supported countries.</p></div>`; }
@@ -350,7 +353,7 @@ async function deleteRow(table, id){
   else show(current);
 }
 
-// INITIALIZE APP
+// INITIALIZE APP ON LOAD
 guard();
 </script>
 </body>
