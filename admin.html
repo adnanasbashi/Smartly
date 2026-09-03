@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Smartly Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7f9;color:#17212b}button,input,select,textarea{font:inherit}button{cursor:pointer}.top{background:#123B5D;color:#fff;padding:18px}.wrap{max-width:1250px;margin:auto;padding:18px}.login{max-width:430px;margin:8vh auto}.panel{background:#fff;border:1px solid #ddd;border-radius:14px;padding:18px;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #d9dee3;border-radius:8px;background:#fff}.field textarea{min-height:90px}.btn{padding:10px 14px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:700}.dark{background:#123B5D}.danger{background:#D94A45}.muted{color:#68727d}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}.tab{padding:10px 12px;border:1px solid #ddd;background:#fff;border-radius:9px}.tab.active{background:#123B5D;color:#fff}.actions{display:flex;gap:7px;flex-wrap:wrap}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{padding:9px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}.status{font-weight:700}.hidden{display:none}.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#fff;border:1px solid #ddd;border-radius:12px;padding:15px}.stat b{display:block;font-size:25px;margin-top:6px}.msg{padding:10px;border-radius:8px;margin:10px 0}.ok{background:#e8f7ef}.err{background:#fdeceb}@media(max-width:850px){.grid,.statgrid{grid-template-columns:1fr 1fr}}@media(max-width:550px){.grid,.statgrid{grid-template-columns:1fr}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7f9;color:#17212b}button,input,select,textarea{font:inherit}button{cursor:pointer}.top{background:#123B5D;color:#fff;padding:18px}.wrap{max-width:1250px;margin:auto;padding:18px}.login{max-width:430px;margin:8vh auto}.panel{background:#fff;border:1px solid #ddd;border-radius:14px;padding:18px;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #d9dee3;border-radius:8px;background:#fff}.field textarea{min-height:90px}.btn{padding:10px 14px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:700}.dark{background:#123B5D}.danger{background:#D94A45}.muted{color:#68727d}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}.tab{padding:10px 12px;border:1px solid #ddd;background:#fff;border-radius:9px}.tab.active{background:#123B5D;color:#fff}.actions{display:flex;gap:7px;flex-wrap:wrap}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{padding:9px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}.status{font-weight:700}.hidden{display:none}.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#fff;border:1px solid #ddd;border-radius:12px;padding:15px}.stat b{display:block;font-size:25px;margin-top:6px}.msg{padding:10px;border-radius:8px;margin:10px 0}.ok{background:#e8f7ef}.err{background:#fdeceb}.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100}.modal.show{display:flex}.modal-box{background:#fff;width:min(650px,95%);max-height:90vh;overflow:auto;border-radius:12px;padding:20px;position:relative}.badge{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;display:inline-block}.badge.pending{background:#fff3cd;color:#856404}.badge.approved,.badge.completed{background:#d4edda;color:#155724}.badge.rejected,.badge.cancelled{background:#f8d7da;color:#721c24}@media(max-width:850px){.grid,.statgrid{grid-template-columns:1fr 1fr}}@media(max-width:550px){.grid,.statgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -45,6 +45,14 @@
 </div>
 </div>
 
+<!-- RECORD VIEW MODAL -->
+<div class="modal" id="recordModal">
+  <div class="modal-box">
+    <button class="btn danger" style="position:absolute;top:15px;right:15px;padding:4px 8px;" onclick="closeModal()">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
@@ -53,33 +61,15 @@ const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const COUNTRY_LIST = [
-  { code: 'LB', name: 'Lebanon' },
-  { code: 'SY', name: 'Syria' },
-  { code: 'JO', name: 'Jordan' },
-  { code: 'AE', name: 'United Arab Emirates' },
-  { code: 'SA', name: 'Saudi Arabia' },
-  { code: 'EG', name: 'Egypt' },
-  { code: 'QA', name: 'Qatar' },
-  { code: 'KW', name: 'Kuwait' },
-  { code: 'BH', name: 'Bahrain' },
-  { code: 'OM', name: 'Oman' },
-  { code: 'IQ', name: 'Iraq' },
-  { code: 'PS', name: 'Palestine' },
-  { code: 'TR', name: 'Turkey' },
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'FR', name: 'France' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'IT', name: 'Italy' },
-  { code: 'ES', name: 'Spain' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'CN', name: 'China' },
-  { code: 'JP', name: 'Japan' },
-  { code: 'IN', name: 'India' },
-  { code: 'BR', name: 'Brazil' },
-  { code: 'RU', name: 'Russia' },
-  { code: 'ZA', name: 'South Africa' }
+  { code: 'LB', name: 'Lebanon' }, { code: 'SY', name: 'Syria' }, { code: 'JO', name: 'Jordan' },
+  { code: 'AE', name: 'United Arab Emirates' }, { code: 'SA', name: 'Saudi Arabia' }, { code: 'EG', name: 'Egypt' },
+  { code: 'QA', name: 'Qatar' }, { code: 'KW', name: 'Kuwait' }, { code: 'BH', name: 'Bahrain' },
+  { code: 'OM', name: 'Oman' }, { code: 'IQ', name: 'Iraq' }, { code: 'PS', name: 'Palestine' },
+  { code: 'TR', name: 'Turkey' }, { code: 'US', name: 'United States' }, { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' }, { code: 'FR', name: 'France' }, { code: 'DE', name: 'Germany' },
+  { code: 'IT', name: 'Italy' }, { code: 'ES', name: 'Spain' }, { code: 'AU', name: 'Australia' },
+  { code: 'CN', name: 'China' }, { code: 'JP', name: 'Japan' }, { code: 'IN', name: 'India' },
+  { code: 'BR', name: 'Brazil' }, { code: 'RU', name: 'Russia' }, { code: 'ZA', name: 'South Africa' }
 ];
 
 let current = 'dashboard', categories = [], countries = [];
@@ -104,6 +94,10 @@ const tabs = [
 
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function msg(text,error=false){return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`}
+
+function closeModal(){
+  document.getElementById('recordModal').classList.remove('show');
+}
 
 async function login(){
   const email = loginEmail.value.trim();
@@ -178,8 +172,8 @@ async function count(table){
 async function dashboard(){
   const app = document.getElementById('app');
   app.innerHTML = '<div class="panel"><h2>Dashboard</h2><p class="muted">Loading...</p></div>';
-  const [p,o,r,s] = await Promise.all([count('products'), count('orders'), count('reservations'), count('special_requests')]);
-  app.innerHTML = `<div class="panel"><h2>Dashboard</h2><p class="muted">Store overview</p></div><div class="statgrid"><div class="stat">Products<b>${p}</b></div><div class="stat">Orders<b>${o}</b></div><div class="stat">Reservations<b>${r}</b></div><div class="stat">Special Requests<b>${s}</b></div></div>`;
+  const [p,o,r,s,rev] = await Promise.all([count('products'), count('orders'), count('reservations'), count('special_requests'), count('reviews')]);
+  app.innerHTML = `<div class="panel"><h2>Dashboard</h2><p class="muted">Store overview</p></div><div class="statgrid"><div class="stat">Products<b>${p}</b></div><div class="stat">Orders<b>${o}</b></div><div class="stat">Reservations<b>${r}</b></div><div class="stat">Special Requests<b>${s}</b></div><div class="stat">Reviews<b>${rev}</b></div></div>`;
 }
 
 function formField(id,label,type='text',extra=''){
@@ -527,7 +521,7 @@ async function ordersPage(){
     return `<tr>
       <td>${esc(x.order_number||x.id)}</td>
       <td>${esc(x.name)}</td>
-      <td>${esc(x.phone)}</td>
+      <td><a href="https://wa.me/${esc(x.phone)}" target="_blank">${esc(x.phone)}</a></td>
       <td><b>${totalItems}</b></td>
       <td>$${totalAmount.toFixed(2)}</td>
       <td>${esc(x.payment_method)}</td>
@@ -541,7 +535,7 @@ async function ordersPage(){
           <option value="cancelled" ${x.status==='cancelled'?'selected':''}>cancelled</option>
         </select>
       </td>
-      <td>${esc(x.created_at)}</td>
+      <td><small>${new Date(x.created_at).toLocaleString()}</small></td>
       <td><button class="btn" onclick="viewRecord('orders','${esc(x.id)}')">View</button></td>
     </tr>`;
   }).join('')}</table></div>`;
@@ -581,26 +575,93 @@ async function adjustOrderInventory(orderId, mode){
 
 async function reservationsPage(){
   const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Reservations</h2><div id="table"></div></div>';
+  app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Reservations</h2><button class="btn" onclick="reservationsPage()">Refresh</button></div><div class="panel"><div id="table"></div></div>';
   const r = await sb.from('reservations').select('*').order('created_at', {ascending:false}).limit(200);
   if(r.error) return table.innerHTML = msg(r.error.message, true);
-  table.innerHTML = genericTable(r.data || [], ['id','product_id','name','phone','quantity','status','created_at'], true, 'reservations');
+  
+  table.innerHTML = `<div class="table-wrap"><table class="table">
+    <tr><th>Date</th><th>Item / Product</th><th>Qty</th><th>Customer</th><th>Phone</th><th>Country & Location</th><th>Status</th><th>Action</th></tr>
+    ${(r.data||[]).map(x=>`
+      <tr>
+        <td><small>${new Date(x.created_at).toLocaleDateString()}</small></td>
+        <td><b>${esc(x.product_name||x.item_name||x.product_id)}</b></td>
+        <td><b>${esc(x.quantity||1)}</b></td>
+        <td>${esc(x.customer_name||x.name)}</td>
+        <td><a href="https://wa.me/${esc(x.phone)}" target="_blank">${esc(x.phone)}</a></td>
+        <td>${esc(x.country)} - <small>${esc(x.location||'')}</small></td>
+        <td><span class="badge ${esc(x.status||'pending')}">${esc(x.status||'pending')}</span></td>
+        <td>
+          <button class="btn" onclick="updateReservationStatus('${x.id}', 'fulfilled')">Fulfill</button>
+          <button class="btn danger" onclick="updateReservationStatus('${x.id}', 'cancelled')">Cancel</button>
+        </td>
+      </tr>
+    `).join('')}
+  </table></div>`;
+}
+
+async function updateReservationStatus(id, status){
+  await sb.from('reservations').update({status}).eq('id', id);
+  reservationsPage();
 }
 
 async function reviewsPage(){
   const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Reviews</h2><div id="table"></div></div>';
+  app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Reviews Moderation</h2><button class="btn" onclick="reviewsPage()">Refresh</button></div><div class="panel"><div id="table"></div></div>';
   const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
   if(r.error) return table.innerHTML = msg(r.error.message, true);
-  table.innerHTML = genericTable(r.data || [], ['id','customer_name','product_name','comment','approved','created_at'], true, 'reviews');
+
+  table.innerHTML = `<div class="table-wrap"><table class="table">
+    <tr><th>Customer</th><th>Product</th><th>Rating</th><th>Comment</th><th>Status</th><th>Action</th></tr>
+    ${(r.data||[]).map(x=>`
+      <tr>
+        <td><b>${esc(x.customer_name||'Anonymous')}</b></td>
+        <td>${esc(x.product_name||'General')}</td>
+        <td>⭐ ${esc(x.rating||5)}/5</td>
+        <td>"${esc(x.comment)}"</td>
+        <td><span class="badge ${x.approved ? 'approved' : 'pending'}">${x.approved ? 'Approved' : 'Pending'}</span></td>
+        <td>
+          ${!x.approved ? `<button class="btn" onclick="toggleReviewApproval('${x.id}', true)">Approve</button>` : ''}
+          <button class="btn danger" onclick="deleteRow('reviews','${x.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('')}
+  </table></div>`;
+}
+
+async function toggleReviewApproval(id, approved){
+  await sb.from('reviews').update({approved}).eq('id', id);
+  reviewsPage();
 }
 
 async function specialPage(){
   const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Special Requests</h2><div id="table"></div></div>';
+  app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Special Custom Requests</h2><button class="btn" onclick="specialPage()">Refresh</button></div><div class="panel"><div id="table"></div></div>';
   const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
   if(r.error) return table.innerHTML = msg(r.error.message, true);
-  table.innerHTML = genericTable(r.data || [], ['id','name','phone','country','item','status','created_at'], true, 'special_requests');
+
+  table.innerHTML = `<div class="table-wrap"><table class="table">
+    <tr><th>Date</th><th>Item Details / Link</th><th>Qty</th><th>Customer Name</th><th>Phone</th><th>Country</th><th>Status</th><th>Action</th></tr>
+    ${(r.data||[]).map(x=>`
+      <tr>
+        <td><small>${new Date(x.created_at).toLocaleDateString()}</small></td>
+        <td>${esc(x.item_description||x.product_link||x.item)}</td>
+        <td><b>${esc(x.quantity||1)}</b></td>
+        <td>${esc(x.customer_name||x.name)}</td>
+        <td><a href="https://wa.me/${esc(x.phone)}" target="_blank">${esc(x.phone)}</a></td>
+        <td>${esc(x.country)}</td>
+        <td><span class="badge ${esc(x.status||'pending')}">${esc(x.status||'pending')}</span></td>
+        <td>
+          <button class="btn" onclick="updateSpecialStatus('${x.id}', 'sourced')">Sourced</button>
+          <button class="btn danger" onclick="updateSpecialStatus('${x.id}', 'rejected')">Reject</button>
+        </td>
+      </tr>
+    `).join('')}
+  </table></div>`;
+}
+
+async function updateSpecialStatus(id, status){
+  await sb.from('special_requests').update({status}).eq('id', id);
+  specialPage();
 }
 
 async function customersPage(){
@@ -651,85 +712,46 @@ async function editCustomer(id){
 }
 
 async function settingsPage(){
-  editingId = null;
   const app = document.getElementById('app');
-  const r = await sb.from('site_settings').select('*').order('setting_key');
-  if(r.error) return app.innerHTML = '<div class="panel">' + msg(r.error.message, true) + '</div>';
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Site Settings</h2><div class="grid">${formField('s_key','Setting Key')}${formField('s_value','Setting Value')}</div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveSetting()">Save Setting</button><button class="tab hidden" id="cancelBtn" onclick="settingsPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
-  table.innerHTML = genericTable(r.data || [], ['id','setting_key','setting_value','updated_at'], false, 'site_settings');
+  app.innerHTML = `<div class="panel"><h2>Store Settings</h2><p class="muted">Global preferences and administrative configurations.</p><p>Logged in as authorized store administrator.</p></div>`;
 }
 
-async function saveSetting(){
-  const key = s_key.value.trim();
-  if(!key) return formMsg.innerHTML = msg('Setting key is required.', true);
-  const value = s_value.value.trim();
-  let r;
-
-  if(editingId) {
-    r = await sb.from('site_settings').update({setting_key: key, setting_value: value, updated_at: new Date().toISOString()}).eq('id', editingId);
-  } else {
-    const existing = await sb.from('site_settings').select('id').eq('setting_key', key).limit(1).maybeSingle();
-    if(existing.error) r = existing;
-    else if(existing.data?.id) r = await sb.from('site_settings').update({setting_value: value, updated_at: new Date().toISOString()}).eq('id', existing.data.id);
-    else r = await sb.from('site_settings').insert({setting_key: key, setting_value: value, updated_at: new Date().toISOString()});
-  }
-
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Setting updated.' : 'Setting saved.');
-  if(!r.error) settingsPage();
+async function loadGeneric(table_name, fields){
+  const r = await sb.from(table_name).select('*').order('created_at', {ascending:false}).limit(200);
+  if(r.error) return table.innerHTML = msg(r.error.message, true);
+  table.innerHTML = genericTable(r.data || [], fields, true, table_name);
 }
 
-async function editSetting(id){
-  const r = await sb.from('site_settings').select('*').eq('id', id).single();
+function genericTable(data, fields, actions=true, table_name=''){
+  if(!data.length) return '<p class="muted">No items found.</p>';
+  return `<div class="table-wrap"><table class="table"><tr>${fields.map(f=>`<th>${esc(f.replace('_',' '))}</th>`).join('')}${actions?'<th>Action</th>':''}</tr>${data.map(x=>`<tr>${fields.map(f=>`<td>${esc(x[f])}</td>`).join('')}${actions?`<td>${table_name==='categories'?`<button class="btn" onclick="editCategory('${x.id}')">Edit</button>`:table_name==='countries'?`<button class="btn" onclick="editCountry('${x.id}')">Edit</button>`:table_name==='delivery_fees'?`<button class="btn" onclick="editDeliveryFee('${x.id}')">Edit</button>`:table_name==='bundles'?`<button class="btn" onclick="editBundle('${x.id}')">Edit</button>`:table_name==='payment_methods'?`<button class="btn" onclick="editPayment('${x.id}')">Edit</button>`:table_name==='customer_profiles'?`<button class="btn" onclick="editCustomer('${x.id}')">Edit</button>`:''}<button class="btn danger" onclick="deleteRow('${table_name}','${x.id}')">Delete</button></td>`:''}</tr>`).join('')}</table></div>`;
+}
+
+async function viewRecord(table_name, id){
+  const r = await sb.from(table_name).select('*, order_items(*)').eq('id', id).single();
   if(r.error) return alert(r.error.message);
+  
   const item = r.data;
-  editingId = item.id;
-  s_key.value = item.setting_key || '';
-  s_value.value = item.setting_value || '';
-
-  document.getElementById('formTitle').innerText = 'Edit Setting';
-  document.getElementById('saveBtn').innerText = 'Update Setting';
-  document.getElementById('cancelBtn').classList.remove('hidden');
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  let html = `<h3>Order Details #${esc(item.order_number||item.id)}</h3>`;
+  html += `<p><b>Customer:</b> ${esc(item.name)}<br><b>Phone:</b> ${esc(item.phone)}<br><b>Address:</b> ${esc(item.location||'')}, ${esc(item.country||'')}</p>`;
+  if(item.order_items && item.order_items.length){
+    html += `<h4>Items Ordered</h4><ul>`;
+    item.order_items.forEach(i=>{
+      html += `<li>${esc(i.product_name||'Product')} x ${i.quantity} - $${Number(i.unit_price||0).toFixed(2)}</li>`;
+    });
+    html += `</ul>`;
+  }
+  html += `<p><b>Total Amount:</b> $${Number(item.total||0).toFixed(2)}</p>`;
+  
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('recordModal').classList.add('show');
 }
 
-async function loadGeneric(table, cols){
-  const r = await sb.from(table).select('*').limit(200);
-  if(r.error) return document.getElementById('table').innerHTML = msg(r.error.message, true);
-  document.getElementById('table').innerHTML = genericTable(r.data || [], cols, true, table);
-}
-
-function getEditFunction(table){
-  if(table === 'categories') return 'editCategory';
-  if(table === 'countries') return 'editCountry';
-  if(table === 'delivery_fees') return 'editDeliveryFee';
-  if(table === 'bundles') return 'editBundle';
-  if(table === 'payment_methods') return 'editPayment';
-  if(table === 'customer_profiles') return 'editCustomer';
-  if(table === 'site_settings') return 'editSetting';
-  return null;
-}
-
-function genericTable(data, cols, del, table){
-  const editFn = getEditFunction(table);
-  return `<div class="table-wrap"><table class="table"><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}<th>Action</th></tr>${data.map(x=>`<tr>${cols.map(c=>`<td>${esc(typeof x[c]==='boolean'?(x[c]?'Yes':'No'):x[c])}</td>`).join('')}<td>${editFn ? `<button class="btn" onclick="${editFn}('${esc(x.id)}')">Edit</button> ` : ''}${del ? `<button class="btn danger" onclick="deleteRow('${table}','${esc(x.id)}')">Delete</button>` : ''}</td></tr>`).join('')}</table></div>`;
-}
-
-async function deleteRow(table, id){
-  if(!confirm('Delete this record?')) return;
-  const r = await sb.from(table).delete().eq('id', id);
+async function deleteRow(table_name, id){
+  if(!confirm('Are you sure you want to delete this record?')) return;
+  const r = await sb.from(table_name).delete().eq('id', id);
   if(r.error) alert(r.error.message);
   else show(current);
-}
-
-async function updateField(table, id, column, value){
-  const r = await sb.from(table).update({[column]: value}).eq('id', id);
-  if(r.error) alert(r.error.message);
-}
-
-async function viewRecord(table, id){
-  const r = await sb.from(table).select('*').eq('id', id).single();
-  if(r.error) return alert(r.error.message);
-  alert(JSON.stringify(r.data, null, 2));
 }
 
 guard();
