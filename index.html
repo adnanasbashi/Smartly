@@ -160,6 +160,78 @@ function renderUserNav(){
   }
 }
 
+// --- FIX: Auth Modal Functionality ---
+function authModal(){
+  openModal(`
+    <h2 style="margin-bottom:15px">Account Login / Register</h2>
+    <div style="display:flex;gap:10px;margin-bottom:15px">
+      <button class="pill primary" id="tabLogin" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="pill" id="tabSignup" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+    <form id="authForm" onsubmit="handleAuth(event)">
+      <div id="fullNameField" class="field" style="display:none;margin-bottom:10px">
+        <label>Full Name</label>
+        <input id="authName" type="text" placeholder="John Doe">
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Email Address</label>
+        <input id="authEmail" type="email" required placeholder="name@example.com">
+      </div>
+      <div class="field" style="margin-bottom:15px">
+        <label>Password</label>
+        <input id="authPassword" type="password" required placeholder="••••••••">
+      </div>
+      <button class="btn primary full" type="submit" id="authSubmitBtn">Sign In</button>
+    </form>
+  `);
+}
+
+let authMode = 'login';
+function switchAuthTab(mode){
+  authMode = mode;
+  const nameField = document.getElementById('fullNameField');
+  const btn = document.getElementById('authSubmitBtn');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+
+  if(mode === 'signup'){
+    nameField.style.display = 'block';
+    btn.textContent = 'Create Account';
+    tabLogin.classList.remove('primary');
+    tabSignup.classList.add('primary');
+  } else {
+    nameField.style.display = 'none';
+    btn.textContent = 'Sign In';
+    tabSignup.classList.remove('primary');
+    tabLogin.classList.add('primary');
+  }
+}
+
+async function handleAuth(e){
+  e.preventDefault();
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  const name = authName.value.trim();
+
+  if(!email || !password) return toast('Please enter both email and password.');
+
+  if(authMode === 'signup'){
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name } }
+    });
+    if(error) return toast(error.message);
+    toast('Account created successfully!');
+    closeModal();
+  } else {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if(error) return toast(error.message);
+    toast('Logged in successfully!');
+    closeModal();
+  }
+}
+
 async function logout(){
   await sb.auth.signOut();
   currentUser = null;
