@@ -937,23 +937,3 @@ async function deleteRow(table, id){
 </body>
 </html>
 // ==========================================
-// SMARTLY PATCH LOADER (DO NOT DELETE)
-// ==========================================
-window.SmartlyModules = {};
-
-window.registerModule = function(name, initFn) {
-    window.SmartlyModules[name] = initFn;
-    console.log(`[Patch System] Module '${name}' registered successfully.`);
-};
-
-window.runModule = function(name, ...args) {
-    if (window.SmartlyModules[name]) {
-        try {
-            return window.SmartlyModules[name](...args);
-        } catch (e) {
-            console.error(`[Patch Error in ${name}]:`, e);
-        }
-    } else {
-        console.warn(`[Patch System] Module '${name}' not found.`);
-    }
-};
