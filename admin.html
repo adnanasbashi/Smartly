@@ -382,6 +382,7 @@ async function handleOrderStatusChange(orderId, oldStatus, newStatus){
   const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
   if(r.error) return alert('Failed to update order status: ' + r.error.message);
 
+  // Auto Inventory Stock Restoration on Cancellation
   if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
     await adjustOrderInventory(orderId, 'restock');
   } else if(oldStatus === 'cancelled' && newStatus !== 'cancelled'){
@@ -602,13 +603,6 @@ async function updateRecordStatus(table, id, status){
   if(r.error) alert('Failed to update status: ' + r.error.message);
 }
 
-async function deleteRow(table, id){
-  if(!confirm('Are you sure you want to delete this record?')) return;
-  const r = await sb.from(table).delete().eq('id', id);
-  if(r.error) alert('Failed to delete: ' + r.error.message);
-  else show(current);
-}
-
 // ------------------------------------------------------------------
 // SETTINGS
 // ------------------------------------------------------------------
@@ -673,45 +667,16 @@ async function productsPage(natural=false){
         <div class="field"><label>Is Natural</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div>
       </div><br>
       <div class="actions">
-        <button class="btn" id="saveBtn" onclick="saveProduct(${natural})">Save Product</button>
+        <button class="btn" id="saveBtn" onclick="saveProduct()">Save Product</button>
         <button class="btn outline hidden" id="cancelBtn" onclick="productsPage(${natural})">Cancel Edit</button>
       </div>
       <div id="formMsg"></div>
     </div>
     <div class="panel"><div id="table">Loading products catalog...</div></div>`;
-  loadProducts(natural);
+  loadProducts();
 }
 
-async function loadProducts(natural=false){
-  const tableEl = document.getElementById('table');
-  let q = sb.from('products').select('*, categories(name_en,name_ar)').order('created_at', {ascending:false});
-  if(natural) q = q.eq('is_natural', true);
-  const r = await q;
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-
-  tableEl.innerHTML = `
-    <div class="table-wrap">
-      <table class="table">
-        <tr><th>Image</th><th>Name EN</th><th>Category</th><th>Price</th><th>Stock</th><th>Active</th><th>Actions</th></tr>
-        ${(r.data||[]).map(x => `
-          <tr>
-            <td>${x.image_url ? `<img src="${esc(x.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
-            <td><b>${esc(x.name_en)}</b></td>
-            <td>${esc(x.categories?.name_en || '—')}</td>
-            <td>$${Number(x.retail_price||0).toFixed(2)}</td>
-            <td>${x.stock_quantity}</td>
-            <td><span class="status-pill ${x.active?'status-confirmed':'status-cancelled'}">${x.active?'Active':'Inactive'}</span></td>
-            <td>
-              <button class="btn dark" onclick="editProduct('${esc(x.id)}', ${natural})">Edit</button>
-              <button class="btn danger" onclick="deleteRow('products', '${esc(x.id)}')">Delete</button>
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>`;
-}
-
-async function saveProduct(natural=false){
+async function saveProduct(){
   const name = p_name_en.value.trim();
   if(!name) return formMsg.innerHTML = msg('Product name is required.', true);
   let image_url = '';
@@ -733,155 +698,240 @@ async function saveProduct(natural=false){
 
   let r = editingId ? await sb.from('products').update(row).eq('id', editingId) : await sb.from('products').insert(row);
   formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Product updated.' : 'Product saved.');
-  if(!r.error) productsPage(natural);
+  if(!r.error){ if(editingId) productsPage(current === 'natural'); else loadProducts(); }
 }
 
-async function editProduct(id, natural=false){
+async function editProduct(id){
   const r = await sb.from('products').select('*').eq('id', id).single();
   if(r.error) return alert(r.error.message);
-  const p = r.data;
-  editingId = p.id;
-  p_name_en.value = p.name_en || '';
-  p_name_ar.value = p.name_ar || '';
-  p_category.value = p.category_id || '';
-  p_desc_en.value = p.description_en || '';
-  p_desc_ar.value = p.description_ar || '';
-  p_price.value = p.retail_price || 0;
-  p_stock.value = p.stock_quantity || 0;
-  p_sort.value = p.sort_order || 0;
-  p_active.value = String(p.active);
-  p_natural.value = String(p.is_natural);
-  saveBtn.textContent = 'Update Product';
-  cancelBtn.classList.remove('hidden');
+  const item = r.data;
+  editingId = item.id;
+  p_name_en.value = item.name_en || ''; p_name_ar.value = item.name_ar || '';
+  p_category.value = item.category_id || ''; p_desc_en.value = item.description_en || '';
+  p_desc_ar.value = item.description_ar || ''; p_price.value = item.retail_price || 0;
+  p_stock.value = item.stock_quantity || 0; p_sort.value = item.sort_order || 0;
+  p_active.value = item.active ? 'true' : 'false'; p_natural.value = item.is_natural ? 'true' : 'false';
+  document.getElementById('saveBtn').innerText = 'Update Product';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+async function loadProducts(){
+  const natural = current === 'natural';
+  const q = sb.from('products').select('*, categories(name_en, name_ar)').order('sort_order').limit(200);
+  if(natural) q.eq('is_natural', true);
+  const r = await q;
+  if(r.error) return document.getElementById('table').innerHTML = msg(r.error.message, true);
+
+  document.getElementById('table').innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Natural</th><th>Active</th><th>Action</th></tr>
+        ${(r.data||[]).map(x => {
+          const catName = x.categories ? (x.categories.name_en || x.categories.name_ar) : '—';
+          return `<tr><td>${esc(x.name_en||x.name_ar)}</td><td>${esc(catName)}</td><td>$${Number(x.retail_price||0).toFixed(2)}</td><td><b>${x.stock_quantity??0}</b></td><td>${x.is_natural?'Yes':'No'}</td><td>${x.active?'Yes':'No'}</td><td><button class="btn" onclick="editProduct('${esc(x.id)}')">Edit</button> <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button></td></tr>`;
+        }).join('')}
+      </table>
+    </div>`;
 }
 
 async function categoriesPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel">${renderHeader('Categories Overview')}<p class="muted">Categories loading...</p></div>`;
-  const r = await sb.from('categories').select('*').order('sort_order');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Categories Overview')}
-      <div class="table-wrap">
-        <table class="table">
-          <tr><th>Category EN</th><th>Category AR</th><th>Sort Order</th><th>Action</th></tr>
-          ${(r.data||[]).map(c => `
-            <tr>
-              <td><b>${esc(c.name_en)}</b></td>
-              <td>${esc(c.name_ar)}</td>
-              <td>${c.sort_order}</td>
-              <td><button class="btn danger" onclick="deleteRow('categories','${esc(c.id)}')">Delete</button></td>
-            </tr>
-          `).join('')}
-        </table>
-      </div>
-    </div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Categories')}<div class="grid">${formField('c_en','Name EN')}${formField('c_ar','Name AR')}${formField('c_icon','Icon')}${formField('c_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="c_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCategory()">Save Category</button><button class="btn outline hidden" id="cancelBtn" onclick="categoriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading categories...</div></div>`;
+  loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']);
+}
+
+async function saveCategory(){
+  const row = { name_en: c_en.value.trim(), name_ar: c_ar.value.trim(), icon: c_icon.value.trim(), active: c_active.value === 'true', sort_order: Number(c_sort.value || 0) };
+  let r = editingId ? await sb.from('categories').update(row).eq('id', editingId) : await sb.from('categories').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Category updated.' : 'Category saved.');
+  if(!r.error){ if(editingId) categoriesPage(); else loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']); }
+}
+
+async function editCategory(id){
+  const r = await sb.from('categories').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data; editingId = item.id;
+  c_en.value = item.name_en || ''; c_ar.value = item.name_ar || ''; c_icon.value = item.icon || '';
+  c_sort.value = item.sort_order || 0; c_active.value = item.active ? 'true' : 'false';
+  document.getElementById('saveBtn').innerText = 'Update Category';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function countriesPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  const r = await sb.from('countries').select('*').order('sort_order');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Supported Delivery Countries')}
-      <div class="table-wrap">
-        <table class="table">
-          <tr><th>Country</th><th>Code</th><th>Sort</th><th>Actions</th></tr>
-          ${(r.data||[]).map(c => `
-            <tr>
-              <td><b>${esc(c.name)}</b></td>
-              <td>${esc(c.country_code)}</td>
-              <td>${c.sort_order}</td>
-              <td><button class="btn danger" onclick="deleteRow('countries','${esc(c.id)}')">Delete</button></td>
-            </tr>
-          `).join('')}
-        </table>
-      </div>
-    </div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Countries Configuration')}<div class="grid">${formField('co_name','Country Name')}<div class="field"><label>Country Code</label><select id="co_code" onchange="autoFillCountryName(this.value)"><option value="">Select Code</option>${COUNTRY_LIST.map(c=>`<option value="${esc(c.code)}">${esc(c.code)} - ${esc(c.name)}</option>`).join('')}</select></div>${formField('co_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="co_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCountry()">Save Country</button><button class="btn outline hidden" id="cancelBtn" onclick="countriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading countries...</div></div>`;
+  loadGeneric('countries', ['id','name','country_code','active','sort_order']);
+}
+
+function autoFillCountryName(code){
+  const found = COUNTRY_LIST.find(c => c.code === code);
+  if(found && !co_name.value.trim()) co_name.value = found.name;
+}
+
+async function saveCountry(){
+  const row = { name: co_name.value.trim(), country_code: co_code.value.trim(), active: co_active.value === 'true', sort_order: Number(co_sort.value || 0) };
+  let r = editingId ? await sb.from('countries').update(row).eq('id', editingId) : await sb.from('countries').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Country updated.' : 'Country saved.');
+  if(!r.error){ if(editingId) countriesPage(); else loadGeneric('countries', ['id','name','country_code','active','sort_order']); }
+}
+
+async function editCountry(id){
+  const r = await sb.from('countries').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data; editingId = item.id;
+  co_name.value = item.name || ''; co_code.value = item.country_code || ''; co_sort.value = item.sort_order || 0; co_active.value = item.active ? 'true' : 'false';
+  document.getElementById('saveBtn').innerText = 'Update Country';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function deliveryFeesPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  const r = await sb.from('delivery_fees').select('*');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Delivery Fees & Zones')}
-      <div class="table-wrap">
-        <table class="table">
-          <tr><th>Region / Zone</th><th>Fee ($)</th><th>Action</th></tr>
-          ${(r.data||[]).map(d => `
-            <tr>
-              <td><b>${esc(d.region_name || d.zone || 'Standard Zone')}</b></td>
-              <td>$${Number(d.fee || 0).toFixed(2)}</td>
-              <td><button class="btn danger" onclick="deleteRow('delivery_fees','${esc(d.id)}')">Delete</button></td>
-            </tr>
-          `).join('')}
-        </table>
-      </div>
-    </div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Delivery Fee Schedules')}<div class="grid">${formField('df_location','Location / Region Name')}${formField('df_fee','Delivery Fee ($)','number','step="0.01"')}${formField('df_min_distance','Min Distance (km)','number','step="0.1" value="0"')}${formField('df_max_distance','Max Distance (km)','number','step="0.1"')}<div class="field"><label>Active</label><select id="df_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveDeliveryFee()">Save Fee Rate</button><button class="btn outline hidden" id="cancelBtn" onclick="deliveryFeesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading delivery fees...</div></div>`;
+  loadGeneric('delivery_fees', ['id','location_name','fee_amount','min_distance_km','max_distance_km','active']);
+}
+
+async function saveDeliveryFee(){
+  const row = { location_name: df_location.value.trim(), fee_amount: Number(df_fee.value || 0), min_distance_km: Number(df_min_distance.value || 0), max_distance_km: df_max_distance.value ? Number(df_max_distance.value) : null, active: df_active.value === 'true' };
+  let r = editingId ? await sb.from('delivery_fees').update(row).eq('id', editingId) : await sb.from('delivery_fees').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Fee rate updated.' : 'Fee rate saved.');
+  if(!r.error){ if(editingId) deliveryFeesPage(); else loadGeneric('delivery_fees', ['id','location_name','fee_amount','min_distance_km','max_distance_km','active']); }
+}
+
+async function editDeliveryFee(id){
+  const r = await sb.from('delivery_fees').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data; editingId = item.id;
+  df_location.value = item.location_name || ''; df_fee.value = item.fee_amount || 0; df_min_distance.value = item.min_distance_km || 0; df_max_distance.value = item.max_distance_km || ''; df_active.value = item.active ? 'true' : 'false';
+  document.getElementById('saveBtn').innerText = 'Update Rate';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function bundlesPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  const r = await sb.from('bundles').select('*');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Bundles & Promotional Offers')}
-      <div class="table-wrap">
-        <table class="table">
-          <tr><th>Bundle Title</th><th>Discount Price</th><th>Actions</th></tr>
-          ${(r.data||[]).map(b => `
-            <tr>
-              <td><b>${esc(b.title || b.name_en)}</b></td>
-              <td>$${Number(b.price || 0).toFixed(2)}</td>
-              <td><button class="btn danger" onclick="deleteRow('bundles','${esc(b.id)}')">Delete</button></td>
-            </tr>
-          `).join('')}
-        </table>
-      </div>
-    </div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Promotional Bundles & Offers')}<div class="grid">${formField('b_en','Bundle Name EN')}${formField('b_ar','Bundle Name AR')}${formField('b_price','Price ($)','number','step="0.01"')}${formField('b_sort','Sort Order','number','value="0"')}<div class="field"><label>Description EN</label><textarea id="b_desc_en"></textarea></div><div class="field"><label>Description AR</label><textarea id="b_desc_ar"></textarea></div><div class="field"><label>Image</label><input id="b_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="b_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveBundle()">Save Bundle</button><button class="btn outline hidden" id="cancelBtn" onclick="bundlesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading bundles...</div></div>`;
+  loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']);
+}
+
+async function saveBundle(){
+  let image_url = ''; const f = b_image.files[0];
+  if(f){
+    const path = `bundles/${Date.now()}-${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+    const u = await sb.storage.from('products').upload(path, f, {upsert:false});
+    if(u.error) return formMsg.innerHTML = msg(u.error.message, true);
+    image_url = sb.storage.from('products').getPublicUrl(path).data.publicUrl;
+  }
+  const row = { name_en: b_en.value.trim(), name_ar: b_ar.value.trim(), description_en: b_desc_en.value.trim(), description_ar: b_desc_ar.value.trim(), price: Number(b_price.value || 0), active: b_active.value === 'true', sort_order: Number(b_sort.value || 0) };
+  if(image_url) row.image_url = image_url;
+  let r = editingId ? await sb.from('bundles').update(row).eq('id', editingId) : await sb.from('bundles').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Bundle updated.' : 'Bundle saved.');
+  if(!r.error){ if(editingId) bundlesPage(); else loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']); }
+}
+
+async function editBundle(id){
+  const r = await sb.from('bundles').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data; editingId = item.id;
+  b_en.value = item.name_en || ''; b_ar.value = item.name_ar || ''; b_desc_en.value = item.description_en || ''; b_desc_ar.value = item.description_ar || ''; b_price.value = item.price || 0; b_sort.value = item.sort_order || 0; b_active.value = item.active ? 'true' : 'false';
+  document.getElementById('saveBtn').innerText = 'Update Bundle';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function paymentsPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  const r = await sb.from('payment_methods').select('*');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Configured Payment Gateways')}
-      <div class="table-wrap">
-        <table class="table">
-          <tr><th>Payment Method</th><th>Status</th><th>Action</th></tr>
-          ${(r.data||[]).map(p => `
-            <tr>
-              <td><b>${esc(p.name || p.title)}</b></td>
-              <td><span class="status-pill ${p.active?'status-confirmed':'status-cancelled'}">${p.active?'Enabled':'Disabled'}</span></td>
-              <td><button class="btn danger" onclick="deleteRow('payment_methods','${esc(p.id)}')">Delete</button></td>
-            </tr>
-          `).join('')}
-        </table>
-      </div>
-    </div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Payment Gateways & Methods')}<div class="grid">${formField('pm_name','Payment Method')}${formField('pm_desc','Description')}${formField('pm_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="pm_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="savePayment()">Save Payment Method</button><button class="btn outline hidden" id="cancelBtn" onclick="paymentsPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading payment options...</div></div>`;
+  loadGeneric('payment_methods', ['id','name','description','active','sort_order']);
+}
+
+async function savePayment(){
+  const row = { name: pm_name.value.trim(), description: pm_desc.value.trim(), active: pm_active.value === 'true', sort_order: Number(pm_sort.value || 0) };
+  let r = editingId ? await sb.from('payment_methods').update(row).eq('id', editingId) : await sb.from('payment_methods').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Payment method updated.' : 'Payment method saved.');
+  if(!r.error){ if(editingId) paymentsPage(); else loadGeneric('payment_methods', ['id','name','description','active','sort_order']); }
+}
+
+async function editPayment(id){
+  const r = await sb.from('payment_methods').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data; editingId = item.id;
+  pm_name.value = item.name || ''; pm_desc.value = item.description || ''; pm_sort.value = item.sort_order || 0; pm_active.value = item.active ? 'true' : 'false';
+  document.getElementById('saveBtn').innerText = 'Update Payment Method';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 async function customersPage(){
+  editingId = null;
   const app = document.getElementById('app');
-  const r = await sb.from('profiles').select('*').limit(200);
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Registered Customer Database')}
-      <div class="table-wrap">
-        <table class="table">
-          <tr><th>Full Name</th><th>Email / Phone</th><th>Joined Date</th></tr>
-          ${(r.data||[]).map(c => `
-            <tr>
-              <td><b>${esc(c.full_name || c.name || 'N/A')}</b></td>
-              <td>${esc(c.email || c.phone || 'N/A')}</td>
-              <td><small>${formatLebanonTime(c.created_at)}</small></td>
-            </tr>
-          `).join('')}
-        </table>
-      </div>
-    </div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Directory')}<div class="grid">${formField('cu_name','Full Name')}${formField('cu_phone','Primary Phone')}${formField('cu_alt','Alternative Phone')}${formField('cu_email','Email Address','email')}${formField('cu_country','Country')}${formField('cu_location','City / Location')}</div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCustomer()">Save Customer Profile</button><button class="btn outline hidden" id="cancelBtn" onclick="customersPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading customer directory...</div></div>`;
+  loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']);
+}
+
+async function saveCustomer(){
+  const row = { name: cu_name.value.trim(), phone: cu_phone.value.trim(), alternative_phone: cu_alt.value.trim(), email: cu_email.value.trim(), country: cu_country.value.trim(), location: cu_location.value.trim() };
+  let r = editingId ? await sb.from('customer_profiles').update(row).eq('id', editingId) : await sb.from('customer_profiles').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Customer updated.' : 'Customer saved.');
+  if(!r.error){ if(editingId) customersPage(); else loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']); }
+}
+
+async function editCustomer(id){
+  const r = await sb.from('customer_profiles').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const item = r.data; editingId = item.id;
+  cu_name.value = item.name || ''; cu_phone.value = item.phone || ''; cu_alt.value = item.alternative_phone || ''; cu_email.value = item.email || ''; cu_country.value = item.country || ''; cu_location.value = item.location || '';
+  document.getElementById('saveBtn').innerText = 'Update Customer';
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+async function loadGeneric(table, fields){
+  const r = await sb.from(table).select('*').order('id', {ascending:true}).limit(200);
+  const tableEl = document.getElementById('table');
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+  tableEl.innerHTML = genericTable(r.data || [], fields, true, table);
+}
+
+function genericTable(data, fields, showActions=true, tableName=''){
+  if(!data.length) return '<p class="muted">No records found.</p>';
+  const headers = fields.map(f => `<th>${esc(f.replace(/_/g,' '))}</th>`).join('');
+  const rows = data.map(row => {
+    const cols = fields.map(f => {
+      let val = row[f];
+      if(f === 'created_at') val = formatLebanonTime(val);
+      return `<td>${esc(val)}</td>`;
+    }).join('');
+    let actions = '';
+    if(showActions && tableName){
+      let editFn = '';
+      if(tableName==='categories') editFn = `editCategory('${esc(row.id)}')`;
+      else if(tableName==='countries') editFn = `editCountry('${esc(row.id)}')`;
+      else if(tableName==='delivery_fees') editFn = `editDeliveryFee('${esc(row.id)}')`;
+      else if(tableName==='bundles') editFn = `editBundle('${esc(row.id)}')`;
+      else if(tableName==='payment_methods') editFn = `editPayment('${esc(row.id)}')`;
+      else if(tableName==='customer_profiles') editFn = `editCustomer('${esc(row.id)}')`;
+
+      actions = `<td>${editFn ? `<button class="btn" onclick="${editFn}">Edit</button> ` : ''}<button class="btn danger" onclick="deleteRow('${tableName}','${esc(row.id)}')">Delete</button></td>`;
+    }
+    return `<tr>${cols}${actions}</tr>`;
+  }).join('');
+
+  return `<div class="table-wrap"><table class="table"><tr>${headers}${showActions?'<th>Action</th>':''}</tr>${rows}</table></div>`;
+}
+
+async function deleteRow(table, id){
+  if(!confirm('Confirm permanent deletion of this record?')) return;
+  const r = await sb.from(table).delete().eq('id', id);
+  if(r.error) alert('Error deleting record: ' + r.error.message);
+  else show(current);
 }
 </script>
 </body>
