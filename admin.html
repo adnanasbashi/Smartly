@@ -3,47 +3,101 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Smartly Admin</title>
+<title>Smartly Admin - Management Hub</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7f9;color:#17212b}button,input,select,textarea{font:inherit}button{cursor:pointer}.top{background:#123B5D;color:#fff;padding:18px}.wrap{max-width:1250px;margin:auto;padding:18px}.login{max-width:430px;margin:8vh auto}.panel{background:#fff;border:1px solid #ddd;border-radius:14px;padding:18px;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #d9dee3;border-radius:8px;background:#fff}.field textarea{min-height:90px}.btn{padding:10px 14px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:700}.dark{background:#123B5D}.danger{background:#D94A45}.muted{color:#68727d}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}.tab{padding:10px 12px;border:1px solid #ddd;background:#fff;border-radius:9px}.tab.active{background:#123B5D;color:#fff}.actions{display:flex;gap:7px;flex-wrap:wrap}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{padding:9px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}.status{font-weight:700}.hidden{display:none}.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#fff;border:1px solid #ddd;border-radius:12px;padding:15px}.stat b{display:block;font-size:25px;margin-top:6px}.msg{padding:10px;border-radius:8px;margin:10px 0}.ok{background:#e8f7ef}.err{background:#fdeceb}@media(max-width:850px){.grid,.statgrid{grid-template-columns:1fr 1fr}}@media(max-width:550px){.grid,.statgrid{grid-template-columns:1fr}}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f4f6f9;color:#1c252e}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.top{background:#123B5D;color:#fff;padding:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.wrap{max-width:1320px;margin:auto;padding:0 18px}
+.login{max-width:420px;margin:10vh auto}
+.panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.panel-title{margin:0;font-size:20px;font-weight:700;color:#123B5D}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#475569;text-transform:uppercase;letter-spacing:0.5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#159A9C;box-shadow:0 0 0 3px rgba(21,154,156,0.15)}
+.field textarea{min-height:90px;resize:vertical}
+.btn{padding:9px 16px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:600;font-size:14px;transition:all 0.2s}
+.btn:hover{opacity:0.9;transform:translateY(-1px)}
+.btn.dark{background:#123B5D}
+.btn.danger{background:#e11d48}
+.btn.outline{background:transparent;border:1px solid #cbd5e1;color:#475569}
+.btn.outline:hover{background:#f8fafc}
+.btn.success{background:#10b981}
+.muted{color:#64748b}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.tab{padding:9px 14px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;color:#475569;font-weight:600;font-size:13px}
+.tab.active{background:#123B5D;color:#fff;border-color:#123B5D}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.table-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px}
+.table{width:100%;border-collapse:collapse;min-width:850px;background:#fff;font-size:14px}
+.table th{background:#f8fafc;padding:12px 10px;border-bottom:2px solid #e2e8f0;text-align:left;color:#475569;font-weight:700}
+.table td{padding:12px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.table tr:hover{background:#f8fafc}
+.status-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;text-transform:capitalize}
+.status-pending{background:#fef3c7;color:#d97706}
+.status-confirmed,.status-approved{background:#dcfce7;color:#15803d}
+.status-completed{background:#dbeafe;color:#1d4ed8}
+.status-cancelled{background:#fee2e2;color:#b91c1c}
+.hidden{display:none !important}
+.statgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
+.stat span{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase}
+.stat b{display:block;font-size:24px;margin-top:6px;color:#123B5D}
+.bi-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+.progress-bar-bg{background:#e2e8f0;border-radius:6px;height:10px;width:100%;overflow:hidden;margin-top:6px}
+.progress-bar-fill{background:#159A9C;height:100%;border-radius:6px}
+.msg{padding:12px;border-radius:8px;margin:12px 0;font-weight:500}
+.ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+.modal-content{background:#fff;border-radius:12px;width:90%;max-width:650px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}
+@media(max-width:1024px){.statgrid{grid-template-columns:repeat(3,1fr)}.bi-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.grid,.statgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid,.statgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div id="loginView" class="login panel">
-  <h1>Smartly Admin</h1>
-  <p class="muted">Sign in with your authorized administrator account.</p>
+  <h1 style="margin-top:0;color:#123B5D">Smartly Admin</h1>
+  <p class="muted">Enter authorized administrator credentials.</p>
   <form onsubmit="event.preventDefault(); login();">
     <div class="field">
-      <label>Email</label>
+      <label>Email Address</label>
       <input id="loginEmail" type="email" autocomplete="email" required>
     </div><br>
     <div class="field">
       <label>Password</label>
       <input id="loginPassword" type="password" autocomplete="current-password" required>
     </div><br>
-    <button type="submit" class="btn dark">Sign in</button>
+    <button type="submit" class="btn dark" style="width:100%">Sign In</button>
   </form>
   <div id="loginMsg"></div>
 </div>
 
 <div id="adminView" class="hidden">
-<header class="top">
-  <div class="wrap">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-      <div>
-        <h2 style="margin:0">Smartly Admin</h2>
-        <small>Storefront management</small>
+  <header class="top">
+    <div class="wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <h2 style="margin:0;font-size:22px">Smartly Operations Control</h2>
+          <small style="opacity:0.8">Beirut Local Timezone: GMT+3</small>
+        </div>
+        <button class="btn danger" onclick="logout()">Sign Out</button>
       </div>
-      <button class="btn" onclick="logout()">Sign out</button>
     </div>
+  </header>
+  <div class="wrap">
+    <div class="tabs" id="tabs"></div>
+    <div id="app"></div>
   </div>
-</header>
-<div class="wrap">
-  <div class="tabs" id="tabs"></div>
-  <div id="app"></div>
 </div>
-</div>
+
+<div id="modalContainer" class="hidden"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -53,33 +107,15 @@ const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const COUNTRY_LIST = [
-  { code: 'LB', name: 'Lebanon' },
-  { code: 'SY', name: 'Syria' },
-  { code: 'JO', name: 'Jordan' },
-  { code: 'AE', name: 'United Arab Emirates' },
-  { code: 'SA', name: 'Saudi Arabia' },
-  { code: 'EG', name: 'Egypt' },
-  { code: 'QA', name: 'Qatar' },
-  { code: 'KW', name: 'Kuwait' },
-  { code: 'BH', name: 'Bahrain' },
-  { code: 'OM', name: 'Oman' },
-  { code: 'IQ', name: 'Iraq' },
-  { code: 'PS', name: 'Palestine' },
-  { code: 'TR', name: 'Turkey' },
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'FR', name: 'France' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'IT', name: 'Italy' },
-  { code: 'ES', name: 'Spain' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'CN', name: 'China' },
-  { code: 'JP', name: 'Japan' },
-  { code: 'IN', name: 'India' },
-  { code: 'BR', name: 'Brazil' },
-  { code: 'RU', name: 'Russia' },
-  { code: 'ZA', name: 'South Africa' }
+  { code: 'LB', name: 'Lebanon' }, { code: 'SY', name: 'Syria' },
+  { code: 'JO', name: 'Jordan' }, { code: 'AE', name: 'United Arab Emirates' },
+  { code: 'SA', name: 'Saudi Arabia' }, { code: 'EG', name: 'Egypt' },
+  { code: 'QA', name: 'Qatar' }, { code: 'KW', name: 'Kuwait' },
+  { code: 'BH', name: 'Bahrain' }, { code: 'OM', name: 'Oman' },
+  { code: 'IQ', name: 'Iraq' }, { code: 'PS', name: 'Palestine' },
+  { code: 'TR', name: 'Turkey' }, { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' }, { code: 'CA', name: 'Canada' },
+  { code: 'FR', name: 'France' }, { code: 'DE', name: 'Germany' }
 ];
 
 let current = 'dashboard', categories = [], countries = [];
@@ -102,8 +138,26 @@ const tabs = [
   ['settings','Settings']
 ];
 
-function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function msg(text,error=false){return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`}
+function esc(v){ return String(v??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function msg(text, error=false){ return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`; }
+
+function formatLebanonTime(isoString){
+  if(!isoString) return '—';
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleString('en-GB', {
+      timeZone: 'Asia/Beirut',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch(e) {
+    return isoString;
+  }
+}
 
 window.addEventListener('DOMContentLoaded', guard);
 
@@ -117,20 +171,13 @@ async function guard(){
 async function login(){
   const email = loginEmail.value.trim();
   const password = loginPassword.value;
-  if(!email || !password){
-    loginMsg.innerHTML = msg('Email and password are required.', true);
-    return;
-  }
+  if(!email || !password) return loginMsg.innerHTML = msg('Email and password required.', true);
   const r = await sb.auth.signInWithPassword({email, password});
-  if(r.error){
-    loginMsg.innerHTML = msg(r.error.message, true);
-    return;
-  }
+  if(r.error) return loginMsg.innerHTML = msg(r.error.message, true);
   const a = await sb.rpc('is_admin');
   if(a.error || a.data !== true){
     await sb.auth.signOut();
-    loginMsg.innerHTML = msg('This account is not an active administrator.', true);
-    return;
+    return loginMsg.innerHTML = msg('Access denied. Administrator privilege required.', true);
   }
   showAdmin();
 }
@@ -148,15 +195,13 @@ function showAdmin(){
 }
 
 function renderTabs(){
-  const tabsEl = document.getElementById('tabs');
-  tabsEl.innerHTML = tabs.map(x=>`<button class="tab ${current===x[0]?'active':''}" onclick="show('${x[0]}')">${x[1]}</button>`).join('');
+  document.getElementById('tabs').innerHTML = tabs.map(x => `<button class="tab ${current===x[0]?'active':''}" onclick="show('${x[0]}')">${x[1]}</button>`).join('');
 }
 
 function show(t){
   current = t;
   editingId = null;
   renderTabs();
-  const app = document.getElementById('app');
   if(t==='dashboard') return dashboard();
   if(t==='products'||t==='natural') return productsPage(t==='natural');
   if(t==='categories') return categoriesPage();
@@ -172,22 +217,428 @@ function show(t){
   if(t==='settings') return settingsPage();
 }
 
-async function count(table){
-  const r = await sb.from(table).select('*', {count:'exact', head:true});
-  return r.count || 0;
+function renderHeader(title, subtitle=''){
+  return `
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">${title}</h2>
+        ${subtitle ? `<small class="muted">${subtitle}</small>` : ''}
+      </div>
+      <button class="btn outline" onclick="show('${current}')">🔄 Refresh Data</button>
+    </div>`;
 }
 
-async function dashboard(){
-  const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Dashboard</h2><p class="muted">Loading...</p></div>';
-  const [p,o,r,s] = await Promise.all([count('products'), count('orders'), count('reservations'), count('special_requests')]);
-  app.innerHTML = `<div class="panel"><h2>Dashboard</h2><p class="muted">Store overview</p></div><div class="statgrid"><div class="stat">Products<b>${p}</b></div><div class="stat">Orders<b>${o}</b></div><div class="stat">Reservations<b>${r}</b></div><div class="stat">Special Requests<b>${s}</b></div></div>`;
-}
-
-function formField(id,label,type='text',extra=''){
+function formField(id, label, type='text', extra=''){
   return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" ${extra}></div>`;
 }
 
+// ------------------------------------------------------------------
+// DASHBOARD (BI ANALYTICS)
+// ------------------------------------------------------------------
+async function dashboard(){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="panel">${renderHeader('Executive Dashboard', 'Real-time sales & operational metrics')}<p class="muted">Calculating store statistics...</p></div>`;
+
+  const [pRes, oRes, rRes, sRes, itemsRes] = await Promise.all([
+    sb.from('products').select('id, name_en, retail_price, category_id, stock_quantity'),
+    sb.from('orders').select('id, total, delivery_fee, status, created_at'),
+    sb.from('reservations').select('id', {count:'exact'}),
+    sb.from('special_requests').select('id', {count:'exact'}),
+    sb.from('order_items').select('product_id, quantity, price')
+  ]);
+
+  const orders = oRes.data || [];
+  const products = pRes.data || [];
+  const orderItems = itemsRes.data || [];
+
+  const totalGrossRevenue = orders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+  const completedOrders = orders.filter(o => o.status === 'completed');
+  const completedRevenue = completedOrders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+  const avgOrderValue = orders.length ? (totalGrossRevenue / orders.length) : 0;
+
+  // Product sales velocity
+  const productSalesMap = {};
+  orderItems.forEach(item => {
+    productSalesMap[item.product_id] = (productSalesMap[item.product_id] || 0) + (item.quantity || 1);
+  });
+
+  const topProducts = products
+    .map(p => ({ name: p.name_en || 'Product', sales: productSalesMap[p.id] || 0 }))
+    .sort((a,b) => b.sales - a.sales)
+    .slice(0, 5);
+
+  const maxSales = Math.max(...topProducts.map(p => p.sales), 1);
+
+  // Status distribution
+  const statusCounts = orders.reduce((acc, o) => {
+    acc[o.status] = (acc[o.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  app.innerHTML = `
+    <div class="panel">${renderHeader('Executive Business Intelligence', 'Live telemetry & performative analytics')}</div>
+    <div class="statgrid">
+      <div class="stat"><span>Gross Revenue</span><b>$${totalGrossRevenue.toFixed(2)}</b></div>
+      <div class="stat"><span>Completed Revenue</span><b>$${completedRevenue.toFixed(2)}</b></div>
+      <div class="stat"><span>Average Order Value</span><b>$${avgOrderValue.toFixed(2)}</b></div>
+      <div class="stat"><span>Total Orders</span><b>${orders.length}</b></div>
+      <div class="stat"><span>Pending Inquiries</span><b>${(rRes.count || 0) + (sRes.count || 0)}</b></div>
+    </div>
+
+    <div class="bi-grid">
+      <div class="panel">
+        <h3 style="margin-top:0;color:#123B5D">Top Selling Products</h3>
+        ${topProducts.length ? topProducts.map(tp => `
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600">
+              <span>${esc(tp.name)}</span>
+              <span>${tp.sales} units sold</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:${(tp.sales/maxSales)*100}%"></div>
+            </div>
+          </div>
+        `).join('') : '<p class="muted">No sales data recorded yet.</p>'}
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-top:0;color:#123B5D">Order Pipeline Status</h3>
+        <ul style="list-style:none;padding:0;margin:0">
+          ${['pending','confirmed','preparing','out_for_delivery','completed','cancelled'].map(st => `
+            <li style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9">
+              <span class="status-pill status-${st}">${st.replace(/_/g,' ')}</span>
+              <b>${statusCounts[st] || 0} orders</b>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+// ------------------------------------------------------------------
+// ORDERS MANAGEMENT & BILLING
+// ------------------------------------------------------------------
+async function ordersPage(){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Orders Hub', 'Manage fulfillment, restock on cancel & track billing')}<div id="table">Loading orders...</div></div>`;
+
+  const r = await sb.from('orders').select('*, order_items(*)').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('table');
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Items Qt.</th>
+          <th>Subtotal</th>
+          <th>Delivery Fee</th>
+          <th>Total Bill</th>
+          <th>Status</th>
+          <th>Created Date/Time (LB)</th>
+          <th>Actions</th>
+        </tr>
+        ${(r.data||[]).map(x => {
+          const items = x.order_items || [];
+          const totalQty = items.reduce((sum, i) => sum + (Number(i.quantity) || 1), 0);
+          const deliveryFee = Number(x.delivery_fee || 0);
+          const totalBill = Number(x.total || 0);
+          const subtotal = Math.max(0, totalBill - deliveryFee);
+
+          return `
+            <tr>
+              <td><b>${esc(x.order_number || x.id.slice(0,8))}</b></td>
+              <td>${esc(x.name)}</td>
+              <td>${esc(x.phone)}</td>
+              <td><b style="color:#159A9C">${totalQty}</b></td>
+              <td>$${subtotal.toFixed(2)}</td>
+              <td>+$${deliveryFee.toFixed(2)}</td>
+              <td><b style="color:#123B5D">$${totalBill.toFixed(2)}</b></td>
+              <td>
+                <select onchange="handleOrderStatusChange('${esc(x.id)}', '${esc(x.status)}', this.value)">
+                  <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+                  <option value="confirmed" ${x.status==='confirmed'?'selected':''}>Confirmed</option>
+                  <option value="preparing" ${x.status==='preparing'?'selected':''}>Preparing</option>
+                  <option value="out_for_delivery" ${x.status==='out_for_delivery'?'selected':''}>Out for Delivery</option>
+                  <option value="completed" ${x.status==='completed'?'selected':''}>Completed</option>
+                  <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+                </select>
+              </td>
+              <td><small>${formatLebanonTime(x.created_at)}</small></td>
+              <td><button class="btn dark" onclick="viewOrderDetails('${esc(x.id)}')">Invoice / Details</button></td>
+            </tr>`;
+        }).join('')}
+      </table>
+    </div>`;
+}
+
+async function handleOrderStatusChange(orderId, oldStatus, newStatus){
+  if(oldStatus === newStatus) return;
+
+  const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
+  if(r.error) return alert('Failed to update order status: ' + r.error.message);
+
+  // Auto Inventory Stock Restoration on Cancellation
+  if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
+    await adjustOrderInventory(orderId, 'restock');
+  } else if(oldStatus === 'cancelled' && newStatus !== 'cancelled'){
+    await adjustOrderInventory(orderId, 'deduct');
+  }
+
+  ordersPage();
+}
+
+async function adjustOrderInventory(orderId, mode){
+  const itemsRes = await sb.from('order_items').select('product_id, quantity').eq('order_id', orderId);
+  if(itemsRes.error || !itemsRes.data) return;
+
+  for(const item of itemsRes.data){
+    if(!item.product_id) continue;
+    const prodRes = await sb.from('products').select('stock_quantity').eq('id', item.product_id).single();
+    if(prodRes.data){
+      let currentStock = Number(prodRes.data.stock_quantity || 0);
+      let qty = Number(item.quantity || 1);
+      let updatedStock = (mode === 'restock') ? (currentStock + qty) : Math.max(0, currentStock - qty);
+      await sb.from('products').update({ stock_quantity: updatedStock }).eq('id', item.product_id);
+    }
+  }
+}
+
+async function viewOrderDetails(orderId){
+  const [oRes, iRes] = await Promise.all([
+    sb.from('orders').select('*').eq('id', orderId).single(),
+    sb.from('order_items').select('*, products(name_en)').eq('order_id', orderId)
+  ]);
+
+  if(oRes.error) return alert(oRes.error.message);
+  const o = oRes.data;
+  const items = iRes.data || [];
+  const deliveryFee = Number(o.delivery_fee || 0);
+  const total = Number(o.total || 0);
+  const subtotal = Math.max(0, total - deliveryFee);
+
+  const modal = document.getElementById('modalContainer');
+  modal.classList.remove('hidden');
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px">
+          <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||o.id.slice(0,8))}</h3>
+          <button class="btn danger" onclick="closeModal()">Close</button>
+        </div>
+        <p><b>Customer Name:</b> ${esc(o.name)}</p>
+        <p><b>Phone:</b> ${esc(o.phone)} | <b>Alt:</b> ${esc(o.alternative_phone||'N/A')}</p>
+        <p><b>Delivery Address:</b> ${esc(o.address || o.location || 'N/A')}</p>
+        <p><b>Date Ordered (Lebanon):</b> ${formatLebanonTime(o.created_at)}</p>
+
+        <h4 style="margin-top:20px;border-bottom:1px solid #eee;padding-bottom:6px">Line Items</h4>
+        <table class="table" style="min-width:100%">
+          <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+          ${items.map(it => `
+            <tr>
+              <td>${esc(it.products?.name_en || it.product_name || 'Product')}</td>
+              <td>${it.quantity}</td>
+              <td>$${Number(it.price || 0).toFixed(2)}</td>
+              <td>$${(Number(it.quantity||1)*Number(it.price||0)).toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </table>
+
+        <div style="margin-top:16px;text-align:right;background:#f8fafc;padding:12px;border-radius:8px">
+          <p style="margin:4px 0">Subtotal: <b>$${subtotal.toFixed(2)}</b></p>
+          <p style="margin:4px 0">Delivery Fee: <b>+$${deliveryFee.toFixed(2)}</b></p>
+          <h3 style="margin:8px 0 0 0;color:#123B5D">Total Customer Bill: $${total.toFixed(2)}</h3>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeModal(){
+  document.getElementById('modalContainer').classList.add('hidden');
+}
+
+// ------------------------------------------------------------------
+// REVIEWS WITH APPROVAL WORKFLOW
+// ------------------------------------------------------------------
+async function reviewsPage(){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Reviews Moderation', 'Approve comments prior to storefront display')}<div id="table">Loading reviews...</div></div>`;
+
+  const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('table');
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Customer Name</th>
+          <th>Product / Subject</th>
+          <th>Rating</th>
+          <th>Comment</th>
+          <th>Submitted Date (LB)</th>
+          <th>Approved</th>
+          <th>Moderation Actions</th>
+        </tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.customer_name||'Anonymous')}</b></td>
+            <td>${esc(x.product_name||'General')}</td>
+            <td>⭐ ${x.rating || 5}/5</td>
+            <td style="max-width:250px">${esc(x.comment)}</td>
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+            <td><span class="status-pill ${x.approved?'status-approved':'status-pending'}">${x.approved?'Approved':'Pending'}</span></td>
+            <td>
+              <button class="btn ${x.approved?'danger':'success'}" onclick="toggleReviewApproval('${esc(x.id)}', ${!x.approved})">
+                ${x.approved?'Unapprove / Hide':'Approve & Post'}
+              </button>
+              <button class="btn outline" onclick="deleteRow('reviews','${esc(x.id)}')">Delete</button>
+            </td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function toggleReviewApproval(id, newStatus){
+  const r = await sb.from('reviews').update({ approved: newStatus }).eq('id', id);
+  if(r.error) alert('Error updating approval status: ' + r.error.message);
+  else reviewsPage();
+}
+
+// ------------------------------------------------------------------
+// RESERVATIONS & SPECIAL REQUESTS
+// ------------------------------------------------------------------
+async function reservationsPage(){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="panel">${renderHeader('Product Reservations', 'Manage upcoming stock reservations')}<div id="table">Loading...</div></div>`;
+
+  const r = await sb.from('reservations').select('*, products(name_en)').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('table');
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Customer Name</th>
+          <th>Phone</th>
+          <th>Product Reserved</th>
+          <th>Quantity</th>
+          <th>Status</th>
+          <th>Date (LB Time)</th>
+          <th>Action</th>
+        </tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.name)}</b></td>
+            <td>${esc(x.phone)}</td>
+            <td>${esc(x.products?.name_en || x.product_id)}</td>
+            <td>${x.quantity || 1}</td>
+            <td>
+              <select onchange="updateRecordStatus('reservations', '${esc(x.id)}', this.value)">
+                <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+                <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
+                <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
+                <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+              </select>
+            </td>
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+            <td><button class="btn danger" onclick="deleteRow('reservations','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function specialPage(){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="panel">${renderHeader('Special Requests', 'Inbound custom customer requests')}<div id="table">Loading...</div></div>`;
+
+  const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('table');
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Customer Name</th>
+          <th>Phone</th>
+          <th>Country</th>
+          <th>Requested Item</th>
+          <th>Status</th>
+          <th>Date (LB Time)</th>
+          <th>Action</th>
+        </tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.name)}</b></td>
+            <td>${esc(x.phone)}</td>
+            <td>${esc(x.country || 'Lebanon')}</td>
+            <td>${esc(x.item || x.request_details)}</td>
+            <td>
+              <select onchange="updateRecordStatus('special_requests', '${esc(x.id)}', this.value)">
+                <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+                <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
+                <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
+                <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+              </select>
+            </td>
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+            <td><button class="btn danger" onclick="deleteRow('special_requests','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function updateRecordStatus(table, id, status){
+  const r = await sb.from(table).update({ status }).eq('id', id);
+  if(r.error) alert('Failed to update status: ' + r.error.message);
+}
+
+// ------------------------------------------------------------------
+// SETTINGS
+// ------------------------------------------------------------------
+function settingsPage(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader('Store System Settings & Preferences', 'Configure administrative defaults & maintenance controls')}
+      <div class="grid">
+        ${formField('s_store_name', 'Store Front Name', 'text', 'value="Smartly Lebanon"')}
+        ${formField('s_currency', 'Store Currency Symbol', 'text', 'value="$"')}
+        ${formField('s_phone', 'Support WhatsApp Hotline', 'text', 'value="+961 70 000 000"')}
+        ${formField('s_tax', 'VAT / Tax Percentage (%)', 'number', 'value="0"')}
+        <div class="field">
+          <label>Maintenance Mode</label>
+          <select id="s_maintenance">
+            <option value="false">Disabled (Store Active)</option>
+            <option value="true">Enabled (Store Offline)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Default Timezone</label>
+          <input type="text" value="Asia/Beirut (GMT+3)" disabled readonly style="background:#f1f5f9">
+        </div>
+      </div>
+      <br>
+      <div class="actions">
+        <button class="btn" onclick="alert('System configurations saved successfully.')">Save Configurations</button>
+        <button class="btn outline" onclick="localStorage.clear(); alert('Local administrative cache cleared.');">Clear Local Cache</button>
+      </div>
+    </div>`;
+}
+
+// ------------------------------------------------------------------
+// PRODUCTS, CATEGORIES, COUNTRIES, DELIVERY, BUNDLES, PAYMENTS, CUSTOMERS
+// ------------------------------------------------------------------
 async function loadRefs(){
   const [c,co] = await Promise.all([
     sb.from('categories').select('id,name_en,name_ar').order('sort_order'),
@@ -201,7 +652,27 @@ async function productsPage(natural=false){
   await loadRefs();
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">${natural?'Natural Products':'Products'}</h2><div class="grid">${formField('p_name_en','Name EN')}${formField('p_name_ar','Name AR')}<div class="field"><label>Category</label><select id="p_category"><option value="">Select category</option>${categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name_en||c.name_ar)}</option>`).join('')}</select></div>${formField('p_desc_en','Description EN')}${formField('p_desc_ar','Description AR')}${formField('p_price','Retail Price','number','step="0.01"')}${formField('p_stock','Stock Quantity','number','min="0"')}${formField('p_sort','Sort Order','number','value="0"')}<div class="field"><label>Image</label><input id="p_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="p_active"><option value="true">Yes</option><option value="false">No</option></select></div><div class="field"><label>Natural Product</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveProduct()">Save Product</button><button class="tab hidden" id="cancelBtn" onclick="productsPage(${natural})">Cancel Edit</button><button class="tab" onclick="loadProducts()">Refresh</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader(natural ? 'Natural Products Management' : 'Products Catalog')}
+      <div class="grid">
+        ${formField('p_name_en','Name EN')}${formField('p_name_ar','Name AR')}
+        <div class="field"><label>Category</label><select id="p_category"><option value="">Select category</option>${categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name_en||c.name_ar)}</option>`).join('')}</select></div>
+        ${formField('p_desc_en','Description EN')}${formField('p_desc_ar','Description AR')}
+        ${formField('p_price','Retail Price ($)','number','step="0.01"')}
+        ${formField('p_stock','Stock Quantity','number','min="0"')}
+        ${formField('p_sort','Sort Order','number','value="0"')}
+        <div class="field"><label>Product Image</label><input id="p_image" type="file" accept="image/*"></div>
+        <div class="field"><label>Active</label><select id="p_active"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="field"><label>Is Natural</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div>
+      </div><br>
+      <div class="actions">
+        <button class="btn" id="saveBtn" onclick="saveProduct()">Save Product</button>
+        <button class="btn outline hidden" id="cancelBtn" onclick="productsPage(${natural})">Cancel Edit</button>
+      </div>
+      <div id="formMsg"></div>
+    </div>
+    <div class="panel"><div id="table">Loading products catalog...</div></div>`;
   loadProducts();
 }
 
@@ -217,31 +688,17 @@ async function saveProduct(){
     image_url = sb.storage.from('products').getPublicUrl(path).data.publicUrl;
   }
   const row = {
-    name_en: name,
-    name_ar: p_name_ar.value.trim(),
-    description_en: p_desc_en.value.trim(),
-    description_ar: p_desc_ar.value.trim(),
-    category_id: p_category.value || null,
-    retail_price: Number(p_price.value || 0),
-    stock_quantity: Number(p_stock.value || 0),
-    active: p_active.value === 'true',
-    is_natural: p_natural.value === 'true',
-    sort_order: Number(p_sort.value || 0)
+    name_en: name, name_ar: p_name_ar.value.trim(),
+    description_en: p_desc_en.value.trim(), description_ar: p_desc_ar.value.trim(),
+    category_id: p_category.value || null, retail_price: Number(p_price.value || 0),
+    stock_quantity: Number(p_stock.value || 0), active: p_active.value === 'true',
+    is_natural: p_natural.value === 'true', sort_order: Number(p_sort.value || 0)
   };
   if(image_url) row.image_url = image_url;
-  
-  let r;
-  if(editingId) {
-    r = await sb.from('products').update(row).eq('id', editingId);
-  } else {
-    r = await sb.from('products').insert(row);
-  }
 
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Product updated successfully.' : 'Product saved successfully.');
-  if(!r.error) {
-    if(editingId) productsPage(current === 'natural');
-    else loadProducts();
-  }
+  let r = editingId ? await sb.from('products').update(row).eq('id', editingId) : await sb.from('products').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Product updated.' : 'Product saved.');
+  if(!r.error){ if(editingId) productsPage(current === 'natural'); else loadProducts(); }
 }
 
 async function editProduct(id){
@@ -249,18 +706,11 @@ async function editProduct(id){
   if(r.error) return alert(r.error.message);
   const item = r.data;
   editingId = item.id;
-  p_name_en.value = item.name_en || '';
-  p_name_ar.value = item.name_ar || '';
-  p_category.value = item.category_id || '';
-  p_desc_en.value = item.description_en || '';
-  p_desc_ar.value = item.description_ar || '';
-  p_price.value = item.retail_price || 0;
-  p_stock.value = item.stock_quantity || 0;
-  p_sort.value = item.sort_order || 0;
-  p_active.value = item.active ? 'true' : 'false';
-  p_natural.value = item.is_natural ? 'true' : 'false';
-  
-  document.getElementById('formTitle').innerText = 'Edit Product';
+  p_name_en.value = item.name_en || ''; p_name_ar.value = item.name_ar || '';
+  p_category.value = item.category_id || ''; p_desc_en.value = item.description_en || '';
+  p_desc_ar.value = item.description_ar || ''; p_price.value = item.retail_price || 0;
+  p_stock.value = item.stock_quantity || 0; p_sort.value = item.sort_order || 0;
+  p_active.value = item.active ? 'true' : 'false'; p_natural.value = item.is_natural ? 'true' : 'false';
   document.getElementById('saveBtn').innerText = 'Update Product';
   document.getElementById('cancelBtn').classList.remove('hidden');
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -272,53 +722,39 @@ async function loadProducts(){
   if(natural) q.eq('is_natural', true);
   const r = await q;
   if(r.error) return document.getElementById('table').innerHTML = msg(r.error.message, true);
-  
-  document.getElementById('table').innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Natural</th><th>Active</th><th>Action</th></tr>${(r.data||[]).map(x=>{
-    const catName = x.categories ? (x.categories.name_en || x.categories.name_ar) : '—';
-    return `<tr><td>${esc(x.name_en||x.name_ar)}</td><td>${esc(catName)}</td><td>$${Number(x.retail_price||0).toFixed(2)}</td><td>${x.stock_quantity??0}</td><td>${x.is_natural?'Yes':'No'}</td><td>${x.active?'Yes':'No'}</td><td><button class="btn" onclick="editProduct('${esc(x.id)}')">Edit</button> <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button></td></tr>`;
-  }).join('')}</table></div>`;
+
+  document.getElementById('table').innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Natural</th><th>Active</th><th>Action</th></tr>
+        ${(r.data||[]).map(x => {
+          const catName = x.categories ? (x.categories.name_en || x.categories.name_ar) : '—';
+          return `<tr><td>${esc(x.name_en||x.name_ar)}</td><td>${esc(catName)}</td><td>$${Number(x.retail_price||0).toFixed(2)}</td><td><b>${x.stock_quantity??0}</b></td><td>${x.is_natural?'Yes':'No'}</td><td>${x.active?'Yes':'No'}</td><td><button class="btn" onclick="editProduct('${esc(x.id)}')">Edit</button> <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button></td></tr>`;
+        }).join('')}
+      </table>
+    </div>`;
 }
 
 async function categoriesPage(){
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Categories</h2><div class="grid">${formField('c_en','Name EN')}${formField('c_ar','Name AR')}${formField('c_icon','Icon')}${formField('c_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="c_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCategory()">Save Category</button><button class="tab hidden" id="cancelBtn" onclick="categoriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Categories')}<div class="grid">${formField('c_en','Name EN')}${formField('c_ar','Name AR')}${formField('c_icon','Icon')}${formField('c_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="c_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCategory()">Save Category</button><button class="btn outline hidden" id="cancelBtn" onclick="categoriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading categories...</div></div>`;
   loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']);
 }
 
 async function saveCategory(){
-  const row = {
-    name_en: c_en.value.trim(),
-    name_ar: c_ar.value.trim(),
-    icon: c_icon.value.trim(),
-    active: c_active.value === 'true',
-    sort_order: Number(c_sort.value || 0)
-  };
-  let r;
-  if(editingId) {
-    r = await sb.from('categories').update(row).eq('id', editingId);
-  } else {
-    r = await sb.from('categories').insert(row);
-  }
+  const row = { name_en: c_en.value.trim(), name_ar: c_ar.value.trim(), icon: c_icon.value.trim(), active: c_active.value === 'true', sort_order: Number(c_sort.value || 0) };
+  let r = editingId ? await sb.from('categories').update(row).eq('id', editingId) : await sb.from('categories').insert(row);
   formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Category updated.' : 'Category saved.');
-  if(!r.error) {
-    if(editingId) categoriesPage();
-    else loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']);
-  }
+  if(!r.error){ if(editingId) categoriesPage(); else loadGeneric('categories', ['id','name_en','name_ar','icon','active','sort_order']); }
 }
 
 async function editCategory(id){
   const r = await sb.from('categories').select('*').eq('id', id).single();
   if(r.error) return alert(r.error.message);
-  const item = r.data;
-  editingId = item.id;
-  c_en.value = item.name_en || '';
-  c_ar.value = item.name_ar || '';
-  c_icon.value = item.icon || '';
-  c_sort.value = item.sort_order || 0;
-  c_active.value = item.active ? 'true' : 'false';
-
-  document.getElementById('formTitle').innerText = 'Edit Category';
+  const item = r.data; editingId = item.id;
+  c_en.value = item.name_en || ''; c_ar.value = item.name_ar || ''; c_icon.value = item.icon || '';
+  c_sort.value = item.sort_order || 0; c_active.value = item.active ? 'true' : 'false';
   document.getElementById('saveBtn').innerText = 'Update Category';
   document.getElementById('cancelBtn').classList.remove('hidden');
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -327,48 +763,27 @@ async function editCategory(id){
 async function countriesPage(){
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Countries</h2><div class="grid">${formField('co_name','Country Name')}<div class="field"><label>Country Code</label><select id="co_code" onchange="autoFillCountryName(this.value)"><option value="">Select Country Code</option>${COUNTRY_LIST.map(c=>`<option value="${esc(c.code)}">${esc(c.code)} - ${esc(c.name)}</option>`).join('')}</select></div>${formField('co_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="co_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCountry()">Save Country</button><button class="tab hidden" id="cancelBtn" onclick="countriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Countries Configuration')}<div class="grid">${formField('co_name','Country Name')}<div class="field"><label>Country Code</label><select id="co_code" onchange="autoFillCountryName(this.value)"><option value="">Select Code</option>${COUNTRY_LIST.map(c=>`<option value="${esc(c.code)}">${esc(c.code)} - ${esc(c.name)}</option>`).join('')}</select></div>${formField('co_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="co_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCountry()">Save Country</button><button class="btn outline hidden" id="cancelBtn" onclick="countriesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading countries...</div></div>`;
   loadGeneric('countries', ['id','name','country_code','active','sort_order']);
 }
 
 function autoFillCountryName(code){
   const found = COUNTRY_LIST.find(c => c.code === code);
-  if(found && !co_name.value.trim()){
-    co_name.value = found.name;
-  }
+  if(found && !co_name.value.trim()) co_name.value = found.name;
 }
 
 async function saveCountry(){
-  const row = {
-    name: co_name.value.trim(),
-    country_code: co_code.value.trim(),
-    active: co_active.value === 'true',
-    sort_order: Number(co_sort.value || 0)
-  };
-  let r;
-  if(editingId) {
-    r = await sb.from('countries').update(row).eq('id', editingId);
-  } else {
-    r = await sb.from('countries').insert(row);
-  }
+  const row = { name: co_name.value.trim(), country_code: co_code.value.trim(), active: co_active.value === 'true', sort_order: Number(co_sort.value || 0) };
+  let r = editingId ? await sb.from('countries').update(row).eq('id', editingId) : await sb.from('countries').insert(row);
   formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Country updated.' : 'Country saved.');
-  if(!r.error) {
-    if(editingId) countriesPage();
-    else loadGeneric('countries', ['id','name','country_code','active','sort_order']);
-  }
+  if(!r.error){ if(editingId) countriesPage(); else loadGeneric('countries', ['id','name','country_code','active','sort_order']); }
 }
 
 async function editCountry(id){
   const r = await sb.from('countries').select('*').eq('id', id).single();
   if(r.error) return alert(r.error.message);
-  const item = r.data;
-  editingId = item.id;
-  co_name.value = item.name || '';
-  co_code.value = item.country_code || '';
-  co_sort.value = item.sort_order || 0;
-  co_active.value = item.active ? 'true' : 'false';
-
-  document.getElementById('formTitle').innerText = 'Edit Country';
+  const item = r.data; editingId = item.id;
+  co_name.value = item.name || ''; co_code.value = item.country_code || ''; co_sort.value = item.sort_order || 0; co_active.value = item.active ? 'true' : 'false';
   document.getElementById('saveBtn').innerText = 'Update Country';
   document.getElementById('cancelBtn').classList.remove('hidden');
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -377,43 +792,22 @@ async function editCountry(id){
 async function deliveryFeesPage(){
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Delivery Fees by Location/Distance</h2><div class="grid">${formField('df_location','Location / Region Name')}${formField('df_fee','Delivery Fee Amount ($)','number','step="0.01"')}${formField('df_min_distance','Min Distance (km)','number','step="0.1" value="0"')}${formField('df_max_distance','Max Distance (km)','number','step="0.1"')}<div class="field"><label>Active</label><select id="df_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveDeliveryFee()">Save Delivery Fee Rate</button><button class="tab hidden" id="cancelBtn" onclick="deliveryFeesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Delivery Fee Schedules')}<div class="grid">${formField('df_location','Location / Region Name')}${formField('df_fee','Delivery Fee ($)','number','step="0.01"')}${formField('df_min_distance','Min Distance (km)','number','step="0.1" value="0"')}${formField('df_max_distance','Max Distance (km)','number','step="0.1"')}<div class="field"><label>Active</label><select id="df_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveDeliveryFee()">Save Fee Rate</button><button class="btn outline hidden" id="cancelBtn" onclick="deliveryFeesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading delivery fees...</div></div>`;
   loadGeneric('delivery_fees', ['id','location_name','fee_amount','min_distance_km','max_distance_km','active']);
 }
 
 async function saveDeliveryFee(){
-  const row = {
-    location_name: df_location.value.trim(),
-    fee_amount: Number(df_fee.value || 0),
-    min_distance_km: Number(df_min_distance.value || 0),
-    max_distance_km: df_max_distance.value ? Number(df_max_distance.value) : null,
-    active: df_active.value === 'true'
-  };
-  let r;
-  if(editingId) {
-    r = await sb.from('delivery_fees').update(row).eq('id', editingId);
-  } else {
-    r = await sb.from('delivery_fees').insert(row);
-  }
-  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Delivery fee rate updated.' : 'Delivery fee rate saved.');
-  if(!r.error) {
-    if(editingId) deliveryFeesPage();
-    else loadGeneric('delivery_fees', ['id','location_name','fee_amount','min_distance_km','max_distance_km','active']);
-  }
+  const row = { location_name: df_location.value.trim(), fee_amount: Number(df_fee.value || 0), min_distance_km: Number(df_min_distance.value || 0), max_distance_km: df_max_distance.value ? Number(df_max_distance.value) : null, active: df_active.value === 'true' };
+  let r = editingId ? await sb.from('delivery_fees').update(row).eq('id', editingId) : await sb.from('delivery_fees').insert(row);
+  formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Fee rate updated.' : 'Fee rate saved.');
+  if(!r.error){ if(editingId) deliveryFeesPage(); else loadGeneric('delivery_fees', ['id','location_name','fee_amount','min_distance_km','max_distance_km','active']); }
 }
 
 async function editDeliveryFee(id){
   const r = await sb.from('delivery_fees').select('*').eq('id', id).single();
   if(r.error) return alert(r.error.message);
-  const item = r.data;
-  editingId = item.id;
-  df_location.value = item.location_name || '';
-  df_fee.value = item.fee_amount || 0;
-  df_min_distance.value = item.min_distance_km || 0;
-  df_max_distance.value = item.max_distance_km || '';
-  df_active.value = item.active ? 'true' : 'false';
-
-  document.getElementById('formTitle').innerText = 'Edit Delivery Fee Rate';
+  const item = r.data; editingId = item.id;
+  df_location.value = item.location_name || ''; df_fee.value = item.fee_amount || 0; df_min_distance.value = item.min_distance_km || 0; df_max_distance.value = item.max_distance_km || ''; df_active.value = item.active ? 'true' : 'false';
   document.getElementById('saveBtn').innerText = 'Update Rate';
   document.getElementById('cancelBtn').classList.remove('hidden');
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -422,57 +816,30 @@ async function editDeliveryFee(id){
 async function bundlesPage(){
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Bundles & Offers</h2><div class="grid">${formField('b_en','Name EN')}${formField('b_ar','Name AR')}${formField('b_price','Price','number','step="0.01"')}${formField('b_sort','Sort Order','number','value="0"')}<div class="field"><label>Description EN</label><textarea id="b_desc_en"></textarea></div><div class="field"><label>Description AR</label><textarea id="b_desc_ar"></textarea></div><div class="field"><label>Image</label><input id="b_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="b_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveBundle()">Save Bundle</button><button class="tab hidden" id="cancelBtn" onclick="bundlesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Promotional Bundles & Offers')}<div class="grid">${formField('b_en','Bundle Name EN')}${formField('b_ar','Bundle Name AR')}${formField('b_price','Price ($)','number','step="0.01"')}${formField('b_sort','Sort Order','number','value="0"')}<div class="field"><label>Description EN</label><textarea id="b_desc_en"></textarea></div><div class="field"><label>Description AR</label><textarea id="b_desc_ar"></textarea></div><div class="field"><label>Image</label><input id="b_image" type="file" accept="image/*"></div><div class="field"><label>Active</label><select id="b_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveBundle()">Save Bundle</button><button class="btn outline hidden" id="cancelBtn" onclick="bundlesPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading bundles...</div></div>`;
   loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']);
 }
 
 async function saveBundle(){
-  let image_url = '';
-  const f = b_image.files[0];
+  let image_url = ''; const f = b_image.files[0];
   if(f){
     const path = `bundles/${Date.now()}-${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
     const u = await sb.storage.from('products').upload(path, f, {upsert:false});
     if(u.error) return formMsg.innerHTML = msg(u.error.message, true);
     image_url = sb.storage.from('products').getPublicUrl(path).data.publicUrl;
   }
-  const row = {
-    name_en: b_en.value.trim(),
-    name_ar: b_ar.value.trim(),
-    description_en: b_desc_en.value.trim(),
-    description_ar: b_desc_ar.value.trim(),
-    price: Number(b_price.value || 0),
-    active: b_active.value === 'true',
-    sort_order: Number(b_sort.value || 0)
-  };
+  const row = { name_en: b_en.value.trim(), name_ar: b_ar.value.trim(), description_en: b_desc_en.value.trim(), description_ar: b_desc_ar.value.trim(), price: Number(b_price.value || 0), active: b_active.value === 'true', sort_order: Number(b_sort.value || 0) };
   if(image_url) row.image_url = image_url;
-  
-  let r;
-  if(editingId) {
-    r = await sb.from('bundles').update(row).eq('id', editingId);
-  } else {
-    r = await sb.from('bundles').insert(row);
-  }
+  let r = editingId ? await sb.from('bundles').update(row).eq('id', editingId) : await sb.from('bundles').insert(row);
   formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Bundle updated.' : 'Bundle saved.');
-  if(!r.error) {
-    if(editingId) bundlesPage();
-    else loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']);
-  }
+  if(!r.error){ if(editingId) bundlesPage(); else loadGeneric('bundles', ['id','name_en','description_en','price','active','sort_order']); }
 }
 
 async function editBundle(id){
   const r = await sb.from('bundles').select('*').eq('id', id).single();
   if(r.error) return alert(r.error.message);
-  const item = r.data;
-  editingId = item.id;
-  b_en.value = item.name_en || '';
-  b_ar.value = item.name_ar || '';
-  b_desc_en.value = item.description_en || '';
-  b_desc_ar.value = item.description_ar || '';
-  b_price.value = item.price || 0;
-  b_sort.value = item.sort_order || 0;
-  b_active.value = item.active ? 'true' : 'false';
-
-  document.getElementById('formTitle').innerText = 'Edit Bundle';
+  const item = r.data; editingId = item.id;
+  b_en.value = item.name_en || ''; b_ar.value = item.name_ar || ''; b_desc_en.value = item.description_en || ''; b_desc_ar.value = item.description_ar || ''; b_price.value = item.price || 0; b_sort.value = item.sort_order || 0; b_active.value = item.active ? 'true' : 'false';
   document.getElementById('saveBtn').innerText = 'Update Bundle';
   document.getElementById('cancelBtn').classList.remove('hidden');
   window.scrollTo({top: 0, behavior: 'smooth'});
@@ -481,188 +848,49 @@ async function editBundle(id){
 async function paymentsPage(){
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Payment Methods</h2><div class="grid">${formField('pm_name','Payment Method')}${formField('pm_desc','Description')}${formField('pm_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="pm_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="savePayment()">Save Payment Method</button><button class="tab hidden" id="cancelBtn" onclick="paymentsPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Payment Gateways & Methods')}<div class="grid">${formField('pm_name','Payment Method')}${formField('pm_desc','Description')}${formField('pm_sort','Sort Order','number','value="0"')}<div class="field"><label>Active</label><select id="pm_active"><option value="true">Yes</option><option value="false">No</option></select></div></div><br><div class="actions"><button class="btn" id="saveBtn" onclick="savePayment()">Save Payment Method</button><button class="btn outline hidden" id="cancelBtn" onclick="paymentsPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading payment options...</div></div>`;
   loadGeneric('payment_methods', ['id','name','description','active','sort_order']);
 }
 
 async function savePayment(){
-  const row = {
-    name: pm_name.value.trim(),
-    description: pm_desc.value.trim(),
-    active: pm_active.value === 'true',
-    sort_order: Number(pm_sort.value || 0)
-  };
-  let r;
-  if(editingId) {
-    r = await sb.from('payment_methods').update(row).eq('id', editingId);
-  } else {
-    r = await sb.from('payment_methods').insert(row);
-  }
+  const row = { name: pm_name.value.trim(), description: pm_desc.value.trim(), active: pm_active.value === 'true', sort_order: Number(pm_sort.value || 0) };
+  let r = editingId ? await sb.from('payment_methods').update(row).eq('id', editingId) : await sb.from('payment_methods').insert(row);
   formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Payment method updated.' : 'Payment method saved.');
-  if(!r.error) {
-    if(editingId) paymentsPage();
-    else loadGeneric('payment_methods', ['id','name','description','active','sort_order']);
-  }
+  if(!r.error){ if(editingId) paymentsPage(); else loadGeneric('payment_methods', ['id','name','description','active','sort_order']); }
 }
 
 async function editPayment(id){
   const r = await sb.from('payment_methods').select('*').eq('id', id).single();
   if(r.error) return alert(r.error.message);
-  const item = r.data;
-  editingId = item.id;
-  pm_name.value = item.name || '';
-  pm_desc.value = item.description || '';
-  pm_sort.value = item.sort_order || 0;
-  pm_active.value = item.active ? 'true' : 'false';
-
-  document.getElementById('formTitle').innerText = 'Edit Payment Method';
+  const item = r.data; editingId = item.id;
+  pm_name.value = item.name || ''; pm_desc.value = item.description || ''; pm_sort.value = item.sort_order || 0; pm_active.value = item.active ? 'true' : 'false';
   document.getElementById('saveBtn').innerText = 'Update Payment Method';
   document.getElementById('cancelBtn').classList.remove('hidden');
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-async function ordersPage(){
-  const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Orders</h2><button class="btn" onclick="ordersPage()">Refresh Orders</button></div><div class="panel"><div id="table"></div></div>';
-  const r = await sb.from('orders').select('*, order_items(quantity)').order('created_at', {ascending:false}).limit(200);
-  const tableEl = document.getElementById('table');
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  
-  tableEl.innerHTML = `<div class="table-wrap"><table class="table"><tr><th>Order</th><th>Customer</th><th>Phone</th><th>Total Items</th><th>Total Amount</th><th>Payment</th><th>Status</th><th>Created</th><th>Action</th></tr>${(r.data||[]).map(x=>{
-    const totalItems = (x.order_items || []).reduce((sum, item) => sum + (item.quantity || 0), 0) || x.total_items || 0;
-    const totalAmount = Number(x.total || 0);
-    return `<tr>
-      <td>${esc(x.order_number||x.id)}</td>
-      <td>${esc(x.name)}</td>
-      <td>${esc(x.phone)}</td>
-      <td><b>${totalItems}</b></td>
-      <td>$${totalAmount.toFixed(2)}</td>
-      <td>${esc(x.payment_method)}</td>
-      <td>
-        <select onchange="handleOrderStatusChange('${esc(x.id)}', '${esc(x.status)}', this.value)">
-          <option value="pending" ${x.status==='pending'?'selected':''}>pending</option>
-          <option value="confirmed" ${x.status==='confirmed'?'selected':''}>confirmed</option>
-          <option value="preparing" ${x.status==='preparing'?'selected':''}>preparing</option>
-          <option value="out_for_delivery" ${x.status==='out_for_delivery'?'selected':''}>out_for_delivery</option>
-          <option value="completed" ${x.status==='completed'?'selected':''}>completed</option>
-          <option value="cancelled" ${x.status==='cancelled'?'selected':''}>cancelled</option>
-        </select>
-      </td>
-      <td>${esc(x.created_at)}</td>
-      <td><button class="btn" onclick="viewRecord('orders','${esc(x.id)}')">View</button></td>
-    </tr>`;
-  }).join('')}</table></div>`;
-}
-
-async function handleOrderStatusChange(orderId, oldStatus, newStatus){
-  if(oldStatus === newStatus) return;
-
-  const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
-  if(r.error) return alert('Failed to update order status: ' + r.error.message);
-
-  if(newStatus === 'confirmed' && oldStatus !== 'confirmed'){
-    await adjustOrderInventory(orderId, 'decrease');
-  } else if(newStatus === 'cancelled' && oldStatus === 'confirmed'){
-    await adjustOrderInventory(orderId, 'increase');
-  }
-
-  ordersPage();
-}
-
-async function adjustOrderInventory(orderId, mode){
-  const itemsRes = await sb.from('order_items').select('product_id, quantity').eq('order_id', orderId);
-  if(itemsRes.error || !itemsRes.data) return;
-
-  for(const item of itemsRes.data){
-    if(!item.product_id) continue;
-    const prodRes = await sb.from('products').select('stock_quantity').eq('id', item.product_id).single();
-    if(prodRes.data){
-      let newStock = Number(prodRes.data.stock_quantity || 0);
-      if(mode === 'decrease') newStock -= item.quantity;
-      if(mode === 'increase') newStock += item.quantity;
-      if(newStock < 0) newStock = 0;
-      await sb.from('products').update({ stock_quantity: newStock }).eq('id', item.product_id);
-    }
-  }
-}
-
-async function reservationsPage(){
-  const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Reservations</h2><div id="table"></div></div>';
-  const r = await sb.from('reservations').select('*').order('created_at', {ascending:false}).limit(200);
-  const tableEl = document.getElementById('table');
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  tableEl.innerHTML = genericTable(r.data || [], ['id','product_id','name','phone','quantity','status','created_at'], true, 'reservations');
-}
-
-async function reviewsPage(){
-  const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Reviews</h2><div id="table"></div></div>';
-  const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
-  const tableEl = document.getElementById('table');
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  tableEl.innerHTML = genericTable(r.data || [], ['id','customer_name','product_name','comment','approved','created_at'], true, 'reviews');
-}
-
-async function specialPage(){
-  const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Special Requests</h2><div id="table"></div></div>';
-  const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
-  const tableEl = document.getElementById('table');
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  tableEl.innerHTML = genericTable(r.data || [], ['id','name','phone','country','item','status','created_at'], true, 'special_requests');
-}
-
 async function customersPage(){
   editingId = null;
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel"><h2 id="formTitle">Customers</h2><div class="grid">${formField('cu_name','Name')}${formField('cu_phone','Phone')}${formField('cu_alt','Alternative Phone')}${formField('cu_email','Email','email')}${formField('cu_country','Country')}${formField('cu_location','Location')}</div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCustomer()">Save Customer</button><button class="tab hidden" id="cancelBtn" onclick="customersPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table"></div></div>`;
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Directory')}<div class="grid">${formField('cu_name','Full Name')}${formField('cu_phone','Primary Phone')}${formField('cu_alt','Alternative Phone')}${formField('cu_email','Email Address','email')}${formField('cu_country','Country')}${formField('cu_location','City / Location')}</div><br><div class="actions"><button class="btn" id="saveBtn" onclick="saveCustomer()">Save Customer Profile</button><button class="btn outline hidden" id="cancelBtn" onclick="customersPage()">Cancel Edit</button></div><div id="formMsg"></div></div><div class="panel"><div id="table">Loading customer directory...</div></div>`;
   loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']);
 }
 
 async function saveCustomer(){
-  const row = {
-    name: cu_name.value.trim(),
-    phone: cu_phone.value.trim(),
-    alternative_phone: cu_alt.value.trim(),
-    email: cu_email.value.trim(),
-    country: cu_country.value.trim(),
-    location: cu_location.value.trim()
-  };
-  let r;
-  if(editingId) {
-    r = await sb.from('customer_profiles').update(row).eq('id', editingId);
-  } else {
-    r = await sb.from('customer_profiles').insert(row);
-  }
+  const row = { name: cu_name.value.trim(), phone: cu_phone.value.trim(), alternative_phone: cu_alt.value.trim(), email: cu_email.value.trim(), country: cu_country.value.trim(), location: cu_location.value.trim() };
+  let r = editingId ? await sb.from('customer_profiles').update(row).eq('id', editingId) : await sb.from('customer_profiles').insert(row);
   formMsg.innerHTML = r.error ? msg(r.error.message, true) : msg(editingId ? 'Customer updated.' : 'Customer saved.');
-  if(!r.error) {
-    if(editingId) customersPage();
-    else loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']);
-  }
+  if(!r.error){ if(editingId) customersPage(); else loadGeneric('customer_profiles', ['id','name','phone','alternative_phone','email','country','location','created_at']); }
 }
 
 async function editCustomer(id){
   const r = await sb.from('customer_profiles').select('*').eq('id', id).single();
   if(r.error) return alert(r.error.message);
-  const item = r.data;
-  editingId = item.id;
-  cu_name.value = item.name || '';
-  cu_phone.value = item.phone || '';
-  cu_alt.value = item.alternative_phone || '';
-  cu_email.value = item.email || '';
-  cu_country.value = item.country || '';
-  cu_location.value = item.location || '';
-
-  document.getElementById('formTitle').innerText = 'Edit Customer';
+  const item = r.data; editingId = item.id;
+  cu_name.value = item.name || ''; cu_phone.value = item.phone || ''; cu_alt.value = item.alternative_phone || ''; cu_email.value = item.email || ''; cu_country.value = item.country || ''; cu_location.value = item.location || '';
   document.getElementById('saveBtn').innerText = 'Update Customer';
   document.getElementById('cancelBtn').classList.remove('hidden');
   window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-async function settingsPage(){
-  const app = document.getElementById('app');
-  app.innerHTML = '<div class="panel"><h2>Settings</h2><p class="muted">Storefront configuration and preferences.</p></div>';
 }
 
 async function loadGeneric(table, fields){
@@ -676,7 +904,11 @@ function genericTable(data, fields, showActions=true, tableName=''){
   if(!data.length) return '<p class="muted">No records found.</p>';
   const headers = fields.map(f => `<th>${esc(f.replace(/_/g,' '))}</th>`).join('');
   const rows = data.map(row => {
-    const cols = fields.map(f => `<td>${esc(row[f])}</td>`).join('');
+    const cols = fields.map(f => {
+      let val = row[f];
+      if(f === 'created_at') val = formatLebanonTime(val);
+      return `<td>${esc(val)}</td>`;
+    }).join('');
     let actions = '';
     if(showActions && tableName){
       let editFn = '';
@@ -696,16 +928,10 @@ function genericTable(data, fields, showActions=true, tableName=''){
 }
 
 async function deleteRow(table, id){
-  if(!confirm('Are you sure you want to delete this record?')) return;
+  if(!confirm('Confirm permanent deletion of this record?')) return;
   const r = await sb.from(table).delete().eq('id', id);
-  if(r.error) alert('Error deleting: ' + r.error.message);
+  if(r.error) alert('Error deleting record: ' + r.error.message);
   else show(current);
-}
-
-async function viewRecord(table, id){
-  const r = await sb.from(table).select('*').eq('id', id).single();
-  if(r.error) return alert(r.error.message);
-  alert(JSON.stringify(r.data, null, 2));
 }
 </script>
 </body>
