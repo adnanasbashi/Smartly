@@ -273,4 +273,85 @@ async function specialPage(){
     ${r.data.map(x=>{
       const itemDesc = x.item_description || x.product_link || x.item || x.title || 'Custom Sourcing';
       const cust = x.customer_name || x.name || 'Customer';
-      const
+      const phone = x.phone || x.customer_phone || '';
+      const qty = x.quantity || x.qty || 1;
+      const status = x.status || 'pending';
+      return `<tr>
+        <td><small>${new Date(x.created_at||Date.now()).toLocaleDateString()}</small></td>
+        <td><b>${esc(itemDesc)}</b></td>
+        <td><b>${esc(qty)}</b></td>
+        <td>${esc(cust)}</td>
+        <td><a href="https://wa.me/${esc(phone)}" target="_blank" style="color:#1E6FA8">${esc(phone)}</a></td>
+        <td>${esc(x.country||'')}</td>
+        <td><span class="badge ${esc(status)}">${esc(status)}</span></td>
+        <td>
+          <button class="btn" onclick="updateSpecialStatus('${x.id}', 'fulfilled')">Fulfill</button>
+          <button class="btn danger" onclick="deleteRow('special_requests','${x.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('')}
+  </table></div>`;
+}
+
+async function updateSpecialStatus(id, status){
+  const r = await sb.from('special_requests').update({status}).eq('id', id);
+  if(r.error) alert(r.error.message);
+  else specialPage();
+}
+
+// ORDERS VIEW
+async function ordersPage(){
+  const app = document.getElementById('app');
+  app.innerHTML = '<div class="panel" style="display:flex;justify-content:space-between;align-items:center"><h2>Orders</h2><button class="btn" onclick="ordersPage()">Refresh</button></div><div class="panel"><div id="table">Loading...</div></div>';
+  
+  const r = await sb.from('orders').select('*').order('created_at', {ascending:false}).limit(200);
+  if(r.error) return table.innerHTML = msg(r.error.message, true);
+  if(!r.data || !r.data.length) return table.innerHTML = '<p class="muted">No orders found.</p>';
+
+  table.innerHTML = `<div class="table-wrap"><table class="table">
+    <tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Action</th></tr>
+    ${r.data.map(x=>`<tr>
+      <td><small>${new Date(x.created_at||Date.now()).toLocaleDateString()}</small></td>
+      <td><b>#${esc(x.id.slice(0,8))}</b></td>
+      <td>${esc(x.customer_name||x.name||'Customer')}</td>
+      <td>$${esc(x.total_price||x.total||0)}</td>
+      <td><span class="badge ${esc(x.status||'pending')}">${esc(x.status||'pending')}</span></td>
+      <td>
+        <button class="btn" onclick="updateOrderStatus('${x.id}','completed')">Complete</button>
+        <button class="btn danger" onclick="updateOrderStatus('${x.id}','cancelled')">Cancel</button>
+      </td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+async function updateOrderStatus(id, status){
+  const r = await sb.from('orders').update({status}).eq('id', id);
+  if(r.error) alert(r.error.message);
+  else ordersPage();
+}
+
+// GENERIC STUBS & PLACEHOLDERS FOR OTHER TABS
+async function productsPage(isNatural = false) {
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="panel"><h2>${isNatural ? 'Natural Products' : 'Products'} Management</h2><p class="muted">Manage your store products catalog.</p></div>`;
+}
+async function categoriesPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Categories</h2><p class="muted">Manage product categories.</p></div>`; }
+async function countriesPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Countries</h2><p class="muted">Manage supported countries.</p></div>`; }
+async function deliveryFeesPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Delivery Fees</h2><p class="muted">Configure regional shipping fees.</p></div>`; }
+async function bundlesPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Bundles & Offers</h2><p class="muted">Manage active discounts and bundles.</p></div>`; }
+async function paymentsPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Payment Methods</h2><p class="muted">Manage checkout payment gateways.</p></div>`; }
+async function customersPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Customers</h2><p class="muted">View customer directory.</p></div>`; }
+async function settingsPage() { document.getElementById('app').innerHTML = `<div class="panel"><h2>Settings</h2><p class="muted">Global store settings.</p></div>`; }
+
+async function deleteRow(table, id){
+  if(!confirm("Are you sure you want to delete this record?")) return;
+  const r = await sb.from(table).delete().eq('id', id);
+  if(r.error) alert(r.error.message);
+  else show(current);
+}
+
+// INITIALIZE APP
+guard();
+</script>
+</body>
+</html>
