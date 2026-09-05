@@ -162,10 +162,14 @@ function formatLebanonTime(isoString){
 window.addEventListener('DOMContentLoaded', guard);
 
 async function guard(){
-  const s = await sb.auth.getSession();
-  if(!s.data.session) return;
-  const a = await sb.rpc('is_admin');
-  if(!a.error && a.data === true) showAdmin();
+  try {
+    const s = await sb.auth.getSession();
+    if(!s.data?.session) return;
+    const a = await sb.rpc('is_admin');
+    if(!a.error && a.data === true) showAdmin();
+  } catch(e) {
+    console.warn('Auth guard check non-critical failure:', e);
+  }
 }
 
 async function login(){
@@ -442,8 +446,8 @@ async function viewOrderDetails(orderId){
             <tr>
               <td>${esc(it.products?.name_en || it.product_name || 'Product')}</td>
               <td>${it.quantity}</td>
-              <td>$${Number(it.price || 0).toFixed(2)}</td>
-              <td>$${(Number(it.quantity||1)*Number(it.price||0)).toFixed(2)}</td>
+              <td>$${Number(it.price || it.unit_price || 0).toFixed(2)}</td>
+              <td>$${(Number(it.quantity||1)*Number(it.price || it.unit_price || 0)).toFixed(2)}</td>
             </tr>
           `).join('')}
         </table>
@@ -606,15 +610,16 @@ async function updateRecordStatus(table, id, status){
 // ------------------------------------------------------------------
 // SETTINGS
 // ------------------------------------------------------------------
-function settingsPage(){
+async function settingsPage(){
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="panel">
       ${renderHeader('Store System Settings & Preferences', 'Configure administrative defaults & maintenance controls')}
+      <div id="settingsMsg"></div>
       <div class="grid">
         ${formField('s_store_name', 'Store Front Name', 'text', 'value="Smartly Lebanon"')}
         ${formField('s_currency', 'Store Currency Symbol', 'text', 'value="$"')}
-        ${formField('s_phone', 'Support WhatsApp Hotline', 'text', 'value="+961 70 000 000"')}
+        ${formField('s_phone', 'Support WhatsApp Hotline', 'text', 'value="9613080365"')}
         ${formField('s_tax', 'VAT / Tax Percentage (%)', 'number', 'value="0"')}
         <div class="field">
           <label>Maintenance Mode</label>
@@ -630,10 +635,52 @@ function settingsPage(){
       </div>
       <br>
       <div class="actions">
-        <button class="btn" onclick="alert('System configurations saved successfully.')">Save Configurations</button>
+        <button class="btn" onclick="saveStoreSettings()">Save Configurations</button>
         <button class="btn outline" onclick="localStorage.clear(); alert('Local administrative cache cleared.');">Clear Local Cache</button>
       </div>
     </div>`;
+
+    loadStoreSettings();
+}
+
+async function loadStoreSettings(){
+  try {
+    const { data } = await sb.from('settings').select('*').limit(1).maybeSingle();
+    if(data) {
+      if(document.getElementById('s_store_name')) s_store_name.value = data.store_name || 'Smartly Lebanon';
+      if(document.getElementById('s_currency')) s_currency.value = data.currency || '$';
+      if(document.getElementById('s_phone')) s_phone.value = data.whatsapp_phone || '9613080365';
+      if(document.getElementById('s_tax')) s_tax.value = data.tax_percent || 0;
+      if(document.getElementById('s_maintenance')) s_maintenance.value = data.maintenance_mode ? 'true' : 'false';
+    }
+  } catch(e) {
+    console.log('Settings load fallback active');
+  }
+}
+
+async function saveStoreSettings(){
+  const row = {
+    store_name: s_store_name.value.trim(),
+    currency: s_currency.value.trim(),
+    whatsapp_phone: s_phone.value.trim().replace(/[^0-9]/g, ''),
+    tax_percent: Number(s_tax.value || 0),
+    maintenance_mode: s_maintenance.value === 'true'
+  };
+
+  const { data: existing } = await sb.from('settings').select('id').limit(1).maybeSingle();
+  let r;
+  if(existing?.id){
+    r = await sb.from('settings').update(row).eq('id', existing.id);
+  } else {
+    r = await sb.from('settings').insert(row);
+  }
+
+  if(r?.error){
+    alert('Could not save to DB, settings saved to local cache fallback: ' + r.error.message);
+    localStorage.setItem('smartly_settings', JSON.stringify(row));
+  } else {
+    alert('System configurations saved successfully.');
+  }
 }
 
 // ------------------------------------------------------------------
