@@ -1,1256 +1,1428 @@
-<!doctype html>
 <html lang="en">
+
 <head>
+
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Smartly Admin - Management Hub</title>
+
 <style>
+
 *{box-sizing:border-box}
+
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f4f6f9;color:#1c252e}
+
 button,input,select,textarea{font:inherit}
+
 button{cursor:pointer}
+
 .top{background:#123B5D;color:#fff;padding:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+
 .wrap{max-width:1320px;margin:auto;padding:0 18px}
+
 .login{max-width:420px;margin:10vh auto}
+
 .panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+
 .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+
 .panel-title{margin:0;font-size:20px;font-weight:700;color:#123B5D}
+
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
 .field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#475569;text-transform:uppercase;letter-spacing:0.5px}
+
 .field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a}
+
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#159A9C;box-shadow:0 0 0 3px rgba(21,154,156,0.15)}
+
 .field textarea{min-height:90px;resize:vertical}
+
 .btn{padding:9px 16px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:600;font-size:14px;transition:all 0.2s}
+
 .btn:hover{opacity:0.9;transform:translateY(-1px)}
+
 .btn.dark{background:#123B5D}
+
 .btn.danger{background:#e11d48}
+
 .btn.outline{background:transparent;border:1px solid #cbd5e1;color:#475569}
+
 .btn.outline:hover{background:#f8fafc}
+
 .btn.success{background:#10b981}
+
 .muted{color:#64748b}
+
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+
 .tab{padding:9px 14px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;color:#475569;font-weight:600;font-size:13px}
+
 .tab.active{background:#123B5D;color:#fff;border-color:#123B5D}
+
 .actions{display:flex;gap:8px;flex-wrap:wrap}
+
 .table-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px}
+
 .table{width:100%;border-collapse:collapse;min-width:850px;background:#fff;font-size:14px}
+
 .table th{background:#f8fafc;padding:12px 10px;border-bottom:2px solid #e2e8f0;text-align:left;color:#475569;font-weight:700}
+
 .table td{padding:12px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+
 .table tr:hover{background:#f8fafc}
+
 .status-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;text-transform:capitalize}
+
 .status-pending{background:#fef3c7;color:#d97706}
+
 .status-confirmed,.status-approved{background:#dcfce7;color:#15803d}
+
 .status-completed{background:#dbeafe;color:#1d4ed8}
+
 .status-cancelled{background:#fee2e2;color:#b91c1c}
+
 .hidden{display:none !important}
+
 .statgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+
 .stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
+
 .stat span{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase}
+
 .stat b{display:block;font-size:24px;margin-top:6px;color:#123B5D}
+
 .bi-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+
 .progress-bar-bg{background:#e2e8f0;border-radius:6px;height:10px;width:100%;overflow:hidden;margin-top:6px}
+
 .progress-bar-fill{background:#159A9C;height:100%;border-radius:6px}
+
 .msg{padding:12px;border-radius:8px;margin:12px 0;font-weight:500}
+
 .ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+
 .err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+
 .modal-content{background:#fff;border-radius:12px;width:90%;max-width:650px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}
+
 @media(max-width:1024px){.statgrid{grid-template-columns:repeat(3,1fr)}.bi-grid{grid-template-columns:1fr}}
+
 @media(max-width:768px){.grid,.statgrid{grid-template-columns:1fr 1fr}}
+
 @media(max-width:480px){.grid,.statgrid{grid-template-columns:1fr}}
+
 </style>
+
 </head>
+
 <body>
 
+
+
 <div id="loginView" class="login panel">
+
   <h1 style="margin-top:0;color:#123B5D">Smartly Admin</h1>
+
   <p class="muted">Enter authorized administrator credentials.</p>
+
   <form onsubmit="event.preventDefault(); login();">
+
     <div class="field">
+
       <label>Email Address</label>
+
       <input id="loginEmail" type="email" autocomplete="email" required>
+
     </div><br>
+
     <div class="field">
+
       <label>Password</label>
+
       <input id="loginPassword" type="password" autocomplete="current-password" required>
+
     </div><br>
+
     <button type="submit" class="btn dark" style="width:100%">Sign In</button>
+
   </form>
+
   <div id="loginMsg"></div>
+
 </div>
 
+
+
 <div id="adminView" class="hidden">
+
   <header class="top">
+
     <div class="wrap">
+
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+
         <div>
+
           <h2 style="margin:0;font-size:22px">Smartly Operations Control</h2>
+
           <small style="opacity:0.8">Beirut Local Timezone: GMT+3</small>
+
         </div>
+
         <button class="btn danger" onclick="logout()">Sign Out</button>
+
       </div>
+
     </div>
+
   </header>
+
   <div class="wrap">
+
     <div class="tabs" id="tabs"></div>
+
     <div id="app"></div>
+
   </div>
+
 </div>
+
+
 
 <div id="modalContainer" class="hidden"></div>
 
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+
 const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
+
 const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
+
+
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+
+
 const COUNTRY_LIST = [
+
   { code: 'LB', name: 'Lebanon' }, { code: 'SY', name: 'Syria' },
+
   { code: 'JO', name: 'Jordan' }, { code: 'AE', name: 'United Arab Emirates' },
+
   { code: 'SA', name: 'Saudi Arabia' }, { code: 'EG', name: 'Egypt' },
+
   { code: 'QA', name: 'Qatar' }, { code: 'KW', name: 'Kuwait' },
+
   { code: 'BH', name: 'Bahrain' }, { code: 'OM', name: 'Oman' },
+
   { code: 'IQ', name: 'Iraq' }, { code: 'PS', name: 'Palestine' },
+
   { code: 'TR', name: 'Turkey' }, { code: 'US', name: 'United States' },
+
   { code: 'GB', name: 'United Kingdom' }, { code: 'CA', name: 'Canada' },
+
   { code: 'FR', name: 'France' }, { code: 'DE', name: 'Germany' }
+
 ];
+
+
 
 let current = 'dashboard', categories = [], countries = [];
+
 let editingId = null;
 
+
+
 const tabs = [
+
   ['dashboard','Dashboard'],
+
   ['orders','Orders'],
+
   ['products','Products'],
+
   ['categories','Categories'],
+
   ['countries','Countries'],
+
   ['delivery','Delivery Fees'],
+
   ['bundles','Bundles & Offers'],
+
   ['natural','Natural Products'],
+
   ['payments','Payment Methods'],
+
   ['reservations','Reservations'],
+
   ['reviews','Reviews'],
+
   ['special','Special Requests'],
+
   ['customers','Customers'],
+
   ['settings','Settings']
+
 ];
 
+
+
 function esc(v){ return String(v??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+
 function msg(text, error=false){ return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`; }
 
+
+
 function formatLebanonTime(isoString){
+
   if(!isoString) return '—';
+
   try {
+
     const d = new Date(isoString);
+
     return d.toLocaleString('en-GB', {
+
       timeZone: 'Asia/Beirut',
+
       year: 'numeric',
+
       month: '2-digit',
+
       day: '2-digit',
+
       hour: '2-digit',
+
       minute: '2-digit',
+
       hour12: true
+
     });
+
   } catch(e) {
+
     return isoString;
+
   }
+
 }
+
+
 
 window.addEventListener('DOMContentLoaded', guard);
 
+
+
 async function guard(){
+
   try {
+
     const s = await sb.auth.getSession();
+
     if(!s.data?.session) return;
+
     const a = await sb.rpc('is_admin');
+
     if(!a.error && a.data === true) showAdmin();
+
   } catch(e) {
+
     console.warn('Auth guard check non-critical failure:', e);
+
   }
+
 }
+
+
 
 async function login(){
+
   const email = loginEmail.value.trim();
+
   const password = loginPassword.value;
+
   if(!email || !password) return loginMsg.innerHTML = msg('Email and password required.', true);
+
   const r = await sb.auth.signInWithPassword({email, password});
+
   if(r.error) return loginMsg.innerHTML = msg(r.error.message, true);
+
   const a = await sb.rpc('is_admin');
+
   if(a.error || a.data !== true){
+
     await sb.auth.signOut();
+
     return loginMsg.innerHTML = msg('Access denied. Administrator privilege required.', true);
+
   }
+
   showAdmin();
+
 }
+
+
 
 async function logout(){
+
   await sb.auth.signOut();
+
   location.reload();
+
 }
+
+
 
 function showAdmin(){
+
   loginView.classList.add('hidden');
+
   adminView.classList.remove('hidden');
+
   renderTabs();
+
   show('dashboard');
+
 }
+
+
 
 function renderTabs(){
+
   document.getElementById('tabs').innerHTML = tabs.map(x => `<button class="tab ${current===x[0]?'active':''}" onclick="show('${x[0]}')">${x[1]}</button>`).join('');
+
 }
+
+
 
 function show(t){
+
   current = t;
+
   editingId = null;
+
   renderTabs();
+
   if(t==='dashboard') return dashboard();
+
   if(t==='products'||t==='natural') return productsPage(t==='natural');
+
   if(t==='categories') return categoriesPage();
+
   if(t==='countries') return countriesPage();
+
   if(t==='delivery') return deliveryFeesPage();
+
   if(t==='bundles') return bundlesPage();
+
   if(t==='payments') return paymentsPage();
+
   if(t==='orders') return ordersPage();
+
   if(t==='reservations') return reservationsPage();
+
   if(t==='reviews') return reviewsPage();
+
   if(t==='special') return specialPage();
+
   if(t==='customers') return customersPage();
+
   if(t==='settings') return settingsPage();
+
 }
+
+
 
 function renderHeader(title, subtitle=''){
+
   return `
+
     <div class="panel-header">
+
       <div>
+
         <h2 class="panel-title">${title}</h2>
+
         ${subtitle ? `<small class="muted">${subtitle}</small>` : ''}
+
       </div>
+
       <button class="btn outline" onclick="show('${current}')">🔄 Refresh Data</button>
+
     </div>`;
+
 }
+
+
 
 function formField(id, label, type='text', extra=''){
+
   return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" ${extra}></div>`;
+
 }
 
+
+
 // ------------------------------------------------------------------
+
 // DASHBOARD (BI ANALYTICS)
+
 // ------------------------------------------------------------------
+
 async function dashboard(){
+
   const app = document.getElementById('app');
+
   app.innerHTML = `<div class="panel">${renderHeader('Executive Dashboard', 'Real-time sales & operational metrics')}<p class="muted">Calculating store statistics...</p></div>`;
 
+
+
   const [pRes, oRes, rRes, sRes, itemsRes] = await Promise.all([
+
     sb.from('products').select('id, name_en, retail_price, category_id, stock_quantity'),
+
     sb.from('orders').select('id, total, status, created_at'),
+
     sb.from('reservations').select('id', {count:'exact'}),
+
     sb.from('special_requests').select('id', {count:'exact'}),
+
     sb.from('order_items').select('product_id, quantity, unit_price')
+
   ]);
 
+
+
   const orders = oRes.data || [];
+
   const products = pRes.data || [];
+
   const orderItems = itemsRes.data || [];
 
+
+
   const totalGrossRevenue = orders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+
   const completedOrders = orders.filter(o => o.status === 'completed');
+
   const completedRevenue = completedOrders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+
   const avgOrderValue = orders.length ? (totalGrossRevenue / orders.length) : 0;
 
+
+
   // Product sales velocity
+
   const productSalesMap = {};
+
   orderItems.forEach(item => {
+
     productSalesMap[item.product_id] = (productSalesMap[item.product_id] || 0) + (item.quantity || 1);
+
   });
 
+
+
   const topProducts = products
+
     .map(p => ({ name: p.name_en || 'Product', sales: productSalesMap[p.id] || 0 }))
+
     .sort((a,b) => b.sales - a.sales)
+
     .slice(0, 5);
+
+
 
   const maxSales = Math.max(...topProducts.map(p => p.sales), 1);
 
+
+
   // Status distribution
+
   const statusCounts = orders.reduce((acc, o) => {
+
     acc[o.status] = (acc[o.status] || 0) + 1;
+
     return acc;
+
   }, {});
 
+
+
   app.innerHTML = `
+
     <div class="panel">${renderHeader('Executive Business Intelligence', 'Live telemetry & performative analytics')}</div>
+
     <div class="statgrid">
+
       <div class="stat"><span>Gross Revenue</span><b>$${totalGrossRevenue.toFixed(2)}</b></div>
+
       <div class="stat"><span>Completed Revenue</span><b>$${completedRevenue.toFixed(2)}</b></div>
+
       <div class="stat"><span>Average Order Value</span><b>$${avgOrderValue.toFixed(2)}</b></div>
+
       <div class="stat"><span>Total Orders</span><b>${orders.length}</b></div>
+
       <div class="stat"><span>Pending Inquiries</span><b>${(rRes.count || 0) + (sRes.count || 0)}</b></div>
+
     </div>
+
+
 
     <div class="bi-grid">
-      <div class="panel">
-        <h3 style="margin-top:0;color:#123B5D">Top Selling Products</h3>
-        ${topProducts.length ? topProducts.map(tp => `
-          <div style="margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600">
-              <span>${esc(tp.name)}</span>
-              <span>${tp.sales} units sold</span>
-            </div>
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill" style="width:${(tp.sales/maxSales)*100}%"></div>
-            </div>
-          </div>
-        `).join('') : '<p class="muted">No sales data recorded yet.</p>'}
-      </div>
 
       <div class="panel">
-        <h3 style="margin-top:0;color:#123B5D">Order Pipeline Status</h3>
-        <ul style="list-style:none;padding:0;margin:0">
-          ${['pending','confirmed','preparing','out_for_delivery','completed','cancelled'].map(st => `
-            <li style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9">
-              <span class="status-pill status-${st}">${st.replace(/_/g,' ')}</span>
-              <b>${statusCounts[st] || 0} orders</b>
-            </li>
-          `).join('')}
-        </ul>
+
+        <h3 style="margin-top:0;color:#123B5D">Top Selling Products</h3>
+
+        ${topProducts.length ? topProducts.map(tp => `
+
+          <div style="margin-bottom:14px">
+
+            <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600">
+
+              <span>${esc(tp.name)}</span>
+
+              <span>${tp.sales} units sold</span>
+
+            </div>
+
+            <div class="progress-bar-bg">
+
+              <div class="progress-bar-fill" style="width:${(tp.sales/maxSales)*100}%"></div>
+
+            </div>
+
+          </div>
+
+        `).join('') : '<p class="muted">No sales data recorded yet.</p>'}
+
       </div>
+
+
+
+      <div class="panel">
+
+        <h3 style="margin-top:0;color:#123B5D">Order Pipeline Status</h3>
+
+        <ul style="list-style:none;padding:0;margin:0">
+
+          ${['pending','confirmed','preparing','out_for_delivery','completed','cancelled'].map(st => `
+
+            <li style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9">
+
+              <span class="status-pill status-${st}">${st.replace(/_/g,' ')}</span>
+
+              <b>${statusCounts[st] || 0} orders</b>
+
+            </li>
+
+          `).join('')}
+
+        </ul>
+
+      </div>
+
     </div>
+
   `;
+
 }
 
+
+
 // ------------------------------------------------------------------
+
 // ORDERS MANAGEMENT & BILLING
+
 // ------------------------------------------------------------------
+
 async function ordersPage(){
+
   const app = document.getElementById('app');
+
   app.innerHTML = `<div class="panel">${renderHeader('Customer Orders Hub', 'Manage fulfillment, restock on cancel & track billing')}<div id="table">Loading orders...</div></div>`;
 
+
+
   const r = await sb.from('orders').select('*, order_items(*)').order('created_at', {ascending:false}).limit(200);
+
   const tableEl = document.getElementById('table');
+
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
+
+
   tableEl.innerHTML = `
+
     <div class="table-wrap">
+
       <table class="table">
+
         <tr>
+
           <th>Order #</th>
+
           <th>Customer</th>
+
           <th>Phone</th>
+
           <th>Items Qt.</th>
+
           <th>Subtotal</th>
+
           <th>Delivery Fee</th>
+
           <th>Total Bill</th>
+
           <th>Status</th>
+
           <th>Created Date/Time (LB)</th>
+
           <th>Actions</th>
+
         </tr>
+
         ${(r.data||[]).map(x => {
+
           const items = x.order_items || [];
+
           const totalQty = items.reduce((sum, i) => sum + (Number(i.quantity) || 1), 0);
+
           const deliveryFee = Number(x.delivery_fee || 0);
+
           const totalBill = Number(x.total || 0);
+
           const subtotal = Math.max(0, totalBill - deliveryFee);
 
+
+
           return `
+
             <tr>
+
               <td><b>${esc(x.order_number || x.id.slice(0,8))}</b></td>
+
               <td>${esc(x.name)}</td>
+
               <td>${esc(x.phone)}</td>
+
               <td><b style="color:#159A9C">${totalQty}</b></td>
+
               <td>$${subtotal.toFixed(2)}</td>
+
               <td>+$${deliveryFee.toFixed(2)}</td>
+
               <td><b style="color:#123B5D">$${totalBill.toFixed(2)}</b></td>
+
               <td>
+
                 <select onchange="handleOrderStatusChange('${esc(x.id)}', '${esc(x.status)}', this.value)">
+
                   <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+
                   <option value="confirmed" ${x.status==='confirmed'?'selected':''}>Confirmed</option>
+
                   <option value="preparing" ${x.status==='preparing'?'selected':''}>Preparing</option>
+
                   <option value="out_for_delivery" ${x.status==='out_for_delivery'?'selected':''}>Out for Delivery</option>
+
                   <option value="completed" ${x.status==='completed'?'selected':''}>Completed</option>
+
                   <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+
                 </select>
+
               </td>
+
               <td><small>${formatLebanonTime(x.created_at)}</small></td>
+
               <td><button class="btn dark" onclick="viewOrderDetails('${esc(x.id)}')">Invoice / Details</button></td>
+
             </tr>`;
+
         }).join('')}
+
       </table>
+
     </div>`;
+
 }
+
+
 
 async function handleOrderStatusChange(orderId, oldStatus, newStatus){
+
   if(oldStatus === newStatus) return;
 
+
+
   const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
+
   if(r.error) return alert('Failed to update order status: ' + r.error.message);
 
+
+
   // Auto Inventory Stock Restoration on Cancellation
+
   if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
+
     await adjustOrderInventory(orderId, 'restock');
+
   } else if(oldStatus === 'cancelled' && newStatus !== 'cancelled'){
+
     await adjustOrderInventory(orderId, 'deduct');
+
   }
+
+
 
   ordersPage();
+
 }
+
+
 
 async function adjustOrderInventory(orderId, mode){
+
   const itemsRes = await sb.from('order_items').select('product_id, quantity').eq('order_id', orderId);
+
   if(itemsRes.error || !itemsRes.data) return;
 
+
+
   for(const item of itemsRes.data){
+
     if(!item.product_id) continue;
+
     const prodRes = await sb.from('products').select('stock_quantity').eq('id', item.product_id).single();
+
     if(prodRes.data){
+
       let currentStock = Number(prodRes.data.stock_quantity || 0);
+
       let qty = Number(item.quantity || 1);
+
       let updatedStock = (mode === 'restock') ? (currentStock + qty) : Math.max(0, currentStock - qty);
+
       await sb.from('products').update({ stock_quantity: updatedStock }).eq('id', item.product_id);
+
     }
+
   }
+
 }
+
+
 
 async function viewOrderDetails(orderId){
+
   const [oRes, iRes] = await Promise.all([
+
     sb.from('orders').select('*').eq('id', orderId).single(),
+
     sb.from('order_items').select('*, products(name_en)').eq('order_id', orderId)
+
   ]);
 
+
+
   if(oRes.error) return alert(oRes.error.message);
+
   const o = oRes.data;
+
   const items = iRes.data || [];
+
   const deliveryFee = Number(o.delivery_fee || 0);
+
   const total = Number(o.total || 0);
+
   const subtotal = Math.max(0, total - deliveryFee);
 
+
+
   const modal = document.getElementById('modalContainer');
+
   modal.classList.remove('hidden');
+
   modal.innerHTML = `
+
     <div class="modal">
+
       <div class="modal-content">
+
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px">
+
           <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||o.id.slice(0,8))}</h3>
+
           <button class="btn danger" onclick="closeModal()">Close</button>
+
         </div>
+
         <p><b>Customer Name:</b> ${esc(o.name)}</p>
+
         <p><b>Phone:</b> ${esc(o.phone)} | <b>Alt:</b> ${esc(o.alternative_phone||'N/A')}</p>
+
         <p><b>Delivery Address:</b> ${esc(o.address || o.location || 'N/A')}</p>
+
         <p><b>Date Ordered (Lebanon):</b> ${formatLebanonTime(o.created_at)}</p>
 
+
+
         <h4 style="margin-top:20px;border-bottom:1px solid #eee;padding-bottom:6px">Line Items</h4>
+
         <table class="table" style="min-width:100%">
+
           <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+
           ${items.map(it => `
+
             <tr>
+
               <td>${esc(it.products?.name_en || it.product_name || 'Product')}</td>
+
               <td>${it.quantity}</td>
+
               <td>$${Number(it.unit_price || it.price || 0).toFixed(2)}</td>
+
               <td>$${(Number(it.quantity||1)*Number(it.unit_price || it.price || 0)).toFixed(2)}</td>
+
             </tr>
+
           `).join('')}
+
         </table>
 
+
+
         <div style="margin-top:16px;text-align:right;background:#f8fafc;padding:12px;border-radius:8px">
+
           <p style="margin:4px 0">Subtotal: <b>$${subtotal.toFixed(2)}</b></p>
+
           <p style="margin:4px 0">Delivery Fee: <b>+$${deliveryFee.toFixed(2)}</b></p>
+
           <h3 style="margin:8px 0 0 0;color:#123B5D">Total Customer Bill: $${total.toFixed(2)}</h3>
+
         </div>
+
       </div>
+
     </div>
- utton>
-        <button class="btn outline" onclick="resetProductForm()">Clear Form</button>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Product List</h3>
-        <input type="text" id="p_search" placeholder="Search products..." oninput="filterProducts()" style="padding:6px 12px;border:1px solid #cbd5e1;border-radius:6px;width:240px">
-      </div>
-      <div id="productTable">Loading catalog...</div>
-    </div>`;
 
-  renderProductList(natural);
+  `;
+
 }
 
-let allProductsCache = [];
 
-async function renderProductList(naturalOnly = false){
-  const tableEl = document.getElementById('productTable');
-  let q = sb.from('products').select('*, categories(name_en)').order('created_at', {ascending: false});
-  if(naturalOnly) q = q.eq('is_natural', true);
-  
-  const r = await q;
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  allProductsCache = r.data || [];
-  displayProductsTable(allProductsCache);
+
+function closeModal(){
+
+  document.getElementById('modalContainer').classList.add('hidden');
+
 }
 
-function displayProductsTable(list){
-  const tableEl = document.getElementById('productTable');
-  tableEl.innerHTML = `
-    <div class="table-wrap">
-      <table class="table">
-        <tr>
-          <th>Image</th>
-          <th>Name (EN/AR)</th>
-          <th>Category</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th>Status</th>
-          <th>Sort</th>
-          <th>Actions</th>
-        </tr>
-        ${list.map(p => `
-          <tr>
-            <td>
-              ${p.image_url ? `<img src="${esc(p.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '<span class="muted">No img</span>'}
-            </td>
-            <td><b>${esc(p.name_en || '')}</b><br><small class="muted">${esc(p.name_ar || '')}</small></td>
-            <td>${esc(p.categories?.name_en || '—')}</td>
-            <td><b>$${Number(p.retail_price || 0).toFixed(2)}</b></td>
-            <td><span style="color:${(p.stock_quantity||0)<5?'#e11d48':'#15803d'}"><b>${p.stock_quantity ?? 0}</b></span></td>
-            <td><span class="status-pill ${p.is_active?'status-approved':'status-cancelled'}">${p.is_active?'Active':'Hidden'}</span></td>
-            <td>${p.sort_order || 0}</td>
-            <td>
-              <button class="btn outline" onclick="editProduct('${esc(p.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteRow('products','${esc(p.id)}')">Delete</button>
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>`;
-}
 
-function filterProducts(){
-  const term = document.getElementById('p_search')?.value.toLowerCase() || '';
-  const filtered = allProductsCache.filter(p => 
-    (p.name_en && p.name_en.toLowerCase().includes(term)) ||
-    (p.name_ar && p.name_ar.toLowerCase().includes(term))
-  );
-  displayProductsTable(filtered);
-}
-
-async function uploadImage(file, bucket='products'){
-  if(!file) return null;
-  const ext = file.name.split('.').pop();
-  const path = `${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
-  const { data, error } = await sb.storage.from(bucket).upload(path, file);
-  if(error) {
-    alert('Image upload failed: ' + error.message);
-    return null;
-  }
-  const publicUrlRes = sb.storage.from(bucket).getPublicUrl(path);
-  return publicUrlRes.data.publicUrl;
-}
-
-async function saveProduct(){
-  const msgEl = document.getElementById('productMsg');
-  const fileInput = document.getElementById('p_image');
-  let imageUrl = null;
-
-  if(fileInput && fileInput.files.length > 0){
-    imageUrl = await uploadImage(fileInput.files[0], 'products');
-  }
-
-  const payload = {
-    name_en: p_name_en.value.trim(),
-    name_ar: p_name_ar.value.trim(),
-    category_id: p_category.value || null,
-    description_en: p_desc_en.value.trim(),
-    description_ar: p_desc_ar.value.trim(),
-    retail_price: parseFloat(p_price.value || 0),
-    stock_quantity: parseInt(p_stock.value || 0, 10),
-    sort_order: parseInt(p_sort.value || 0, 10),
-    is_active: p_active.value === 'true',
-    is_natural: p_natural.value === 'true'
-  };
-
-  if(imageUrl) payload.image_url = imageUrl;
-
-  if(!payload.name_en) return msgEl.innerHTML = msg('Product name (English) is required.', true);
-
-  saveBtn.disabled = true;
-  let res;
-  if(editingId){
-    res = await sb.from('products').update(payload).eq('id', editingId);
-  } else {
-    res = await sb.from('products').insert(payload);
-  }
-  saveBtn.disabled = false;
-
-  if(res.error){
-    msgEl.innerHTML = msg(res.error.message, true);
-  } else {
-    msgEl.innerHTML = msg('Product saved successfully!');
-    resetProductForm();
-    renderProductList(current === 'natural');
-  }
-}
-
-function editProduct(id){
-  const p = allProductsCache.find(x => x.id === id);
-  if(!p) return;
-  editingId = p.id;
-  p_name_en.value = p.name_en || '';
-  p_name_ar.value = p.name_ar || '';
-  p_category.value = p.category_id || '';
-  p_desc_en.value = p.description_en || '';
-  p_desc_ar.value = p.description_ar || '';
-  p_price.value = p.retail_price || 0;
-  p_stock.value = p.stock_quantity || 0;
-  p_sort.value = p.sort_order || 0;
-  p_active.value = p.is_active ? 'true' : 'false';
-  p_natural.value = p.is_natural ? 'true' : 'false';
-  saveBtn.textContent = 'Update Product';
-  window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-function resetProductForm(){
-  editingId = null;
-  p_name_en.value = '';
-  p_name_ar.value = '';
-  p_category.value = '';
-  p_desc_en.value = '';
-  p_desc_ar.value = '';
-  p_price.value = '';
-  p_stock.value = '';
-  p_sort.value = '0';
-  p_active.value = 'true';
-  p_image.value = '';
-  saveBtn.textContent = 'Save Product';
-}
 
 // ------------------------------------------------------------------
-// CATEGORIES
+
+// REVIEWS WITH APPROVAL WORKFLOW
+
 // ------------------------------------------------------------------
-async function categoriesPage(){
-  editingId = null;
+
+async function reviewsPage(){
+
   const app = document.getElementById('app');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Categories Management')}
-      <div id="catMsg"></div>
-      <div class="grid">
-        ${formField('c_name_en','Name EN')}${formField('c_name_ar','Name AR')}
-        ${formField('c_sort','Sort Order','number','value="0"')}
-        <div class="field"><label>Category Image</label><input id="c_image" type="file" accept="image/*"></div>
-      </div><br>
-      <div class="actions">
-        <button class="btn" id="saveCatBtn" onclick="saveCategory()">Save Category</button>
-        <button class="btn outline" onclick="resetCatForm()">Clear</button>
-      </div>
-    </div>
-    <div class="panel">
-      <h3 class="panel-title" style="margin-bottom:12px">Existing Categories</h3>
-      <div id="catTable">Loading categories...</div>
-    </div>`;
 
-  renderCategoriesList();
-}
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Reviews Moderation', 'Approve comments prior to storefront display')}<div id="table">Loading reviews...</div></div>`;
 
-let categoriesCache = [];
 
-async function renderCategoriesList(){
-  const tableEl = document.getElementById('catTable');
-  const r = await sb.from('categories').select('*').order('sort_order');
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  categoriesCache = r.data || [];
 
-  tableEl.innerHTML = `
-    <div class="table-wrap">
-      <table class="table">
-        <tr>
-          <th>Image</th>
-          <th>Name EN</th>
-          <th>Name AR</th>
-          <th>Sort Order</th>
-          <th>Actions</th>
-        </tr>
-        ${categoriesCache.map(c => `
-          <tr>
-            <td>${c.image_url ? `<img src="${esc(c.image_url)}" style="width:36px;height:36px;object-fit:cover;border-radius:4px">` : '—'}</td>
-            <td><b>${esc(c.name_en || '')}</b></td>
-            <td>${esc(c.name_ar || '')}</td>
-            <td>${c.sort_order || 0}</td>
-            <td>
-              <button class="btn outline" onclick="editCategory('${esc(c.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteRow('categories','${esc(c.id)}')">Delete</button>
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>`;
-}
+  const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
 
-async function saveCategory(){
-  const msgEl = document.getElementById('catMsg');
-  const fileInput = document.getElementById('c_image');
-  let imageUrl = null;
-
-  if(fileInput && fileInput.files.length > 0){
-    imageUrl = await uploadImage(fileInput.files[0], 'categories');
-  }
-
-  const payload = {
-    name_en: c_name_en.value.trim(),
-    name_ar: c_name_ar.value.trim(),
-    sort_order: parseInt(c_sort.value || 0, 10)
-  };
-
-  if(imageUrl) payload.image_url = imageUrl;
-  if(!payload.name_en) return msgEl.innerHTML = msg('English name required.', true);
-
-  saveCatBtn.disabled = true;
-  let res = editingId ? await sb.from('categories').update(payload).eq('id', editingId) : await sb.from('categories').insert(payload);
-  saveCatBtn.disabled = false;
-
-  if(res.error) msgEl.innerHTML = msg(res.error.message, true);
-  else {
-    msgEl.innerHTML = msg('Category saved.');
-    resetCatForm();
-    renderCategoriesList();
-  }
-}
-
-function editCategory(id){
-  const c = categoriesCache.find(x => x.id === id);
-  if(!c) return;
-  editingId = c.id;
-  c_name_en.value = c.name_en || '';
-  c_name_ar.value = c.name_ar || '';
-  c_sort.value = c.sort_order || 0;
-  saveCatBtn.textContent = 'Update Category';
-}
-
-function resetCatForm(){
-  editingId = null;
-  c_name_en.value = '';
-  c_name_ar.value = '';
-  c_sort.value = '0';
-  if(document.getElementById('c_image')) c_image.value = '';
-  saveCatBtn.textContent = 'Save Category';
-}
-
-// ------------------------------------------------------------------
-// COUNTRIES
-// ------------------------------------------------------------------
-async function countriesPage(){
-  editingId = null;
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Regional Countries & Markets')}
-      <div id="countryMsg"></div>
-      <div class="grid">
-        ${formField('co_name','Country Name')}
-        ${formField('co_code','Country Code (ISO 2)','text','placeholder="e.g. LB"')}
-        ${formField('co_sort','Sort Order','number','value="0"')}
-        <div class="field"><label>Active Status</label><select id="co_active"><option value="true">Active</option><option value="false">Inactive</option></select></div>
-      </div><br>
-      <div class="actions">
-        <button class="btn" id="saveCoBtn" onclick="saveCountry()">Save Country</button>
-        <button class="btn outline" onclick="resetCountryForm()">Clear</button>
-      </div>
-    </div>
-    <div class="panel">
-      <h3 class="panel-title" style="margin-bottom:12px">Configured Countries</h3>
-      <div id="countryTable">Loading countries...</div>
-    </div>`;
-
-  renderCountriesList();
-}
-
-let countriesCache = [];
-
-async function renderCountriesList(){
-  const tableEl = document.getElementById('countryTable');
-  const r = await sb.from('countries').select('*').order('sort_order');
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  countriesCache = r.data || [];
-
-  tableEl.innerHTML = `
-    <div class="table-wrap">
-      <table class="table">
-        <tr>
-          <th>Country Code</th>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Sort Order</th>
-          <th>Actions</th>
-        </tr>
-        ${countriesCache.map(co => `
-          <tr>
-            <td><b style="color:#159A9C">${esc(co.country_code || '—')}</b></td>
-            <td><b>${esc(co.name || '')}</b></td>
-            <td><span class="status-pill ${co.is_active?'status-approved':'status-cancelled'}">${co.is_active?'Active':'Inactive'}</span></td>
-            <td>${co.sort_order || 0}</td>
-            <td>
-              <button class="btn outline" onclick="editCountry('${esc(co.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteRow('countries','${esc(co.id)}')">Delete</button>
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>`;
-}
-
-async function saveCountry(){
-  const msgEl = document.getElementById('countryMsg');
-  const payload = {
-    name: co_name.value.trim(),
-    country_code: co_code.value.trim().toUpperCase(),
-    sort_order: parseInt(co_sort.value || 0, 10),
-    is_active: co_active.value === 'true'
-  };
-
-  if(!payload.name || !payload.country_code) return msgEl.innerHTML = msg('Name and 2-letter Country Code are required.', true);
-
-  saveCoBtn.disabled = true;
-  let res = editingId ? await sb.from('countries').update(payload).eq('id', editingId) : await sb.from('countries').insert(payload);
-  saveCoBtn.disabled = false;
-
-  if(res.error) msgEl.innerHTML = msg(res.error.message, true);
-  else {
-    msgEl.innerHTML = msg('Country saved successfully.');
-    resetCountryForm();
-    renderCountriesList();
-  }
-}
-
-function editCountry(id){
-  const co = countriesCache.find(x => x.id === id);
-  if(!co) return;
-  editingId = co.id;
-  co_name.value = co.name || '';
-  co_code.value = co.country_code || '';
-  co_sort.value = co.sort_order || 0;
-  co_active.value = co.is_active ? 'true' : 'false';
-  saveCoBtn.textContent = 'Update Country';
-}
-
-function resetCountryForm(){
-  editingId = null;
-  co_name.value = '';
-  co_code.value = '';
-  co_sort.value = '0';
-  co_active.value = 'true';
-  saveCoBtn.textContent = 'Save Country';
-}
-
-// ------------------------------------------------------------------
-// DELIVERY FEES
-// ------------------------------------------------------------------
-async function deliveryFeesPage(){
-  await loadRefs();
-  editingId = null;
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Delivery & Logistics Pricing Matrix')}
-      <div id="delMsg"></div>
-      <div class="grid">
-        <div class="field"><label>Country</label><select id="d_country">${countries.map(c=>`<option value="${esc(c.id)}">${esc(c.name)} (${esc(c.country_code)})</option>`).join('')}</select></div>
-        ${formField('d_area','Area / Region Name','text','placeholder="e.g. Greater Beirut or Regional"')}
-        ${formField('d_fee','Delivery Fee ($)','number','step="0.01"')}
-        ${formField('d_est','Estimated Delivery Time','text','placeholder="e.g. 24-48 Hours"')}
-      </div><br>
-      <div class="actions">
-        <button class="btn" id="saveDelBtn" onclick="saveDeliveryFee()">Save Logistics Fee</button>
-        <button class="btn outline" onclick="resetDelForm()">Clear</button>
-      </div>
-    </div>
-    <div class="panel">
-      <h3 class="panel-title" style="margin-bottom:12px">Configured Shipping Zones</h3>
-      <div id="delTable">Loading fees...</div>
-    </div>`;
-
-  renderDeliveryList();
-}
-
-let deliveryCache = [];
-
-async function renderDeliveryList(){
-  const tableEl = document.getElementById('delTable');
-  const r = await sb.from('delivery_fees').select('*, countries(name)').order('created_at', {ascending:false});
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  deliveryCache = r.data || [];
-
-  tableEl.innerHTML = `
-    <div class="table-wrap">
-      <table class="table">
-        <tr>
-          <th>Country</th>
-          <th>Area / Region</th>
-          <th>Fee ($)</th>
-          <th>Est. Delivery Time</th>
-          <th>Actions</th>
-        </tr>
-        ${deliveryCache.map(d => `
-          <tr>
-            <td><b>${esc(d.countries?.name || '—')}</b></td>
-            <td>${esc(d.area_name || 'Standard Area')}</td>
-            <td><b style="color:#123B5D">$${Number(d.fee || 0).toFixed(2)}</b></td>
-            <td><small>${esc(d.estimated_time || '1-3 Days')}</small></td>
-            <td>
-              <button class="btn outline" onclick="editDelivery('${esc(d.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteRow('delivery_fees','${esc(d.id)}')">Delete</button>
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>`;
-}
-
-async function saveDeliveryFee(){
-  const msgEl = document.getElementById('delMsg');
-  const payload = {
-    country_id: d_country.value,
-    area_name: d_area.value.trim(),
-    fee: parseFloat(d_fee.value || 0),
-    estimated_time: d_est.value.trim()
-  };
-
-  if(!payload.country_id) return msgEl.innerHTML = msg('Please select a country.', true);
-
-  saveDelBtn.disabled = true;
-  let res = editingId ? await sb.from('delivery_fees').update(payload).eq('id', editingId) : await sb.from('delivery_fees').insert(payload);
-  saveDelBtn.disabled = false;
-
-  if(res.error) msgEl.innerHTML = msg(res.error.message, true);
-  else {
-    msgEl.innerHTML = msg('Delivery fee configured.');
-    resetDelForm();
-    renderDeliveryList();
-  }
-}
-
-function editDelivery(id){
-  const d = deliveryCache.find(x => x.id === id);
-  if(!d) return;
-  editingId = d.id;
-  d_country.value = d.country_id || '';
-  d_area.value = d.area_name || '';
-  d_fee.value = d.fee || 0;
-  d_est.value = d.estimated_time || '';
-  saveDelBtn.textContent = 'Update Fee';
-}
-
-function resetDelForm(){
-  editingId = null;
-  d_area.value = '';
-  d_fee.value = '';
-  d_est.value = '';
-  saveDelBtn.textContent = 'Save Logistics Fee';
-}
-
-// ------------------------------------------------------------------
-// BUNDLES & OFFERS
-// ------------------------------------------------------------------
-async function bundlesPage(){
-  editingId = null;
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Bundles & Promotional Offers')}
-      <div id="bundleMsg"></div>
-      <div class="grid">
-        ${formField('b_title_en','Bundle Title EN')}${formField('b_title_ar','Bundle Title AR')}
-        ${formField('b_price','Discounted Bundle Price ($)','number','step="0.01"')}
-        ${formField('b_orig','Original Price ($)','number','step="0.01"')}
-        ${formField('b_desc_en','Description EN')}${formField('b_desc_ar','Description AR')}
-        <div class="field"><label>Banner / Image</label><input id="b_image" type="file" accept="image/*"></div>
-        <div class="field"><label>Is Featured</label><select id="b_featured"><option value="true">Yes</option><option value="false">No</option></select></div>
-      </div><br>
-      <div class="actions">
-        <button class="btn" id="saveBundleBtn" onclick="saveBundle()">Save Promotional Offer</button>
-        <button class="btn outline" onclick="resetBundleForm()">Clear Form</button>
-      </div>
-    </div>
-    <div class="panel">
-      <h3 class="panel-title" style="margin-bottom:12px">Active Bundles & Offers</h3>
-      <div id="bundleTable">Loading bundles...</div>
-    </div>`;
-
-  renderBundlesList();
-}
-
-let bundlesCache = [];
-
-async function renderBundlesList(){
-  const tableEl = document.getElementById('bundleTable');
-  const r = await sb.from('bundles').select('*').order('created_at', {ascending:false});
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  bundlesCache = r.data || [];
-
-  tableEl.innerHTML = `
-    <div class="table-wrap">
-      <table class="table">
-        <tr>
-          <th>Banner</th>
-          <th>Offer Title</th>
-          <th>Promo Price</th>
-          <th>Original Value</th>
-          <th>Featured</th>
-          <th>Actions</th>
-        </tr>
-        ${bundlesCache.map(b => `
-          <tr>
-            <td>${b.image_url ? `<img src="${esc(b.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
-            <td><b>${esc(b.title_en || '')}</b><br><small class="muted">${esc(b.title_ar || '')}</small></td>
-            <td><b style="color:#15803d">$${Number(b.price || 0).toFixed(2)}</b></td>
-            <td><s class="muted">$${Number(b.original_price || 0).toFixed(2)}</s></td>
-            <td><span class="status-pill ${b.is_featured?'status-approved':'status-pending'}">${b.is_featured?'Featured':'Standard'}</span></td>
-            <td>
-              <button class="btn outline" onclick="editBundle('${esc(b.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteRow('bundles','${esc(b.id)}')">Delete</button>
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>`;
-}
-
-async function saveBundle(){
-  const msgEl = document.getElementById('bundleMsg');
-  const fileInput = document.getElementById('b_image');
-  let imageUrl = null;
-
-  if(fileInput && fileInput.files.length > 0){
-    imageUrl = await uploadImage(fileInput.files[0], 'bundles');
-  }
-
-  const payload = {
-    title_en: b_title_en.value.trim(),
-    title_ar: b_title_ar.value.trim(),
-    price: parseFloat(b_price.value || 0),
-    original_price: parseFloat(b_orig.value || 0),
-    description_en: b_desc_en.value.trim(),
-    description_ar: b_desc_ar.value.trim(),
-    is_featured: b_featured.value === 'true'
-  };
-
-  if(imageUrl) payload.image_url = imageUrl;
-  if(!payload.title_en) return msgEl.innerHTML = msg('English title required.', true);
-
-  saveBundleBtn.disabled = true;
-  let res = editingId ? await sb.from('bundles').update(payload).eq('id', editingId) : await sb.from('bundles').insert(payload);
-  saveBundleBtn.disabled = false;
-
-  if(res.error) msgEl.innerHTML = msg(res.error.message, true);
-  else {
-    msgEl.innerHTML = msg('Bundle saved successfully.');
-    resetBundleForm();
-    renderBundlesList();
-  }
-}
-
-function editBundle(id){
-  const b = bundlesCache.find(x => x.id === id);
-  if(!b) return;
-  editingId = b.id;
-  b_title_en.value = b.title_en || '';
-  b_title_ar.value = b.title_ar || '';
-  b_price.value = b.price || 0;
-  b_orig.value = b.original_price || 0;
-  b_desc_en.value = b.description_en || '';
-  b_desc_ar.value = b.description_ar || '';
-  b_featured.value = b.is_featured ? 'true' : 'false';
-  saveBundleBtn.textContent = 'Update Offer';
-}
-
-function resetBundleForm(){
-  editingId = null;
-  b_title_en.value = '';
-  b_title_ar.value = '';
-  b_price.value = '';
-  b_orig.value = '';
-  b_desc_en.value = '';
-  b_desc_ar.value = '';
-  if(document.getElementById('b_image')) b_image.value = '';
-  b_featured.value = 'true';
-  saveBundleBtn.textContent = 'Save Promotional Offer';
-}
-
-// ------------------------------------------------------------------
-// PAYMENT METHODS
-// ------------------------------------------------------------------
-async function paymentsPage(){
-  editingId = null;
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <div class="panel">
-      ${renderHeader('Payment Gateways & Options')}
-      <div id="payMsg"></div>
-      <div class="grid">
-        ${formField('pay_name','Payment Gateway Name','text','placeholder="e.g. Cash on Delivery or Wish Money"')}
-        ${formField('pay_code','Gateway Code','text','placeholder="e.g. cod / wish / whish"')}
-        ${formField('pay_instructions','Payment Instructions / Account Info')}
-        <div class="field"><label>Active Status</label><select id="pay_active"><option value="true">Enabled</option><option value="false">Disabled</option></select></div>
-      </div><br>
-      <div class="actions">
-        <button class="btn" id="savePayBtn" onclick="savePaymentMethod()">Save Gateway Option</button>
-        <button class="btn outline" onclick="resetPayForm()">Clear</button>
-      </div>
-    </div>
-    <div class="panel">
-      <h3 class="panel-title" style="margin-bottom:12px">Available Payment Gateways</h3>
-      <div id="payTable">Loading payment methods...</div>
-    </div>`;
-
-  renderPaymentsList();
-}
-
-let paymentsCache = [];
-
-async function renderPaymentsList(){
-  const tableEl = document.getElementById('payTable');
-  const r = await sb.from('payment_methods').select('*').order('created_at', {ascending:false});
-  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-  paymentsCache = r.data || [];
-
-  tableEl.innerHTML = `
-    <div class="table-wrap">
-      <table class="table">
-        <tr>
-          <th>Name</th>
-          <th>Code</th>
-          <th>Instructions</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-        ${paymentsCache.map(p => `
-          <tr>
-            <td><b>${esc(p.name || '')}</b></td>
-            <td><code>${esc(p.code || '—')}</code></td>
-            <td><small class="muted">${esc(p.instructions || 'N/A')}</small></td>
-            <td><span class="status-pill ${p.is_active?'status-approved':'status-cancelled'}">${p.is_active?'Enabled':'Disabled'}</span></td>
-            <td>
-              <button class="btn outline" onclick="editPayment('${esc(p.id)}')">Edit</button>
-              <button class="btn danger" onclick="deleteRow('payment_methods','${esc(p.id)}')">Delete</button>
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>`;
-}
-
-async function savePaymentMethod(){
-  const msgEl = document.getElementById('payMsg');
-  const payload = {
-    name: pay_name.value.trim(),
-    code: pay_code.value.trim().toLowerCase(),
-    instructions: pay_instructions.value.trim(),
-    is_active: pay_active.value === 'true'
-  };
-
-  if(!payload.name) return msgEl.innerHTML = msg('Payment option name required.', true);
-
-  savePayBtn.disabled = true;
-  let res = editingId ? await sb.from('payment_methods').update(payload).eq('id', editingId) : await sb.from('payment_methods').insert(payload);
-  savePayBtn.disabled = false;
-
-  if(res.error) msgEl.innerHTML = msg(res.error.message, true);
-  else {
-    msgEl.innerHTML = msg('Payment gateway updated.');
-    resetPayForm();
-    renderPaymentsList();
-  }
-}
-
-function editPayment(id){
-  const p = paymentsCache.find(x => x.id === id);
-  if(!p) return;
-  editingId = p.id;
-  pay_name.value = p.name || '';
-  pay_code.value = p.code || '';
-  pay_instructions.value = p.instructions || '';
-  pay_active.value = p.is_active ? 'true' : 'false';
-  savePayBtn.textContent = 'Update Option';
-}
-
-function resetPayForm(){
-  editingId = null;
-  pay_name.value = '';
-  pay_code.value = '';
-  pay_instructions.value = '';
-  pay_active.value = 'true';
-  savePayBtn.textContent = 'Save Gateway Option';
-}
-
-// ------------------------------------------------------------------
-// CUSTOMERS DIRECTORY
-// ------------------------------------------------------------------
-async function customersPage(){
-  const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel">${renderHeader('Customer CRM Directory', 'Aggregated customer order history & contacts')}<div id="table">Loading directory...</div></div>`;
-
-  const r = await sb.from('orders').select('name, phone, alternative_phone, address, location, created_at, total');
   const tableEl = document.getElementById('table');
+
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
-  // Group orders by phone number to create customer profiles
-  const customerMap = {};
-  (r.data || []).forEach(o => {
-    const key = o.phone ? o.phone.trim() : 'Unknown';
-    if(!customerMap[key]){
-      customerMap[key] = {
-        name: o.name || 'Anonymous',
-        phone: key,
-        altPhone: o.alternative_phone || '—',
-        address: o.address || o.location || '—',
-        ordersCount: 0,
-        totalSpent: 0,
-        lastOrder: o.created_at
-      };
-    }
-    customerMap[key].ordersCount += 1;
-    customerMap[key].totalSpent += Number(o.total || 0);
-    if(new Date(o.created_at) > new Date(customerMap[key].lastOrder)){
-      customerMap[key].lastOrder = o.created_at;
-    }
-  });
 
-  const customersList = Object.values(customerMap).sort((a,b) => b.totalSpent - a.totalSpent);
 
   tableEl.innerHTML = `
+
     <div class="table-wrap">
+
       <table class="table">
+
         <tr>
+
           <th>Customer Name</th>
-          <th>Primary Phone</th>
-          <th>Alt Phone</th>
-          <th>Primary Address</th>
-          <th>Orders Placed</th>
-          <th>Lifetime Spent</th>
-          <th>Last Active (LB Time)</th>
+
+          <th>Product / Subject</th>
+
+          <th>Rating</th>
+
+          <th>Comment</th>
+
+          <th>Submitted Date (LB)</th>
+
+          <th>Approved</th>
+
+          <th>Moderation Actions</th>
+
         </tr>
-        ${customersList.map(c => `
+
+        ${(r.data||[]).map(x => `
+
           <tr>
-            <td><b>${esc(c.name)}</b></td>
-            <td><a href="tel:${esc(c.phone)}" style="color:#159A9C;text-decoration:none"><b>${esc(c.phone)}</b></a></td>
-            <td>${esc(c.altPhone)}</td>
-            <td style="max-width:200px">${esc(c.address)}</td>
-            <td><b style="color:#123B5D">${c.ordersCount}</b></td>
-            <td><b style="color:#15803d">$${c.totalSpent.toFixed(2)}</b></td>
-            <td><small>${formatLebanonTime(c.lastOrder)}</small></td>
+
+            <td><b>${esc(x.customer_name||'Anonymous')}</b></td>
+
+            <td>${esc(x.product_name||'General')}</td>
+
+            <td>⭐ ${x.rating || 5}/5</td>
+
+            <td style="max-width:250px">${esc(x.comment)}</td>
+
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+
+            <td><span class="status-pill ${x.approved?'status-approved':'status-pending'}">${x.approved?'Approved':'Pending'}</span></td>
+
+            <td>
+
+              <button class="btn ${x.approved?'danger':'success'}" onclick="toggleReviewApproval('${esc(x.id)}', ${!x.approved})">
+
+                ${x.approved?'Unapprove / Hide':'Approve & Post'}
+
+              </button>
+
+              <button class="btn outline" onclick="deleteRow('reviews','${esc(x.id)}')">Delete</button>
+
+            </td>
+
           </tr>
+
         `).join('')}
+
       </table>
+
     </div>`;
+
 }
 
-// ------------------------------------------------------------------
-// GLOBAL UTILS
-// ------------------------------------------------------------------
-async function deleteRow(table, id){
-  if(!confirm(`Are you sure you want to permanently delete this record from ${table}?`)) return;
-  const r = await sb.from(table).delete().eq('id', id);
-  if(r.error) alert('Error deleting record: ' + r.error.message);
-  else show(current);
+
+
+async function toggleReviewApproval(id, newStatus){
+
+  const r = await sb.from('reviews').update({ approved: newStatus }).eq('id', id);
+
+  if(r.error) alert('Error updating approval status: ' + r.error.message);
+
+  else reviewsPage();
+
 }
-</script>
-</body>
-</html>
-</html>
+
+
+
+// ------------------------------------------------------------------
+
+// RESERVATIONS & SPECIAL REQUESTS
+
+// ------------------------------------------------------------------
+
+async function reservationsPage(){
+
+  const app = document.getElementById('app');
+
+  app.innerHTML = `<div class="panel">${renderHeader('Product Reservations', 'Manage upcoming stock reservations')}<div id="table">Loading...</div></div>`;
+
+
+
+  const r = await sb.from('reservations').select('*, products(name_en)').order('created_at', {ascending:false}).limit(200);
+
+  const tableEl = document.getElementById('table');
+
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+
+
+  tableEl.innerHTML = `
+
+    <div class="table-wrap">
+
+      <table class="table">
+
+        <tr>
+
+          <th>Customer Name</th>
+
+          <th>Phone</th>
+
+          <th>Product Reserved</th>
+
+          <th>Quantity</th>
+
+          <th>Status</th>
+
+          <th>Date (LB Time)</th>
+
+          <th>Action</th>
+
+        </tr>
+
+        ${(r.data||[]).map(x => `
+
+          <tr>
+
+            <td><b>${esc(x.name)}</b></td>
+
+            <td>${esc(x.phone)}</td>
+
+            <td>${esc(x.products?.name_en || x.product_id)}</td>
+
+            <td>${x.quantity || 1}</td>
+
+            <td>
+
+              <select onchange="updateRecordStatus('reservations', '${esc(x.id)}', this.value)">
+
+                <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+
+                <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
+
+                <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
+
+                <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+
+              </select>
+
+            </td>
+
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+
+            <td><button class="btn danger" onclick="deleteRow('reservations','${esc(x.id)}')">Delete</button></td>
+
+          </tr>
+
+        `).join('')}
+
+      </table>
+
+    </div>`;
+
+}
+
+
+
+async function specialPage(){
+
+  const app = document.getElementById('app');
+
+  app.innerHTML = `<div class="panel">${renderHeader('Special Requests', 'Inbound custom customer requests')}<div id="table">Loading...</div></div>`;
+
+
+
+  const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
+
+  const tableEl = document.getElementById('table');
+
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+
+
+  tableEl.innerHTML = `
+
+    <div class="table-wrap">
+
+      <table class="table">
+
+        <tr>
+
+          <th>Customer Name</th>
+
+          <th>Phone</th>
+
+          <th>Country</th>
+
+          <th>Requested Item</th>
+
+          <th>Status</th>
+
+          <th>Date (LB Time)</th>
+
+          <th>Action</th>
+
+        </tr>
+
+        ${(r.data||[]).map(x => `
+
+          <tr>
+
+            <td><b>${esc(x.name)}</b></td>
+
+            <td>${esc(x.phone)}</td>
+
+            <td>${esc(x.country || 'Lebanon')}</td>
+
+            <td>${esc(x.item || x.request_details)}</td>
+
+            <td>
+
+              <select onchange="updateRecordStatus('special_requests', '${esc(x.id)}', this.value)">
+
+                <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+
+                <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
+
+                <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
+
+                <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+
+              </select>
+
+            </td>
+
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+
+            <td><button class="btn danger" onclick="deleteRow('special_requests','${esc(x.id)}')">Delete</button></td>
+
+          </tr>
+
+        `).join('')}
+
+      </table>
+
+    </div>`;
+
+}
+
+
+
+async function updateRecordStatus(table, id, status){
+
+  const r = await sb.from(table).update({ status }).eq('id', id);
+
+  if(r.error) alert('Failed to update status: ' + r.error.message);
+
+}
+
+
+
+// ------------------------------------------------------------------
+
+// SETTINGS
+
+// ------------------------------------------------------------------
+
+async function settingsPage(){
+
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+
+    <div class="panel">
+
+      ${renderHeader('Store System Settings & Preferences', 'Configure administrative defaults & maintenance controls')}
+
+      <div id="settingsMsg"></div>
+
+      <div class="grid">
+
+        ${formField('s_store_name', 'Store Front Name', 'text', 'value="Smartly Lebanon"')}
+
+        ${formField('s_currency', 'Store Currency Symbol', 'text', 'value="$"')}
+
+        ${formField('s_phone', 'Support WhatsApp Hotline', 'text', 'value="9613080365"')}
+
+        ${formField('s_tax', 'VAT / Tax Percentage (%)', 'number', 'value="0"')}
+
+        <div class="field">
+
+          <label>Maintenance Mode</label>
+
+          <select id="s_maintenance">
+
+            <option value="false">Disabled (Store Active)</option>
+
+            <option value="true">Enabled (Store Offline)</option>
+
+          </select>
+
+        </div>
+
+        <div class="field">
+
+          <label>Default Timezone</label>
+
+          <input type="text" value="Asia/Beirut (GMT+3)" disabled readonly style="background:#f1f5f9">
+
+        </div>
+
+      </div>
+
+      <br>
+
+      <div class="actions">
+
+        <button class="btn" onclick="saveStoreSettings()">Save Configurations</button>
+
+        <button class="btn outline" onclick="localStorage.clear(); alert('Local administrative cache cleared.');">Clear Local Cache</button>
+
+      </div>
+
+    </div>`;
+
+
+
+    loadStoreSettings();
+
+}
+
+
+
+async function loadStoreSettings(){
+
+  try {
+
+    const { data } = await sb.from('settings').select('*').limit(1).maybeSingle();
+
+    if(data) {
+
+      if(document.getElementById('s_store_name')) s_store_name.value = data.store_name || 'Smartly Lebanon';
+
+      if(document.getElementById('s_currency')) s_currency.value = data.currency || '$';
+
+      if(document.getElementById('s_phone')) s_phone.value = data.whatsapp_phone || '9613080365';
+
+      if(document.getElementById('s_tax')) s_tax.value = data.tax_percent || 0;
+
+      if(document.getElementById('s_maintenance')) s_maintenance.value = data.maintenance_mode ? 'true' : 'false';
+
+    }
+
+  } catch(e) {
+
+    console.log('Settings load fallback active');
+
+  }
+
+}
+
+
+
+async function saveStoreSettings(){
+
+  const row = {
+
+    store_name: s_store_name.value.trim(),
+
+    currency: s_currency.value.trim(),
+
+    whatsapp_phone: s_phone.value.trim().replace(/[^0-9]/g, ''),
+
+    tax_percent: Number(s_tax.value || 0),
+
+    maintenance_mode: s_maintenance.value === 'true'
+
+  };
+
+
+
+  const { data: existing } = await sb.from('settings').select('id').limit(1).maybeSingle();
+
+  let r;
+
+  if(existing?.id){
+
+    r = await sb.from('settings').update(row).eq('id', existing.id);
+
+  } else {
+
+    r = await sb.from('settings').insert(row);
+
+  }
+
+
+
+  if(r?.error){
+
+    alert('Could not save to DB, settings saved to local cache fallback: ' + r.error.message);
+
+    localStorage.setItem('smartly_settings', JSON.stringify(row));
+
+  } else {
+
+    alert('System configurations saved successfully.');
+
+  }
+
+}
+
+
+
+// ------------------------------------------------------------------
+
+// PRODUCTS, CATEGORIES, COUNTRIES, DELIVERY, BUNDLES, PAYMENTS, CUSTOMERS
+
+// ------------------------------------------------------------------
+
+async function loadRefs(){
+
+  const [c,co] = await Promise.all([
+
+    sb.from('categories').select('id,name_en,name_ar').order('sort_order'),
+
+    sb.from('countries').select('id,name,country_code').order('sort_order')
+
+  ]);
+
+  categories = c.data || [];
+
+  countries = co.data || [];
+
+}
+
+
+
+async function productsPage(natural=false){
+
+  await loadRefs();
+
+  editingId = null;
+
+  const app = document.getElementById('app');
+
+  app.innerHTML = `
+
+    <div class="panel">
+
+      ${renderHeader(natural ? 'Natural Products Management' : 'Products Catalog')}
+
+      <div id="productMsg"></div>
+
+      <div class="grid">
+
+        ${formField('p_name_en','Name EN')}${formField('p_name_ar','Name AR')}
+
+        <div class="field"><label>Category</label><select id="p_category"><option value="">Select category</option>${categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name_en||c.name_ar)}</option>`).join('')}</select></div>
+
+        ${formField('p_desc_en','Description EN')}${formField('p_desc_ar','Description AR')}
+
+        ${formField('p_price','Retail Price ($)','number','step="0.01"')}
+
+        ${formField('p_stock','Stock Quantity','number','min="0"')}
+
+        ${formField('p_sort','Sort Order','number','value="0"')}
+
+        <div class="field"><label>Product Image</label><input id="p_image" type="file" accept="image/*"></div>
+
+        <div class="field"><label>Active</label><select id="p_active"><option value="true">Yes</option><option value="false">No</option></select></div>
+
+        <div class="field"><label>Is Natural</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div> 
+
