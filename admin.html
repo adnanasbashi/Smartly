@@ -41,6 +41,10 @@ button{cursor:pointer}
 .status-pending{background:#fef3c7;color:#d97706}
 .status-confirmed,.status-approved{background:#dcfce7;color:#15803d}
 .status-completed{background:#dbeafe;color:#1d4ed8}
+.status-preparing{background:#ede9fe;color:#6d28d9}
+.status-out_for_delivery{background:#e0f2fe;color:#0369a1}
+.status-contacted{background:#e0f2fe;color:#0369a1}
+.status-fulfilled{background:#dcfce7;color:#15803d}
 .status-cancelled{background:#fee2e2;color:#b91c1c}
 .hidden{display:none !important}
 .statgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
@@ -104,6 +108,10 @@ button{cursor:pointer}
 const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
 
+if(!window.supabase || typeof window.supabase.createClient !== 'function'){
+  document.body.innerHTML = '<div class="login panel"><h1 style="color:#123B5D">Connection error</h1><p class="muted">The data library could not be loaded. Check your internet connection and reload the page.</p></div>';
+  throw new Error('Supabase library failed to load');
+}
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const COUNTRY_LIST = [
@@ -120,6 +128,8 @@ const COUNTRY_LIST = [
 
 let current = 'dashboard', categories = [], countries = [];
 let editingId = null;
+let editingCategoryId = null;
+let naturalMode = false;
 
 const tabs = [
   ['dashboard','Dashboard'],
@@ -138,6 +148,7 @@ const tabs = [
   ['settings','Settings']
 ];
 
+function shortId(v){ return v ? String(v).slice(0,8) : '—'; }
 function esc(v){ return String(v??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 function msg(text, error=false){ return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`; }
 
@@ -159,7 +170,8 @@ function formatLebanonTime(isoString){
   }
 }
 
-window.addEventListener('DOMContentLoaded', guard);
+if(document.readyState === 'loading') window.addEventListener('DOMContentLoaded', guard);
+else guard();
 
 async function guard(){
   try {
@@ -224,6 +236,8 @@ function renderTabs(){
 function show(t){
   current = t;
   editingId = null;
+  editingCategoryId = null;
+  closeModal();
   renderTabs();
   if(t==='dashboard') return dashboard();
   if(t==='products'||t==='natural') return productsPage(t==='natural');
@@ -237,7 +251,7 @@ function show(t){
   if(t==='reviews') return reviewsPage();
   if(t==='special') return specialPage();
   if(t==='customers') return customersPage();
-  if(t==='settings') return settingsPage();
+  return dashboard();
 }
 
 function renderHeader(title, subtitle=''){
@@ -375,7 +389,7 @@ async function ordersPage(){
 
           return `
             <tr>
-              <td><b>${esc(x.order_number || x.id.slice(0,8))}</b></td>
+              <td><b>${esc(x.order_number || shortId(x.id))}</b></td>
               <td>${esc(x.name)}</td>
               <td>${esc(x.phone)}</td>
               <td><b style="color:#159A9C">${totalQty}</b></td>
@@ -404,7 +418,11 @@ async function handleOrderStatusChange(orderId, oldStatus, newStatus){
   if(oldStatus === newStatus) return;
 
   const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
-  if(r.error) return alert('Failed to update order status: ' + r.error.message);
+  if(r.error){
+    alert('Failed to update order status: ' + r.error.message);
+    ordersPage();
+    return;
+  }
 
   if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
     await adjustOrderInventory(orderId, 'restock');
@@ -451,7 +469,7 @@ async function viewOrderDetails(orderId){
     <div class="modal">
       <div class="modal-content">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px">
-          <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||o.id.slice(0,8))}</h3>
+          <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||shortId(o.id))}</h3>
           <button class="btn danger" onclick="closeModal()">Close</button>
         </div>
         <p><b>Customer Name:</b> ${esc(o.name)}</p>
@@ -484,7 +502,7 @@ async function viewOrderDetails(orderId){
 
 function closeModal(){
   const modal = document.getElementById('modalContainer');
-  if(modal) modal.classList.add('hidden');
+  if(modal){ modal.classList.add('hidden'); modal.innerHTML = ''; }
 }
 
 // ------------------------------------------------------------------
@@ -631,7 +649,10 @@ async function specialPage(){
 
 async function updateRecordStatus(table, id, status){
   const r = await sb.from(table).update({ status }).eq('id', id);
-  if(r.error) alert('Failed to update status: ' + r.error.message);
+  if(r.error){
+    alert('Failed to update status: ' + r.error.message);
+    show(current);
+  }
 }
 
 // ------------------------------------------------------------------
@@ -736,6 +757,7 @@ async function loadRefs(){
 }
 
 async function productsPage(natural=false){
+  naturalMode = natural;
   await loadRefs();
   editingId = null;
   const app = document.getElementById('app');
@@ -770,7 +792,7 @@ async function productsPage(natural=false){
 
 async function renderProductsList(natural=false){
   let q = sb.from('products').select('*, categories(name_en)').order('sort_order');
-  if(natural) q = q.eq('is_natural', true);
+  q = natural ? q.eq('is_natural', true) : q.or('is_natural.is.null,is_natural.eq.false');
   const r = await q;
   const listEl = document.getElementById('productList');
   if(!listEl) return;
@@ -867,7 +889,7 @@ async function saveProduct(){
   }
   if(msgEl) msgEl.innerHTML = msg('Product saved successfully.');
   resetProductForm();
-  renderProductsList(p_natural ? p_natural.value === 'true' : false);
+  renderProductsList(naturalMode);
 }
 
 async function editProduct(id){
@@ -998,13 +1020,14 @@ async function saveCategory(){
     sort_order: c_sort ? parseInt(c_sort.value)||0 : 0 
   };
   
-  let r = editingId ? await sb.from('categories').update(row).eq('id', editingId) : await sb.from('categories').insert(row);
+  let r = editingCategoryId ? await sb.from('categories').update(row).eq('id', editingCategoryId) : await sb.from('categories').insert(row);
 
   if(r.error) {
     if(catMsg) catMsg.innerHTML = msg(r.error.message, true);
     return;
   }
-  editingId = null;
+  editingCategoryId = null;
+  if(catMsg) catMsg.innerHTML = msg('Category saved successfully.');
   if(c_name_en) c_name_en.value = ''; 
   if(c_name_ar) c_name_ar.value = ''; 
   if(c_sort) c_sort.value = '0';
@@ -1013,7 +1036,7 @@ async function saveCategory(){
 }
 
 function editCategory(id, en, ar, sort){
-  editingId = id;
+  editingCategoryId = id;
   const c_name_en = document.getElementById('c_name_en');
   const c_name_ar = document.getElementById('c_name_ar');
   const c_sort = document.getElementById('c_sort');
@@ -1090,11 +1113,17 @@ async function saveCountry(){
     country_code: sel.value, 
     sort_order: co_sort ? parseInt(co_sort.value)||0 : 0 
   };
+  const existing = await sb.from('countries').select('id').eq('country_code', row.country_code).maybeSingle();
+  if(existing.data){
+    if(coMsg) coMsg.innerHTML = msg('This country is already in the list.', true);
+    return;
+  }
   const r = await sb.from('countries').insert(row);
   if(r.error) {
     if(coMsg) coMsg.innerHTML = msg(r.error.message, true);
     return;
   }
+  if(coMsg) coMsg.innerHTML = msg('Country added.');
   renderCountriesList();
 }
 
@@ -1156,8 +1185,12 @@ async function saveDeliveryFee(){
   const d_fee = document.getElementById('d_fee');
   const delMsg = document.getElementById('delMsg');
 
+  if(!d_country || !d_country.value){
+    if(delMsg) delMsg.innerHTML = msg('Please add a country first, then select it.', true);
+    return;
+  }
   const row = { 
-    country_id: d_country ? d_country.value : null, 
+    country_id: d_country.value, 
     city: d_city ? d_city.value.trim() : '', 
     fee: d_fee ? parseFloat(d_fee.value)||0 : 0 
   };
@@ -1379,7 +1412,7 @@ async function deleteRow(table, id){
   if(!confirm('Are you sure you want to delete this record?')) return;
   const r = await sb.from(table).delete().eq('id', id);
   if(r.error) alert('Delete error: ' + r.error.message);
-  else show(current);
+  else { closeModal(); show(current); }
 }
 </script>
 </body>
