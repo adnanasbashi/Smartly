@@ -690,7 +690,7 @@ function cartModal(){
 
     const p = products.find(x=>String(x.id)===id);
 
-    return p ? `<p><b>${esc(p.name_en||p.name_ar)}</b> × ${q} — $${(Number(p.retail_price||0)*q).toFixed(2)}</p>` : '';
+    return p ? `<p style="margin:6px 0"><b>${esc(p.name_en||p.name_ar)}</b> × ${q} — $${(Number(p.retail_price||0)*q).toFixed(2)}</p>` : '';
 
   }).join('');
 
@@ -718,7 +718,7 @@ function cartModal(){
 
       <div class="field"><label>Country</label><select id="cc">${countries.map(c=>`<option>${esc(c.name||c.name_en)}</option>`).join('')}</select></div>
 
-      <div class="field"><label>Payment method</label><select id="pm">${payments.map(p=>`<option value="${esc(p.name||p.name_en)}">${esc(p.name||p.name_en)}</option>`).join('')}</select></div>
+      <div class="field"><label>Payment method</label><select id="pm" onchange="updateCartFeeSummary()">${payments.map(p=>`<option value="${esc(p.name||p.name_en)}">${esc(p.name||p.name_en)}</option>`).join('')}</select></div>
 
     </div>
 
@@ -736,11 +736,73 @@ function cartModal(){
 
     </div>
 
+    <hr style="margin:15px 0">
+
+    <div id="cartSummary" style="font-size:15px;line-height:1.6"></div>
+
     <br>
 
     <button class="btn primary full" onclick="checkout()">Continue on WhatsApp</button>
 
   `);
+
+
+
+  updateCartFeeSummary();
+
+}
+
+
+
+function updateCartFeeSummary(){
+
+  let subtotal = 0;
+
+  for(const [id,q] of Object.entries(cart)){
+
+    const x = products.find(y=>String(y.id)===id);
+
+    if(x){
+
+      subtotal += Number(x.retail_price||0) * q;
+
+    }
+
+  }
+
+
+
+  const selectedPayment = document.getElementById('pm')?.value || '';
+
+  const isCOD = selectedPayment.toLowerCase().includes('cash') || selectedPayment.toLowerCase().includes('cod');
+
+  
+
+  const deliveryFee = isCOD ? 2.00 : 0.00;
+
+  const grandTotal = subtotal + deliveryFee;
+
+
+
+  const summaryEl = document.getElementById('cartSummary');
+
+  if(summaryEl){
+
+    summaryEl.innerHTML = `
+
+      <div style="display:flex;justify-content:space-between"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
+
+      <div style="display:flex;justify-content:space-between;color:var(--muted)"><span>Delivery Fee:</span><span>$${deliveryFee.toFixed(2)}</span></div>
+
+      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:bold;margin-top:5px;border-top:1px solid var(--line);padding-top:5px">
+
+        <span>Total:</span><span>$${grandTotal.toFixed(2)}</span>
+
+      </div>
+
+    `;
+
+  }
 
 }
 
@@ -780,7 +842,7 @@ async function checkout(){
 
   
 
-  let total = 0, items = [];
+  let subtotal = 0, items = [];
 
   for(const [id,q] of Object.entries(cart)){
 
@@ -788,7 +850,7 @@ async function checkout(){
 
     if(x){
 
-      total += Number(x.retail_price||0) * q;
+      subtotal += Number(x.retail_price||0) * q;
 
       items.push({product_id: x.id, quantity: q, unit_price: x.retail_price});
 
@@ -800,11 +862,21 @@ async function checkout(){
 
   
 
+  const selectedPayment = pm.value;
+
+  const isCOD = selectedPayment.toLowerCase().includes('cash') || selectedPayment.toLowerCase().includes('cod');
+
+  const deliveryFee = isCOD ? 2.00 : 0.00;
+
+  const grandTotal = subtotal + deliveryFee;
+
+
+
   const order_number = 'ORD-' + Date.now();
 
   const o = await sb.from('orders').insert({
 
-    order_number, name:n, phone:p, alternative_phone:cap.value, email:ce.value, country:cc.value, location:loc, payment_method:pm.value, total, status:'pending'
+    order_number, name:n, phone:p, alternative_phone:cap.value, email:ce.value, country:cc.value, location:loc, payment_method:selectedPayment, total:grandTotal, status:'pending'
 
   }).select().single();
 
@@ -840,7 +912,7 @@ async function checkout(){
 
   
 
-  const text = `Hello Smartly, I want to order. Order: ${order_number}; Name: ${n}; Phone: ${p}; Alternative: ${cap.value}; Country: ${cc.value}; Location: ${loc}; Payment: ${pm.value}; Total: $${total.toFixed(2)}`;
+  const text = `Hello Smartly, I want to order.\n\nOrder: ${order_number}\nName: ${n}\nPhone: ${p}\nAlternative: ${cap.value}\nCountry: ${cc.value}\nLocation: ${loc}\nPayment: ${selectedPayment}\nSubtotal: $${subtotal.toFixed(2)}\nDelivery Fee: $${deliveryFee.toFixed(2)}\nTotal Amount: $${grandTotal.toFixed(2)}`;
 
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(text), '_blank');
 
@@ -914,5 +986,4 @@ load().catch(e => toast(e.message));
 
 </body>
 
-</html> 
-
+</html>
