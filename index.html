@@ -628,7 +628,7 @@ function reserveModal(id){
 
 
 
-function sendReservation(id){
+async function sendReservation(id){
 
   const p = products.find(x=>String(x.id)===String(id));
 
@@ -645,6 +645,38 @@ function sendReservation(id){
 
 
   if(!name || !phone) return toast('Please provide your name and phone number');
+
+
+
+  const { data, error } = await sb.from('reservations').insert([{
+
+    customer_name: name,
+
+    name: name,
+
+    phone: phone,
+
+    product_reserved: p ? (p.name_en || p.name_ar) : '',
+
+    product_name: p ? (p.name_en || p.name_ar) : '',
+
+    quantity: qty,
+
+    status: 'Pending',
+
+    location: loc,
+
+    country: country
+
+  }]);
+
+
+
+  if(error) {
+
+    console.error('Reservation insert error:', error);
+
+  }
 
 
 
@@ -682,11 +714,15 @@ async function specialOrder(){
 
     customer_name: name,
 
+    name: name,
+
     phone: phone,
 
     country: country,
 
     requested_item: item,
+
+    item: item,
 
     quantity: qty,
 
@@ -698,19 +734,9 @@ async function specialOrder(){
 
   if(error) {
 
-    toast('Failed to save request: ' + error.message);
-
-    return;
+    console.error('Special request insert error:', error);
 
   }
-
-
-
-  spItem.value = '';
-
-  spName.value = '';
-
-  spPhone.value = '';
 
 
 
@@ -718,7 +744,7 @@ async function specialOrder(){
 
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(text), '_blank');
 
-  toast('Special request submitted and sent to WhatsApp!');
+  toast('Special request generated');
 
 }
 
