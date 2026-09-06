@@ -770,8 +770,7 @@ async function productsPage(natural=false){
 
 async function renderProductsList(natural=false){
   let q = sb.from('products')
-    .select('*, categories!fk_products_categories(name_en)')
-    .eq('is_natural', natural)
+.select('*, categories(name_en)')    .eq('is_natural', natural)
     .order('sort_order');
 
   const r = await q;
@@ -870,8 +869,8 @@ async function saveProduct(){
   }
   if(msgEl) msgEl.innerHTML = msg('Product saved successfully.');
   resetProductForm();
-  renderProductsList(p_natural ? p_natural.value === 'true' : false);
-}
+const isNat = p_natural ? p_natural.value === 'true' : false;
+renderProductsList(isNat);}
 
 async function editProduct(id){
   const r = await sb.from('products').select('*').eq('id', id).single();
