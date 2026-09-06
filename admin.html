@@ -817,7 +817,7 @@ async function renderProductsList(natural=false){
             <td>${esc(x.categories?.name_en || '—')}</td>
             <td>$${Number(x.retail_price||0).toFixed(2)}</td>
             <td><b style="color:${x.stock_quantity<5?'#e11d48':'#123B5D'}">${x.stock_quantity||0}</b></td>
-            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Hidden'}</span></td>
+            <td><span class="status-pill ${x.active?'status-approved':'status-cancelled'}">${x.active?'Active':'Hidden'}</span></td>
             <td>
               <button class="btn outline" onclick="editProduct('${esc(x.id)}')">Edit</button>
               <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button>
@@ -870,7 +870,7 @@ async function saveProduct(){
     retail_price: p_price ? parseFloat(p_price.value) || 0 : 0,
     stock_quantity: p_stock ? parseInt(p_stock.value) || 0 : 0,
     sort_order: p_sort ? parseInt(p_sort.value) || 0 : 0,
-    is_active: p_active ? p_active.value === 'true' : true,
+    active: p_active ? p_active.value === 'true' : true,
     is_natural: p_natural ? p_natural.value === 'true' : false
   };
 
@@ -918,7 +918,7 @@ async function editProduct(id){
   if(p_price) p_price.value = p.retail_price || 0;
   if(p_stock) p_stock.value = p.stock_quantity || 0;
   if(p_sort) p_sort.value = p.sort_order || 0;
-  if(p_active) p_active.value = p.is_active ? 'true' : 'false';
+  if(p_active) p_active.value = p.active ? 'true' : 'false';
   if(p_natural) p_natural.value = p.is_natural ? 'true' : 'false';
   if(saveBtn) saveBtn.innerText = 'Update Product';
   window.scrollTo({top:0, behavior:'smooth'});
@@ -1158,7 +1158,7 @@ async function deliveryFeesPage(){
 }
 
 async function renderDeliveryFeesList(){
-  const r = await sb.from('delivery_fees').select('*, countries(name)');
+  const r = await sb.from('delivery_fees').select('*');
   const tableEl = document.getElementById('delTable');
   if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
@@ -1169,9 +1169,9 @@ async function renderDeliveryFeesList(){
         <tr><th>Country</th><th>City / Region</th><th>Fee</th><th>Actions</th></tr>
         ${(r.data||[]).map(x => `
           <tr>
-            <td><b>${esc(x.countries?.name || '—')}</b></td>
-            <td>${esc(x.city || 'All Cities')}</td>
-            <td>$${Number(x.fee||0).toFixed(2)}</td>
+            <td><b>${esc((countries.find(c => c.id === x.country_id) || {}).name || '—')}</b></td>
+            <td>${esc(x.location_name || 'All Cities')}</td>
+            <td>$${Number(x.fee_amount||0).toFixed(2)}</td>
             <td><button class="btn danger" onclick="deleteRow('delivery_fees','${esc(x.id)}')">Delete</button></td>
           </tr>
         `).join('')}
@@ -1191,8 +1191,9 @@ async function saveDeliveryFee(){
   }
   const row = { 
     country_id: d_country.value, 
-    city: d_city ? d_city.value.trim() : '', 
-    fee: d_fee ? parseFloat(d_fee.value)||0 : 0 
+    location_name: d_city ? d_city.value.trim() : '', 
+    fee_amount: d_fee ? parseFloat(d_fee.value)||0 : 0,
+    active: true
   };
   const r = await sb.from('delivery_fees').insert(row);
   if(r.error) {
@@ -1321,8 +1322,8 @@ async function renderPaymentsList(){
         ${(r.data||[]).map(x => `
           <tr>
             <td><b>${esc(x.name)}</b></td>
-            <td>${esc(x.details||'—')}</td>
-            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Disabled'}</span></td>
+            <td>${esc(x.description||'—')}</td>
+            <td><span class="status-pill ${x.active?'status-approved':'status-cancelled'}">${x.active?'Active':'Disabled'}</span></td>
             <td><button class="btn danger" onclick="deleteRow('payment_methods','${esc(x.id)}')">Delete</button></td>
           </tr>
         `).join('')}
@@ -1344,8 +1345,8 @@ async function savePaymentMethod(){
 
   const row = { 
     name, 
-    details: pm_details ? pm_details.value.trim() : '', 
-    is_active: pm_active ? pm_active.value === 'true' : true 
+    description: pm_details ? pm_details.value.trim() : '', 
+    active: pm_active ? pm_active.value === 'true' : true 
   };
   const r = await sb.from('payment_methods').insert(row);
   if(r.error) {
