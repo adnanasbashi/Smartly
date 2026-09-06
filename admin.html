@@ -751,7 +751,8 @@ async function productsPage(natural=false){
 }
 
 async function renderProductsList(natural=false){
-  let q = sb.from('products').select('*, categories(name_en)').order('sort_order');
+  let q = sb.from('products').select('*, categories!category_id(*)')
+(name_en)').order('sort_order');
   if(natural) q = q.eq('is_natural', true);
   const r = await q;
   const listEl = document.getElementById('productList');
