@@ -769,8 +769,12 @@ async function productsPage(natural=false){
 }
 
 async function renderProductsList(natural=false){
-// REPLACE WITH THIS:
-let q = sb.from('products').select('*, categories!fk_products_categories(name_en)').order('sort_order');  const r = await q;
+  let q = sb.from('products')
+    .select('*, categories!fk_products_categories(name_en)')
+    .eq('is_natural', natural)
+    .order('sort_order');
+
+  const r = await q;
   const listEl = document.getElementById('productList');
   if(!listEl) return;
   if(r.error) return listEl.innerHTML = msg(r.error.message, true);
