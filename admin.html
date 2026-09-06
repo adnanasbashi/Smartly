@@ -734,6 +734,17 @@ async function renderProductsList(natural=false){
   const listEl = document.getElementById('productList');
   if(r.error) return listEl.innerHTML = msg(r.error.message, true);
 
+  // Before:
+// document.getElementById('products-list').innerHTML = html;
+
+// After:
+const productsContainer = document.getElementById('products-list'); // Replace with your actual element ID
+
+if (productsContainer) {
+  productsContainer.innerHTML = htmlContent;
+} else {
+  console.warn("Target element for renderProductsList was not found on line 737.");
+}
   listEl.innerHTML = `
     <div class="table-wrap">
       <table class="table">
