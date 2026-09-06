@@ -104,7 +104,7 @@
 
 
 
-<section id="natural" class="section natural"><div class="wrap"><div class="head"><span class="eyebrow">NATURAL</span><h2>Natural products, food & herbs</h2></div><div class="features"><div class="feature"><b>🌿 Herbs</b><p>Selected herbs and natural ingredients.</p></div><div class="feature"><b>🥜 Natural food</b><p>Useful, quality-focused natural food products.</p></div><div class="feature"><b>🍯 Wellness pantry</b><p>Products chosen for everyday use.</p></div></div></div></section>
+<section id="natural" class="section natural"><div class="wrap"><div class="head"><span class="eyebrow">NATURAL</span><h2>Natural products, food & herbs</h2></div><div class="products" id="naturalProducts" style="margin-bottom:24px"></div><div class="features"><div class="feature"><b>🌿 Herbs</b><p>Selected herbs and natural ingredients.</p></div><div class="feature"><b>🥜 Natural food</b><p>Useful, quality-focused natural food products.</p></div><div class="feature"><b>🍯 Wellness pantry</b><p>Products chosen for everyday use.</p></div></div></div></section>
 
 
 
@@ -514,9 +514,7 @@ function renderProducts(){
 
   
 
-  const productsEl = document.getElementById('products');
-
-  productsEl.innerHTML = arr.length ? arr.map(p=>{
+  const buildCardHtml = (p) => {
 
     const stock = Number(p.stock_quantity||0);
 
@@ -556,7 +554,29 @@ function renderProducts(){
 
     </article>`;
 
-  }).join('') : '<div class="notice">No products found.</div>';
+  };
+
+
+
+  const productsEl = document.getElementById('products');
+
+  productsEl.innerHTML = arr.length ? arr.map(buildCardHtml).join('') : '<div class="notice">No products found.</div>';
+
+
+
+  const naturalEl = document.getElementById('naturalProducts');
+
+  if (naturalEl) {
+
+    const naturalItems = products.filter(p => p.active !== false && (p.is_natural === true || p.is_natural === 'true' || p.is_natural === 'Yes'));
+
+    naturalEl.innerHTML = naturalItems.length 
+
+      ? naturalItems.map(buildCardHtml).join('') 
+
+      : '<p class="muted" style="text-align:center">No natural products featured yet.</p>';
+
+  }
 
 }
 
