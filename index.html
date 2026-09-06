@@ -660,7 +660,7 @@ function sendReservation(id){
 
 
 
-function specialOrder(){
+async function specialOrder(){
 
   const item = spItem.value.trim();
 
@@ -678,11 +678,47 @@ function specialOrder(){
 
 
 
+  const { data, error } = await sb.from('special_requests').insert([{
+
+    customer_name: name,
+
+    phone: phone,
+
+    country: country,
+
+    requested_item: item,
+
+    quantity: qty,
+
+    status: 'pending'
+
+  }]);
+
+
+
+  if(error) {
+
+    toast('Failed to save request: ' + error.message);
+
+    return;
+
+  }
+
+
+
+  spItem.value = '';
+
+  spName.value = '';
+
+  spPhone.value = '';
+
+
+
   const text = `Hello Smartly, I have a SPECIAL REQUEST for sourcing an item.\n\nProduct/Link: ${item}\nQuantity Requested: ${qty}\nName: ${name}\nPhone: ${phone}\nCountry: ${country}`;
 
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(text), '_blank');
 
-  toast('Special request generated');
+  toast('Special request submitted and sent to WhatsApp!');
 
 }
 
