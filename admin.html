@@ -41,10 +41,6 @@ button{cursor:pointer}
 .status-pending{background:#fef3c7;color:#d97706}
 .status-confirmed,.status-approved{background:#dcfce7;color:#15803d}
 .status-completed{background:#dbeafe;color:#1d4ed8}
-.status-preparing{background:#ede9fe;color:#6d28d9}
-.status-out_for_delivery{background:#e0f2fe;color:#0369a1}
-.status-contacted{background:#e0f2fe;color:#0369a1}
-.status-fulfilled{background:#dcfce7;color:#15803d}
 .status-cancelled{background:#fee2e2;color:#b91c1c}
 .hidden{display:none !important}
 .statgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
@@ -108,10 +104,6 @@ button{cursor:pointer}
 const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
 
-if(!window.supabase || typeof window.supabase.createClient !== 'function'){
-  document.body.innerHTML = '<div class="login panel"><h1 style="color:#123B5D">Connection error</h1><p class="muted">The data library could not be loaded. Check your internet connection and reload the page.</p></div>';
-  throw new Error('Supabase library failed to load');
-}
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const COUNTRY_LIST = [
@@ -128,8 +120,6 @@ const COUNTRY_LIST = [
 
 let current = 'dashboard', categories = [], countries = [];
 let editingId = null;
-let editingCategoryId = null;
-let naturalMode = false;
 
 const tabs = [
   ['dashboard','Dashboard'],
@@ -148,7 +138,6 @@ const tabs = [
   ['settings','Settings']
 ];
 
-function shortId(v){ return v ? String(v).slice(0,8) : '—'; }
 function esc(v){ return String(v??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 function msg(text, error=false){ return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`; }
 
@@ -170,8 +159,7 @@ function formatLebanonTime(isoString){
   }
 }
 
-if(document.readyState === 'loading') window.addEventListener('DOMContentLoaded', guard);
-else guard();
+window.addEventListener('DOMContentLoaded', guard);
 
 async function guard(){
   try {
@@ -236,8 +224,6 @@ function renderTabs(){
 function show(t){
   current = t;
   editingId = null;
-  editingCategoryId = null;
-  closeModal();
   renderTabs();
   if(t==='dashboard') return dashboard();
   if(t==='products'||t==='natural') return productsPage(t==='natural');
@@ -251,7 +237,7 @@ function show(t){
   if(t==='reviews') return reviewsPage();
   if(t==='special') return specialPage();
   if(t==='customers') return customersPage();
-  return dashboard();
+  if(t==='settings') return settingsPage();
 }
 
 function renderHeader(title, subtitle=''){
@@ -389,7 +375,7 @@ async function ordersPage(){
 
           return `
             <tr>
-              <td><b>${esc(x.order_number || shortId(x.id))}</b></td>
+              <td><b>${esc(x.order_number || x.id.slice(0,8))}</b></td>
               <td>${esc(x.name)}</td>
               <td>${esc(x.phone)}</td>
               <td><b style="color:#159A9C">${totalQty}</b></td>
@@ -418,11 +404,7 @@ async function handleOrderStatusChange(orderId, oldStatus, newStatus){
   if(oldStatus === newStatus) return;
 
   const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
-  if(r.error){
-    alert('Failed to update order status: ' + r.error.message);
-    ordersPage();
-    return;
-  }
+  if(r.error) return alert('Failed to update order status: ' + r.error.message);
 
   if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
     await adjustOrderInventory(orderId, 'restock');
@@ -469,7 +451,7 @@ async function viewOrderDetails(orderId){
     <div class="modal">
       <div class="modal-content">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px">
-          <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||shortId(o.id))}</h3>
+          <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||o.id.slice(0,8))}</h3>
           <button class="btn danger" onclick="closeModal()">Close</button>
         </div>
         <p><b>Customer Name:</b> ${esc(o.name)}</p>
@@ -502,7 +484,7 @@ async function viewOrderDetails(orderId){
 
 function closeModal(){
   const modal = document.getElementById('modalContainer');
-  if(modal){ modal.classList.add('hidden'); modal.innerHTML = ''; }
+  if(modal) modal.classList.add('hidden');
 }
 
 // ------------------------------------------------------------------
@@ -649,10 +631,7 @@ async function specialPage(){
 
 async function updateRecordStatus(table, id, status){
   const r = await sb.from(table).update({ status }).eq('id', id);
-  if(r.error){
-    alert('Failed to update status: ' + r.error.message);
-    show(current);
-  }
+  if(r.error) alert('Failed to update status: ' + r.error.message);
 }
 
 // ------------------------------------------------------------------
@@ -757,7 +736,6 @@ async function loadRefs(){
 }
 
 async function productsPage(natural=false){
-  naturalMode = natural;
   await loadRefs();
   editingId = null;
   const app = document.getElementById('app');
@@ -792,7 +770,7 @@ async function productsPage(natural=false){
 
 async function renderProductsList(natural=false){
   let q = sb.from('products').select('*, categories(name_en)').order('sort_order');
-  q = natural ? q.eq('is_natural', true) : q.or('is_natural.is.null,is_natural.eq.false');
+  if(natural) q = q.eq('is_natural', true);
   const r = await q;
   const listEl = document.getElementById('productList');
   if(!listEl) return;
@@ -817,7 +795,7 @@ async function renderProductsList(natural=false){
             <td>${esc(x.categories?.name_en || '—')}</td>
             <td>$${Number(x.retail_price||0).toFixed(2)}</td>
             <td><b style="color:${x.stock_quantity<5?'#e11d48':'#123B5D'}">${x.stock_quantity||0}</b></td>
-            <td><span class="status-pill ${x.active?'status-approved':'status-cancelled'}">${x.active?'Active':'Hidden'}</span></td>
+            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Hidden'}</span></td>
             <td>
               <button class="btn outline" onclick="editProduct('${esc(x.id)}')">Edit</button>
               <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button>
@@ -870,7 +848,7 @@ async function saveProduct(){
     retail_price: p_price ? parseFloat(p_price.value) || 0 : 0,
     stock_quantity: p_stock ? parseInt(p_stock.value) || 0 : 0,
     sort_order: p_sort ? parseInt(p_sort.value) || 0 : 0,
-    active: p_active ? p_active.value === 'true' : true,
+    is_active: p_active ? p_active.value === 'true' : true,
     is_natural: p_natural ? p_natural.value === 'true' : false
   };
 
@@ -889,7 +867,7 @@ async function saveProduct(){
   }
   if(msgEl) msgEl.innerHTML = msg('Product saved successfully.');
   resetProductForm();
-  renderProductsList(naturalMode);
+  renderProductsList(p_natural ? p_natural.value === 'true' : false);
 }
 
 async function editProduct(id){
@@ -918,7 +896,7 @@ async function editProduct(id){
   if(p_price) p_price.value = p.retail_price || 0;
   if(p_stock) p_stock.value = p.stock_quantity || 0;
   if(p_sort) p_sort.value = p.sort_order || 0;
-  if(p_active) p_active.value = p.active ? 'true' : 'false';
+  if(p_active) p_active.value = p.is_active ? 'true' : 'false';
   if(p_natural) p_natural.value = p.is_natural ? 'true' : 'false';
   if(saveBtn) saveBtn.innerText = 'Update Product';
   window.scrollTo({top:0, behavior:'smooth'});
@@ -1020,14 +998,13 @@ async function saveCategory(){
     sort_order: c_sort ? parseInt(c_sort.value)||0 : 0 
   };
   
-  let r = editingCategoryId ? await sb.from('categories').update(row).eq('id', editingCategoryId) : await sb.from('categories').insert(row);
+  let r = editingId ? await sb.from('categories').update(row).eq('id', editingId) : await sb.from('categories').insert(row);
 
   if(r.error) {
     if(catMsg) catMsg.innerHTML = msg(r.error.message, true);
     return;
   }
-  editingCategoryId = null;
-  if(catMsg) catMsg.innerHTML = msg('Category saved successfully.');
+  editingId = null;
   if(c_name_en) c_name_en.value = ''; 
   if(c_name_ar) c_name_ar.value = ''; 
   if(c_sort) c_sort.value = '0';
@@ -1036,7 +1013,7 @@ async function saveCategory(){
 }
 
 function editCategory(id, en, ar, sort){
-  editingCategoryId = id;
+  editingId = id;
   const c_name_en = document.getElementById('c_name_en');
   const c_name_ar = document.getElementById('c_name_ar');
   const c_sort = document.getElementById('c_sort');
@@ -1113,17 +1090,11 @@ async function saveCountry(){
     country_code: sel.value, 
     sort_order: co_sort ? parseInt(co_sort.value)||0 : 0 
   };
-  const existing = await sb.from('countries').select('id').eq('country_code', row.country_code).maybeSingle();
-  if(existing.data){
-    if(coMsg) coMsg.innerHTML = msg('This country is already in the list.', true);
-    return;
-  }
   const r = await sb.from('countries').insert(row);
   if(r.error) {
     if(coMsg) coMsg.innerHTML = msg(r.error.message, true);
     return;
   }
-  if(coMsg) coMsg.innerHTML = msg('Country added.');
   renderCountriesList();
 }
 
@@ -1158,7 +1129,7 @@ async function deliveryFeesPage(){
 }
 
 async function renderDeliveryFeesList(){
-  const r = await sb.from('delivery_fees').select('*');
+  const r = await sb.from('delivery_fees').select('*, countries(name)');
   const tableEl = document.getElementById('delTable');
   if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
@@ -1169,9 +1140,9 @@ async function renderDeliveryFeesList(){
         <tr><th>Country</th><th>City / Region</th><th>Fee</th><th>Actions</th></tr>
         ${(r.data||[]).map(x => `
           <tr>
-            <td><b>${esc((countries.find(c => c.id === x.country_id) || {}).name || '—')}</b></td>
-            <td>${esc(x.location_name || 'All Cities')}</td>
-            <td>$${Number(x.fee_amount||0).toFixed(2)}</td>
+            <td><b>${esc(x.countries?.name || '—')}</b></td>
+            <td>${esc(x.city || 'All Cities')}</td>
+            <td>$${Number(x.fee||0).toFixed(2)}</td>
             <td><button class="btn danger" onclick="deleteRow('delivery_fees','${esc(x.id)}')">Delete</button></td>
           </tr>
         `).join('')}
@@ -1185,15 +1156,10 @@ async function saveDeliveryFee(){
   const d_fee = document.getElementById('d_fee');
   const delMsg = document.getElementById('delMsg');
 
-  if(!d_country || !d_country.value){
-    if(delMsg) delMsg.innerHTML = msg('Please add a country first, then select it.', true);
-    return;
-  }
   const row = { 
-    country_id: d_country.value, 
-    location_name: d_city ? d_city.value.trim() : '', 
-    fee_amount: d_fee ? parseFloat(d_fee.value)||0 : 0,
-    active: true
+    country_id: d_country ? d_country.value : null, 
+    city: d_city ? d_city.value.trim() : '', 
+    fee: d_fee ? parseFloat(d_fee.value)||0 : 0 
   };
   const r = await sb.from('delivery_fees').insert(row);
   if(r.error) {
@@ -1322,8 +1288,8 @@ async function renderPaymentsList(){
         ${(r.data||[]).map(x => `
           <tr>
             <td><b>${esc(x.name)}</b></td>
-            <td>${esc(x.description||'—')}</td>
-            <td><span class="status-pill ${x.active?'status-approved':'status-cancelled'}">${x.active?'Active':'Disabled'}</span></td>
+            <td>${esc(x.details||'—')}</td>
+            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Disabled'}</span></td>
             <td><button class="btn danger" onclick="deleteRow('payment_methods','${esc(x.id)}')">Delete</button></td>
           </tr>
         `).join('')}
@@ -1345,8 +1311,8 @@ async function savePaymentMethod(){
 
   const row = { 
     name, 
-    description: pm_details ? pm_details.value.trim() : '', 
-    active: pm_active ? pm_active.value === 'true' : true 
+    details: pm_details ? pm_details.value.trim() : '', 
+    is_active: pm_active ? pm_active.value === 'true' : true 
   };
   const r = await sb.from('payment_methods').insert(row);
   if(r.error) {
@@ -1413,7 +1379,7 @@ async function deleteRow(table, id){
   if(!confirm('Are you sure you want to delete this record?')) return;
   const r = await sb.from(table).delete().eq('id', id);
   if(r.error) alert('Delete error: ' + r.error.message);
-  else { closeModal(); show(current); }
+  else show(current);
 }
 </script>
 </body>
