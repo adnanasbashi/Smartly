@@ -255,6 +255,9 @@ function formField(id, label, type='text', extra=''){
   return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" ${extra}></div>`;
 }
 
+// ------------------------------------------------------------------
+// DASHBOARD (BI ANALYTICS)
+// ------------------------------------------------------------------
 async function dashboard(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -335,6 +338,9 @@ async function dashboard(){
   `;
 }
 
+// ------------------------------------------------------------------
+// ORDERS MANAGEMENT & BILLING
+// ------------------------------------------------------------------
 async function ordersPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -481,6 +487,9 @@ function closeModal(){
   if(modal) modal.classList.add('hidden');
 }
 
+// ------------------------------------------------------------------
+// REVIEWS WITH APPROVAL WORKFLOW
+// ------------------------------------------------------------------
 async function reviewsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -529,6 +538,9 @@ async function toggleReviewApproval(id, newStatus){
   else reviewsPage();
 }
 
+// ------------------------------------------------------------------
+// RESERVATIONS & SPECIAL REQUESTS
+// ------------------------------------------------------------------
 async function reservationsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -622,6 +634,9 @@ async function updateRecordStatus(table, id, status){
   if(r.error) alert('Failed to update status: ' + r.error.message);
 }
 
+// ------------------------------------------------------------------
+// SETTINGS
+// ------------------------------------------------------------------
 async function settingsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -708,6 +723,9 @@ async function saveStoreSettings(){
   }
 }
 
+// ------------------------------------------------------------------
+// PRODUCTS, CATEGORIES, COUNTRIES, DELIVERY, BUNDLES, PAYMENTS, CUSTOMERS
+// ------------------------------------------------------------------
 async function loadRefs(){
   const [c,co] = await Promise.all([
     sb.from('categories').select('id,name_en,name_ar').order('sort_order'),
@@ -751,8 +769,7 @@ async function productsPage(natural=false){
 }
 
 async function renderProductsList(natural=false){
-  let q = sb.from('products').select('*, categories(*)')
-(name_en)').order('sort_order');
+  let q = sb.from('products').select('*, categories(name_en)').order('sort_order');
   if(natural) q = q.eq('is_natural', true);
   const r = await q;
   const listEl = document.getElementById('productList');
@@ -910,6 +927,9 @@ function resetProductForm(){
   if(saveBtn) saveBtn.innerText = 'Save Product';
 }
 
+// ------------------------------------------------------------------
+// CATEGORIES PAGE
+// ------------------------------------------------------------------
 async function categoriesPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1005,6 +1025,9 @@ function editCategory(id, en, ar, sort){
   if(catSaveBtn) catSaveBtn.innerText = 'Update Category';
 }
 
+// ------------------------------------------------------------------
+// COUNTRIES & DELIVERY FEES
+// ------------------------------------------------------------------
 async function countriesPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1148,6 +1171,9 @@ async function saveDeliveryFee(){
   renderDeliveryFeesList();
 }
 
+// ------------------------------------------------------------------
+// BUNDLES & OFFERS
+// ------------------------------------------------------------------
 async function bundlesPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1222,6 +1248,9 @@ async function saveBundle(){
   renderBundlesList();
 }
 
+// ------------------------------------------------------------------
+// PAYMENT METHODS
+// ------------------------------------------------------------------
 async function paymentsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1295,6 +1324,9 @@ async function savePaymentMethod(){
   renderPaymentsList();
 }
 
+// ------------------------------------------------------------------
+// CUSTOMERS DIRECTORY
+// ------------------------------------------------------------------
 async function customersPage(){
   const app = document.getElementById('app');
   if(!app) return;
