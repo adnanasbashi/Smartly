@@ -770,7 +770,8 @@ async function productsPage(natural=false){
 
 async function renderProductsList(natural=false){
   let q = sb.from('products')
-.select('*, categories(name_en)')    .eq('is_natural', natural)
+    .select('*, categories(name_en)')
+    .eq('is_natural', natural)
     .order('sort_order');
 
   const r = await q;
@@ -841,6 +842,8 @@ async function saveProduct(){
     image_url = pub.data.publicUrl;
   }
 
+  const isNat = p_natural ? p_natural.value === 'true' : false;
+
   const row = {
     name_en,
     name_ar: p_name_ar ? p_name_ar.value.trim() : '',
@@ -851,7 +854,7 @@ async function saveProduct(){
     stock_quantity: p_stock ? parseInt(p_stock.value) || 0 : 0,
     sort_order: p_sort ? parseInt(p_sort.value) || 0 : 0,
     is_active: p_active ? p_active.value === 'true' : true,
-    is_natural: p_natural ? p_natural.value === 'true' : false
+    is_natural: isNat
   };
 
   if(image_url) row.image_url = image_url;
@@ -869,8 +872,8 @@ async function saveProduct(){
   }
   if(msgEl) msgEl.innerHTML = msg('Product saved successfully.');
   resetProductForm();
-const isNat = p_natural ? p_natural.value === 'true' : false;
-renderProductsList(isNat);}
+  renderProductsList(isNat);
+}
 
 async function editProduct(id){
   const r = await sb.from('products').select('*').eq('id', id).single();
