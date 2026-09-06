@@ -1,1386 +1,1386 @@
-001: <!doctype html>
-002: <html lang="en">
-003: <head>
-004: <meta charset="utf-8">
-005: <meta name="viewport" content="width=device-width,initial-scale=1">
-006: <title>Smartly Admin - Management Hub</title>
-007: <style>
-008: *{box-sizing:border-box}
-009: body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f4f6f9;color:#1c252e}
-010: button,input,select,textarea{font:inherit}
-011: button{cursor:pointer}
-012: .top{background:#123B5D;color:#fff;padding:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-013: .wrap{max-width:1320px;margin:auto;padding:0 18px}
-014: .login{max-width:420px;margin:10vh auto}
-015: .panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-016: .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-017: .panel-title{margin:0;font-size:20px;font-weight:700;color:#123B5D}
-018: .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-019: .field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#475569;text-transform:uppercase;letter-spacing:0.5px}
-020: .field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a}
-021: .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#159A9C;box-shadow:0 0 0 3px rgba(21,154,156,0.15)}
-022: .field textarea{min-height:90px;resize:vertical}
-023: .btn{padding:9px 16px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:600;font-size:14px;transition:all 0.2s}
-024: .btn:hover{opacity:0.9;transform:translateY(-1px)}
-025: .btn.dark{background:#123B5D}
-026: .btn.danger{background:#e11d48}
-027: .btn.outline{background:transparent;border:1px solid #cbd5e1;color:#475569}
-028: .btn.outline:hover{background:#f8fafc}
-029: .btn.success{background:#10b981}
-030: .muted{color:#64748b}
-031: .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
-032: .tab{padding:9px 14px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;color:#475569;font-weight:600;font-size:13px}
-033: .tab.active{background:#123B5D;color:#fff;border-color:#123B5D}
-034: .actions{display:flex;gap:8px;flex-wrap:wrap}
-035: .table-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px}
-036: .table{width:100%;border-collapse:collapse;min-width:850px;background:#fff;font-size:14px}
-037: .table th{background:#f8fafc;padding:12px 10px;border-bottom:2px solid #e2e8f0;text-align:left;color:#475569;font-weight:700}
-038: .table td{padding:12px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
-039: .table tr:hover{background:#f8fafc}
-040: .status-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;text-transform:capitalize}
-041: .status-pending{background:#fef3c7;color:#d97706}
-042: .status-confirmed,.status-approved{background:#dcfce7;color:#15803d}
-043: .status-completed{background:#dbeafe;color:#1d4ed8}
-044: .status-cancelled{background:#fee2e2;color:#b91c1c}
-045: .hidden{display:none !important}
-046: .statgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
-047: .stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
-048: .stat span{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase}
-049: .stat b{display:block;font-size:24px;margin-top:6px;color:#123B5D}
-050: .bi-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
-051: .progress-bar-bg{background:#e2e8f0;border-radius:6px;height:10px;width:100%;overflow:hidden;margin-top:6px}
-052: .progress-bar-fill{background:#159A9C;height:100%;border-radius:6px}
-053: .msg{padding:12px;border-radius:8px;margin:12px 0;font-weight:500}
-054: .ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
-055: .err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
-056: .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
-057: .modal-content{background:#fff;border-radius:12px;width:90%;max-width:650px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}
-058: @media(max-width:1024px){.statgrid{grid-template-columns:repeat(3,1fr)}.bi-grid{grid-template-columns:1fr}}
-059: @media(max-width:768px){.grid,.statgrid{grid-template-columns:1fr 1fr}}
-060: @media(max-width:480px){.grid,.statgrid{grid-template-columns:1fr}}
-061: </style>
-062: </head>
-063: <body>
-064: 
-065: <div id="loginView" class="login panel">
-066:   <h1 style="margin-top:0;color:#123B5D">Smartly Admin</h1>
-067:   <p class="muted">Enter authorized administrator credentials.</p>
-068:   <form onsubmit="event.preventDefault(); login();">
-069:     <div class="field">
-070:       <label>Email Address</label>
-071:       <input id="loginEmail" type="email" autocomplete="email" required>
-072:     </div><br>
-073:     <div class="field">
-074:       <label>Password</label>
-075:       <input id="loginPassword" type="password" autocomplete="current-password" required>
-076:     </div><br>
-077:     <button type="submit" class="btn dark" style="width:100%">Sign In</button>
-078:   </form>
-079:   <div id="loginMsg"></div>
-080: </div>
-081: 
-082: <div id="adminView" class="hidden">
-083:   <header class="top">
-084:     <div class="wrap">
-085:       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-086:         <div>
-087:           <h2 style="margin:0;font-size:22px">Smartly Operations Control</h2>
-088:           <small style="opacity:0.8">Beirut Local Timezone: GMT+3</small>
-089:         </div>
-090:         <button class="btn danger" onclick="logout()">Sign Out</button>
-091:       </div>
-092:     </div>
-093:   </header>
-094:   <div class="wrap">
-095:     <div class="tabs" id="tabs"></div>
-096:     <div id="app"></div>
-097:   </div>
-098: </div>
-099: 
-100: <div id="modalContainer" class="hidden"></div>
-101: 
-102: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-103: <script>
-104: const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
-105: const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
-106: 
-107: const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-108: 
-109: const COUNTRY_LIST = [
-110:   { code: 'LB', name: 'Lebanon' }, { code: 'SY', name: 'Syria' },
-111:   { code: 'JO', name: 'Jordan' }, { code: 'AE', name: 'United Arab Emirates' },
-112:   { code: 'SA', name: 'Saudi Arabia' }, { code: 'EG', name: 'Egypt' },
-113:   { code: 'QA', name: 'Qatar' }, { code: 'KW', name: 'Kuwait' },
-114:   { code: 'BH', name: 'Bahrain' }, { code: 'OM', name: 'Oman' },
-115:   { code: 'IQ', name: 'Iraq' }, { code: 'PS', name: 'Palestine' },
-116:   { code: 'TR', name: 'Turkey' }, { code: 'US', name: 'United States' },
-117:   { code: 'GB', name: 'United Kingdom' }, { code: 'CA', name: 'Canada' },
-118:   { code: 'FR', name: 'France' }, { code: 'DE', name: 'Germany' }
-119: ];
-120: 
-121: let current = 'dashboard', categories = [], countries = [];
-122: let editingId = null;
-123: 
-124: const tabs = [
-125:   ['dashboard','Dashboard'],
-126:   ['orders','Orders'],
-127:   ['products','Products'],
-128:   ['categories','Categories'],
-129:   ['countries','Countries'],
-130:   ['delivery','Delivery Fees'],
-131:   ['bundles','Bundles & Offers'],
-132:   ['natural','Natural Products'],
-133:   ['payments','Payment Methods'],
-134:   ['reservations','Reservations'],
-135:   ['reviews','Reviews'],
-136:   ['special','Special Requests'],
-137:   ['customers','Customers'],
-138:   ['settings','Settings']
-139: ];
-140: 
-141: function esc(v){ return String(v??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
-142: function msg(text, error=false){ return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`; }
-143: 
-144: function formatLebanonTime(isoString){
-145:   if(!isoString) return '—';
-146:   try {
-147:     const d = new Date(isoString);
-148:     return d.toLocaleString('en-GB', {
-149:       timeZone: 'Asia/Beirut',
-150:       year: 'numeric',
-151:       month: '2-digit',
-152:       day: '2-digit',
-153:       hour: '2-digit',
-154:       minute: '2-digit',
-155:       hour12: true
-156:     });
-157:   } catch(e) {
-158:     return isoString;
-159:   }
-160: }
-161: 
-162: window.addEventListener('DOMContentLoaded', guard);
-163: 
-164: async function guard(){
-165:   try {
-166:     const s = await sb.auth.getSession();
-167:     if(!s.data?.session) return;
-168:     const a = await sb.rpc('is_admin');
-169:     if(!a.error && a.data === true) showAdmin();
-170:   } catch(e) {
-171:     console.warn('Auth guard check non-critical failure:', e);
-172:   }
-173: }
-174: 
-175: async function login(){
-176:   const emailEl = document.getElementById('loginEmail');
-177:   const passEl = document.getElementById('loginPassword');
-178:   const msgEl = document.getElementById('loginMsg');
-179:   
-180:   const email = emailEl ? emailEl.value.trim() : '';
-181:   const password = passEl ? passEl.value : '';
-182:   
-183:   if(!email || !password) {
-184:     if(msgEl) msgEl.innerHTML = msg('Email and password required.', true);
-185:     return;
-186:   }
-187:   
-188:   const r = await sb.auth.signInWithPassword({email, password});
-189:   if(r.error) {
-190:     if(msgEl) msgEl.innerHTML = msg(r.error.message, true);
-191:     return;
-192:   }
-193:   
-194:   const a = await sb.rpc('is_admin');
-195:   if(a.error || a.data !== true){
-196:     await sb.auth.signOut();
-197:     if(msgEl) msgEl.innerHTML = msg('Access denied. Administrator privilege required.', true);
-198:     return;
-199:   }
-200:   showAdmin();
-201: }
-202: 
-203: async function logout(){
-204:   await sb.auth.signOut();
-205:   location.reload();
-206: }
-207: 
-208: function showAdmin(){
-209:   const loginV = document.getElementById('loginView');
-210:   const adminV = document.getElementById('adminView');
-211:   if(loginV) loginV.classList.add('hidden');
-212:   if(adminV) adminV.classList.remove('hidden');
-213:   renderTabs();
-214:   show('dashboard');
-215: }
-216: 
-217: function renderTabs(){
-218:   const tabsEl = document.getElementById('tabs');
-219:   if(tabsEl) {
-220:     tabsEl.innerHTML = tabs.map(x => `<button class="tab ${current===x[0]?'active':''}" onclick="show('${x[0]}')">${x[1]}</button>`).join('');
-221:   }
-222: }
-223: 
-224: function show(t){
-225:   current = t;
-226:   editingId = null;
-227:   renderTabs();
-228:   if(t==='dashboard') return dashboard();
-229:   if(t==='products'||t==='natural') return productsPage(t==='natural');
-230:   if(t==='categories') return categoriesPage();
-231:   if(t==='countries') return countriesPage();
-232:   if(t==='delivery') return deliveryFeesPage();
-233:   if(t==='bundles') return bundlesPage();
-234:   if(t==='payments') return paymentsPage();
-235:   if(t==='orders') return ordersPage();
-236:   if(t==='reservations') return reservationsPage();
-237:   if(t==='reviews') return reviewsPage();
-238:   if(t==='special') return specialPage();
-239:   if(t==='customers') return customersPage();
-240:   if(t==='settings') return settingsPage();
-241: }
-242: 
-243: function renderHeader(title, subtitle=''){
-244:   return `
-245:     <div class="panel-header">
-246:       <div>
-247:         <h2 class="panel-title">${title}</h2>
-248:         ${subtitle ? `<small class="muted">${subtitle}</small>` : ''}
-249:       </div>
-250:       <button class="btn outline" onclick="show('${current}')">🔄 Refresh Data</button>
-251:     </div>`;
-252: }
-253: 
-254: function formField(id, label, type='text', extra=''){
-255:   return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" ${extra}></div>`;
-256: }
-257: 
-258: // ------------------------------------------------------------------
-259: // DASHBOARD (BI ANALYTICS)
-260: // ------------------------------------------------------------------
-261: async function dashboard(){
-262:   const app = document.getElementById('app');
-263:   if(!app) return;
-264:   app.innerHTML = `<div class="panel">${renderHeader('Executive Dashboard', 'Real-time sales & operational metrics')}<p class="muted">Calculating store statistics...</p></div>`;
-265: 
-266:   const [pRes, oRes, rRes, sRes, itemsRes] = await Promise.all([
-267:     sb.from('products').select('id, name_en, retail_price, category_id, stock_quantity'),
-268:     sb.from('orders').select('id, total, status, created_at'),
-269:     sb.from('reservations').select('id', {count:'exact'}),
-270:     sb.from('special_requests').select('id', {count:'exact'}),
-271:     sb.from('order_items').select('product_id, quantity, unit_price')
-272:   ]);
-273: 
-274:   const orders = oRes.data || [];
-275:   const products = pRes.data || [];
-276:   const orderItems = itemsRes.data || [];
-277: 
-278:   const totalGrossRevenue = orders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
-279:   const completedOrders = orders.filter(o => o.status === 'completed');
-280:   const completedRevenue = completedOrders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
-281:   const avgOrderValue = orders.length ? (totalGrossRevenue / orders.length) : 0;
-282: 
-283:   const productSalesMap = {};
-284:   orderItems.forEach(item => {
-285:     productSalesMap[item.product_id] = (productSalesMap[item.product_id] || 0) + (item.quantity || 1);
-286:   });
-287: 
-288:   const topProducts = products
-289:     .map(p => ({ name: p.name_en || 'Product', sales: productSalesMap[p.id] || 0 }))
-290:     .sort((a,b) => b.sales - a.sales)
-291:     .slice(0, 5);
-292: 
-293:   const maxSales = Math.max(...topProducts.map(p => p.sales), 1);
-294: 
-295:   const statusCounts = orders.reduce((acc, o) => {
-296:     acc[o.status] = (acc[o.status] || 0) + 1;
-297:     return acc;
-298:   }, {});
-299: 
-300:   app.innerHTML = `
-301:     <div class="panel">${renderHeader('Executive Business Intelligence', 'Live telemetry & performative analytics')}</div>
-302:     <div class="statgrid">
-303:       <div class="stat"><span>Gross Revenue</span><b>$${totalGrossRevenue.toFixed(2)}</b></div>
-304:       <div class="stat"><span>Completed Revenue</span><b>$${completedRevenue.toFixed(2)}</b></div>
-305:       <div class="stat"><span>Average Order Value</span><b>$${avgOrderValue.toFixed(2)}</b></div>
-306:       <div class="stat"><span>Total Orders</span><b>${orders.length}</b></div>
-307:       <div class="stat"><span>Pending Inquiries</span><b>${(rRes.count || 0) + (sRes.count || 0)}</b></div>
-308:     </div>
-309: 
-310:     <div class="bi-grid">
-311:       <div class="panel">
-312:         <h3 style="margin-top:0;color:#123B5D">Top Selling Products</h3>
-313:         ${topProducts.length ? topProducts.map(tp => `
-314:           <div style="margin-bottom:14px">
-315:             <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600">
-316:               <span>${esc(tp.name)}</span>
-317:               <span>${tp.sales} units sold</span>
-318:             </div>
-319:             <div class="progress-bar-bg">
-320:               <div class="progress-bar-fill" style="width:${(tp.sales/maxSales)*100}%"></div>
-321:             </div>
-322:           </div>
-323:         `).join('') : '<p class="muted">No sales data recorded yet.</p>'}
-324:       </div>
-325: 
-326:       <div class="panel">
-327:         <h3 style="margin-top:0;color:#123B5D">Order Pipeline Status</h3>
-328:         <ul style="list-style:none;padding:0;margin:0">
-329:           ${['pending','confirmed','preparing','out_for_delivery','completed','cancelled'].map(st => `
-330:             <li style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9">
-331:               <span class="status-pill status-${st}">${st.replace(/_/g,' ')}</span>
-332:               <b>${statusCounts[st] || 0} orders</b>
-333:             </li>
-334:           `).join('')}
-335:         </ul>
-336:       </div>
-337:     </div>
-338:   `;
-339: }
-340: 
-341: // ------------------------------------------------------------------
-342: // ORDERS MANAGEMENT & BILLING
-343: // ------------------------------------------------------------------
-344: async function ordersPage(){
-345:   const app = document.getElementById('app');
-346:   if(!app) return;
-347:   app.innerHTML = `<div class="panel">${renderHeader('Customer Orders Hub', 'Manage fulfillment, restock on cancel & track billing')}<div id="table">Loading orders...</div></div>`;
-348: 
-349:   const r = await sb.from('orders').select('*, order_items(*)').order('created_at', {ascending:false}).limit(200);
-350:   const tableEl = document.getElementById('table');
-351:   if(!tableEl) return;
-352:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-353: 
-354:   tableEl.innerHTML = `
-355:     <div class="table-wrap">
-356:       <table class="table">
-357:         <tr>
-358:           <th>Order #</th>
-359:           <th>Customer</th>
-360:           <th>Phone</th>
-361:           <th>Items Qt.</th>
-362:           <th>Subtotal</th>
-363:           <th>Delivery Fee</th>
-364:           <th>Total Bill</th>
-365:           <th>Status</th>
-366:           <th>Created Date/Time (LB)</th>
-367:           <th>Actions</th>
-368:         </tr>
-369:         ${(r.data||[]).map(x => {
-370:           const items = x.order_items || [];
-371:           const totalQty = items.reduce((sum, i) => sum + (Number(i.quantity) || 1), 0);
-372:           const deliveryFee = Number(x.delivery_fee || 0);
-373:           const totalBill = Number(x.total || 0);
-374:           const subtotal = Math.max(0, totalBill - deliveryFee);
-375: 
-376:           return `
-377:             <tr>
-378:               <td><b>${esc(x.order_number || x.id.slice(0,8))}</b></td>
-379:               <td>${esc(x.name)}</td>
-380:               <td>${esc(x.phone)}</td>
-381:               <td><b style="color:#159A9C">${totalQty}</b></td>
-382:               <td>$${subtotal.toFixed(2)}</td>
-383:               <td>+$${deliveryFee.toFixed(2)}</td>
-384:               <td><b style="color:#123B5D">$${totalBill.toFixed(2)}</b></td>
-385:               <td>
-386:                 <select onchange="handleOrderStatusChange('${esc(x.id)}', '${esc(x.status)}', this.value)">
-387:                   <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
-388:                   <option value="confirmed" ${x.status==='confirmed'?'selected':''}>Confirmed</option>
-389:                   <option value="preparing" ${x.status==='preparing'?'selected':''}>Preparing</option>
-390:                   <option value="out_for_delivery" ${x.status==='out_for_delivery'?'selected':''}>Out for Delivery</option>
-391:                   <option value="completed" ${x.status==='completed'?'selected':''}>Completed</option>
-392:                   <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
-393:                 </select>
-394:               </td>
-395:               <td><small>${formatLebanonTime(x.created_at)}</small></td>
-396:               <td><button class="btn dark" onclick="viewOrderDetails('${esc(x.id)}')">Invoice / Details</button></td>
-397:             </tr>`;
-398:         }).join('')}
-399:       </table>
-400:     </div>`;
-401: }
-402: 
-403: async function handleOrderStatusChange(orderId, oldStatus, newStatus){
-404:   if(oldStatus === newStatus) return;
-405: 
-406:   const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
-407:   if(r.error) return alert('Failed to update order status: ' + r.error.message);
-408: 
-409:   if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
-410:     await adjustOrderInventory(orderId, 'restock');
-411:   } else if(oldStatus === 'cancelled' && newStatus !== 'cancelled'){
-412:     await adjustOrderInventory(orderId, 'deduct');
-413:   }
-414: 
-415:   ordersPage();
-416: }
-417: 
-418: async function adjustOrderInventory(orderId, mode){
-419:   const itemsRes = await sb.from('order_items').select('product_id, quantity').eq('order_id', orderId);
-420:   if(itemsRes.error || !itemsRes.data) return;
-421: 
-422:   for(const item of itemsRes.data){
-423:     if(!item.product_id) continue;
-424:     const prodRes = await sb.from('products').select('stock_quantity').eq('id', item.product_id).single();
-425:     if(prodRes.data){
-426:       let currentStock = Number(prodRes.data.stock_quantity || 0);
-427:       let qty = Number(item.quantity || 1);
-428:       let updatedStock = (mode === 'restock') ? (currentStock + qty) : Math.max(0, currentStock - qty);
-429:       await sb.from('products').update({ stock_quantity: updatedStock }).eq('id', item.product_id);
-430:     }
-431:   }
-432: }
-433: 
-434: async function viewOrderDetails(orderId){
-435:   const [oRes, iRes] = await Promise.all([
-436:     sb.from('orders').select('*').eq('id', orderId).single(),
-437:     sb.from('order_items').select('*, products!product_id(name_en)').eq('order_id', orderId)
-438:   ]);
-439: 
-440:   if(oRes.error) return alert(oRes.error.message);
-441:   const o = oRes.data;
-442:   const items = iRes.data || [];
-443:   const deliveryFee = Number(o.delivery_fee || 0);
-444:   const total = Number(o.total || 0);
-445:   const subtotal = Math.max(0, total - deliveryFee);
-446: 
-447:   const modal = document.getElementById('modalContainer');
-448:   if(!modal) return;
-449:   modal.classList.remove('hidden');
-450:   modal.innerHTML = `
-451:     <div class="modal">
-452:       <div class="modal-content">
-453:         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px">
-454:           <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||o.id.slice(0,8))}</h3>
-455:           <button class="btn danger" onclick="closeModal()">Close</button>
-456:         </div>
-457:         <p><b>Customer Name:</b> ${esc(o.name)}</p>
-458:         <p><b>Phone:</b> ${esc(o.phone)} | <b>Alt:</b> ${esc(o.alternative_phone||'N/A')}</p>
-459:         <p><b>Delivery Address:</b> ${esc(o.address || o.location || 'N/A')}</p>
-460:         <p><b>Date Ordered (Lebanon):</b> ${formatLebanonTime(o.created_at)}</p>
-461: 
-462:         <h4 style="margin-top:20px;border-bottom:1px solid #eee;padding-bottom:6px">Line Items</h4>
-463:         <table class="table" style="min-width:100%">
-464:           <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
-465:           ${items.map(it => `
-466:             <tr>
-467:               <td>${esc(it.products?.name_en || it.product_name || 'Product')}</td>
-468:               <td>${it.quantity}</td>
-469:               <td>$${Number(it.unit_price || it.price || 0).toFixed(2)}</td>
-470:               <td>$${(Number(it.quantity||1)*Number(it.unit_price || it.price || 0)).toFixed(2)}</td>
-471:             </tr>
-472:           `).join('')}
-473:         </table>
-474: 
-475:         <div style="margin-top:16px;text-align:right;background:#f8fafc;padding:12px;border-radius:8px">
-476:           <p style="margin:4px 0">Subtotal: <b>$${subtotal.toFixed(2)}</b></p>
-477:           <p style="margin:4px 0">Delivery Fee: <b>+$${deliveryFee.toFixed(2)}</b></p>
-478:           <h3 style="margin:8px 0 0 0;color:#123B5D">Total Customer Bill: $${total.toFixed(2)}</h3>
-479:         </div>
-480:       </div>
-481:     </div>
-482:   `;
-483: }
-484: 
-485: function closeModal(){
-486:   const modal = document.getElementById('modalContainer');
-487:   if(modal) modal.classList.add('hidden');
-488: }
-489: 
-490: // ------------------------------------------------------------------
-491: // REVIEWS WITH APPROVAL WORKFLOW
-492: // ------------------------------------------------------------------
-493: async function reviewsPage(){
-494:   const app = document.getElementById('app');
-495:   if(!app) return;
-496:   app.innerHTML = `<div class="panel">${renderHeader('Customer Reviews Moderation', 'Approve comments prior to storefront display')}<div id="reviewsTable">Loading reviews...</div></div>`;
-497: 
-498:   const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
-499:   const tableEl = document.getElementById('reviewsTable');
-500:   if(!tableEl) return;
-501:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-502: 
-503:   tableEl.innerHTML = `
-504:     <div class="table-wrap">
-505:       <table class="table">
-506:         <tr>
-507:           <th>Customer Name</th>
-508:           <th>Product / Subject</th>
-509:           <th>Rating</th>
-510:           <th>Comment</th>
-511:           <th>Submitted Date (LB)</th>
-512:           <th>Approved</th>
-513:           <th>Moderation Actions</th>
-514:         </tr>
-515:         ${(r.data||[]).map(x => `
-516:           <tr>
-517:             <td><b>${esc(x.customer_name||'Anonymous')}</b></td>
-518:             <td>${esc(x.product_name||'General')}</td>
-519:             <td>⭐ ${x.rating || 5}/5</td>
-520:             <td style="max-width:250px">${esc(x.comment)}</td>
-521:             <td><small>${formatLebanonTime(x.created_at)}</small></td>
-522:             <td><span class="status-pill ${x.approved?'status-approved':'status-pending'}">${x.approved?'Approved':'Pending'}</span></td>
-523:             <td>
-524:               <button class="btn ${x.approved?'danger':'success'}" onclick="toggleReviewApproval('${esc(x.id)}', ${!x.approved})">
-525:                 ${x.approved?'Unapprove / Hide':'Approve & Post'}
-526:               </button>
-527:               <button class="btn outline" onclick="deleteRow('reviews','${esc(x.id)}')">Delete</button>
-528:             </td>
-529:           </tr>
-530:         `).join('')}
-531:       </table>
-532:     </div>`;
-533: }
-534: 
-535: async function toggleReviewApproval(id, newStatus){
-536:   const r = await sb.from('reviews').update({ approved: newStatus }).eq('id', id);
-537:   if(r.error) alert('Error updating approval status: ' + r.error.message);
-538:   else reviewsPage();
-539: }
-540: 
-541: // ------------------------------------------------------------------
-542: // RESERVATIONS & SPECIAL REQUESTS
-543: // ------------------------------------------------------------------
-544: async function reservationsPage(){
-545:   const app = document.getElementById('app');
-546:   if(!app) return;
-547:   app.innerHTML = `<div class="panel">${renderHeader('Product Reservations', 'Manage upcoming stock reservations')}<div id="resTable">Loading...</div></div>`;
-548: 
-549:   const r = await sb.from('reservations').select('*, products!product_id(name_en)').order('created_at', {ascending:false}).limit(200);
-550:   const tableEl = document.getElementById('resTable');
-551:   if(!tableEl) return;
-552:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-553: 
-554:   tableEl.innerHTML = `
-555:     <div class="table-wrap">
-556:       <table class="table">
-557:         <tr>
-558:           <th>Customer Name</th>
-559:           <th>Phone</th>
-560:           <th>Product Reserved</th>
-561:           <th>Quantity</th>
-562:           <th>Status</th>
-563:           <th>Date (LB Time)</th>
-564:           <th>Action</th>
-565:         </tr>
-566:         ${(r.data||[]).map(x => `
-567:           <tr>
-568:             <td><b>${esc(x.name)}</b></td>
-569:             <td>${esc(x.phone)}</td>
-570:             <td>${esc(x.products?.name_en || x.product_id)}</td>
-571:             <td>${x.quantity || 1}</td>
-572:             <td>
-573:               <select onchange="updateRecordStatus('reservations', '${esc(x.id)}', this.value)">
-574:                 <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
-575:                 <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
-576:                 <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
-577:                 <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
-578:               </select>
-579:             </td>
-580:             <td><small>${formatLebanonTime(x.created_at)}</small></td>
-581:             <td><button class="btn danger" onclick="deleteRow('reservations','${esc(x.id)}')">Delete</button></td>
-582:           </tr>
-583:         `).join('')}
-584:       </table>
-585:     </div>`;
-586: }
-587: 
-588: async function specialPage(){
-589:   const app = document.getElementById('app');
-590:   if(!app) return;
-591:   app.innerHTML = `<div class="panel">${renderHeader('Special Requests', 'Inbound custom customer requests')}<div id="specTable">Loading...</div></div>`;
-592: 
-593:   const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
-594:   const tableEl = document.getElementById('specTable');
-595:   if(!tableEl) return;
-596:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-597: 
-598:   tableEl.innerHTML = `
-599:     <div class="table-wrap">
-600:       <table class="table">
-601:         <tr>
-602:           <th>Customer Name</th>
-603:           <th>Phone</th>
-604:           <th>Country</th>
-605:           <th>Requested Item</th>
-606:           <th>Status</th>
-607:           <th>Date (LB Time)</th>
-608:           <th>Action</th>
-609:         </tr>
-610:         ${(r.data||[]).map(x => `
-611:           <tr>
-612:             <td><b>${esc(x.name)}</b></td>
-613:             <td>${esc(x.phone)}</td>
-614:             <td>${esc(x.country || 'Lebanon')}</td>
-615:             <td>${esc(x.item || x.request_details)}</td>
-616:             <td>
-617:               <select onchange="updateRecordStatus('special_requests', '${esc(x.id)}', this.value)">
-618:                 <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
-619:                 <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
-620:                 <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
-621:                 <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
-622:               </select>
-623:             </td>
-624:             <td><small>${formatLebanonTime(x.created_at)}</small></td>
-625:             <td><button class="btn danger" onclick="deleteRow('special_requests','${esc(x.id)}')">Delete</button></td>
-626:           </tr>
-627:         `).join('')}
-628:       </table>
-629:     </div>`;
-630: }
-631: 
-632: async function updateRecordStatus(table, id, status){
-633:   const r = await sb.from(table).update({ status }).eq('id', id);
-634:   if(r.error) alert('Failed to update status: ' + r.error.message);
-635: }
-636: 
-637: // ------------------------------------------------------------------
-638: // SETTINGS
-639: // ------------------------------------------------------------------
-640: async function settingsPage(){
-641:   const app = document.getElementById('app');
-642:   if(!app) return;
-643:   app.innerHTML = `
-644:     <div class="panel">
-645:       ${renderHeader('Store System Settings & Preferences', 'Configure administrative defaults & maintenance controls')}
-646:       <div id="settingsMsg"></div>
-647:       <div class="grid">
-648:         ${formField('s_store_name', 'Store Front Name', 'text', 'value="Smartly Lebanon"')}
-649:         ${formField('s_currency', 'Store Currency Symbol', 'text', 'value="$"')}
-650:         ${formField('s_phone', 'Support WhatsApp Hotline', 'text', 'value="9613080365"')}
-651:         ${formField('s_tax', 'VAT / Tax Percentage (%)', 'number', 'value="0"')}
-652:         <div class="field">
-653:           <label>Maintenance Mode</label>
-654:           <select id="s_maintenance">
-655:             <option value="false">Disabled (Store Active)</option>
-656:             <option value="true">Enabled (Store Offline)</option>
-657:           </select>
-658:         </div>
-659:         <div class="field">
-660:           <label>Default Timezone</label>
-661:           <input type="text" value="Asia/Beirut (GMT+3)" disabled readonly style="background:#f1f5f9">
-662:         </div>
-663:       </div>
-664:       <br>
-665:       <div class="actions">
-666:         <button class="btn" onclick="saveStoreSettings()">Save Configurations</button>
-667:         <button class="btn outline" onclick="localStorage.clear(); alert('Local administrative cache cleared.');">Clear Local Cache</button>
-668:       </div>
-669:     </div>`;
-670: 
-671:     loadStoreSettings();
-672: }
-673: 
-674: async function loadStoreSettings(){
-675:   try {
-676:     const { data } = await sb.from('settings').select('*').limit(1).maybeSingle();
-677:     if(data) {
-678:       const nameEl = document.getElementById('s_store_name');
-679:       const currEl = document.getElementById('s_currency');
-680:       const phoneEl = document.getElementById('s_phone');
-681:       const taxEl = document.getElementById('s_tax');
-682:       const maintEl = document.getElementById('s_maintenance');
-683: 
-684:       if(nameEl) nameEl.value = data.store_name || 'Smartly Lebanon';
-685:       if(currEl) currEl.value = data.currency || '$';
-686:       if(phoneEl) phoneEl.value = data.whatsapp_phone || '9613080365';
-687:       if(taxEl) taxEl.value = data.tax_percent || 0;
-688:       if(maintEl) maintEl.value = data.maintenance_mode ? 'true' : 'false';
-689:     }
-690:   } catch(e) {
-691:     console.log('Settings load fallback active');
-692:   }
-693: }
-694: 
-695: async function saveStoreSettings(){
-696:   const s_store_name = document.getElementById('s_store_name');
-697:   const s_currency = document.getElementById('s_currency');
-698:   const s_phone = document.getElementById('s_phone');
-699:   const s_tax = document.getElementById('s_tax');
-700:   const s_maintenance = document.getElementById('s_maintenance');
-701: 
-702:   const row = {
-703:     store_name: s_store_name ? s_store_name.value.trim() : 'Smartly Lebanon',
-704:     currency: s_currency ? s_currency.value.trim() : '$',
-705:     whatsapp_phone: s_phone ? s_phone.value.trim().replace(/[^0-9]/g, '') : '',
-706:     tax_percent: s_tax ? Number(s_tax.value || 0) : 0,
-707:     maintenance_mode: s_maintenance ? s_maintenance.value === 'true' : false
-708:   };
-709: 
-710:   const { data: existing } = await sb.from('settings').select('id').limit(1).maybeSingle();
-711:   let r;
-712:   if(existing?.id){
-713:     r = await sb.from('settings').update(row).eq('id', existing.id);
-714:   } else {
-715:     r = await sb.from('settings').insert(row);
-716:   }
-717: 
-718:   if(r?.error){
-719:     alert('Could not save to DB, settings saved to local cache fallback: ' + r.error.message);
-720:     localStorage.setItem('smartly_settings', JSON.stringify(row));
-721:   } else {
-722:     alert('System configurations saved successfully.');
-723:   }
-724: }
-725: 
-726: // ------------------------------------------------------------------
-727: // PRODUCTS, CATEGORIES, COUNTRIES, DELIVERY, BUNDLES, PAYMENTS, CUSTOMERS
-728: // ------------------------------------------------------------------
-729: async function loadRefs(){
-730:   const [c,co] = await Promise.all([
-731:     sb.from('categories').select('id,name_en,name_ar').order('sort_order'),
-732:     sb.from('countries').select('id,name,country_code').order('sort_order')
-733:   ]);
-734:   categories = c.data || [];
-735:   countries = co.data || [];
-736: }
-737: 
-738: async function productsPage(natural=false){
-739:   await loadRefs();
-740:   editingId = null;
-741:   const app = document.getElementById('app');
-742:   if(!app) return;
-743:   app.innerHTML = `
-744:     <div class="panel">
-745:       ${renderHeader(natural ? 'Natural Products Management' : 'Products Catalog')}
-746:       <div id="productMsg"></div>
-747:       <div class="grid">
-748:         ${formField('p_name_en','Name EN')}${formField('p_name_ar','Name AR')}
-749:         <div class="field"><label>Category</label><select id="p_category"><option value="">Select category</option>${categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name_en||c.name_ar)}</option>`).join('')}</select></div>
-750:         ${formField('p_desc_en','Description EN')}${formField('p_desc_ar','Description AR')}
-751:         ${formField('p_price','Retail Price ($)','number','step="0.01"')}
-752:         ${formField('p_stock','Stock Quantity','number','min="0"')}
-753:         ${formField('p_sort','Sort Order','number','value="0"')}
-754:         <div class="field"><label>Product Image</label><input id="p_image" type="file" accept="image/*"></div>
-755:         <div class="field"><label>Active</label><select id="p_active"><option value="true">Yes</option><option value="false">No</option></select></div>
-756:         <div class="field"><label>Is Natural</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div>
-757:       </div><br>
-758:       <div class="actions">
-759:         <button class="btn" id="saveBtn" onclick="saveProduct()">Save Product</button>
-760:         <button class="btn outline" onclick="resetProductForm()">Clear Form</button>
-761:       </div>
-762:     </div>
-763:     <div class="panel">
-764:       <h3>Existing Products List</h3>
-765:       <div id="productList">Loading catalog...</div>
-766:     </div>`;
-767: 
-768:   renderProductsList(natural);
-769: }
-770: 
-771: async function renderProductsList(natural=false){
-772:   let q = sb.from('products').select('*, categories!category_id(name_en)').order('sort_order');
-773:   if(natural) q = q.eq('is_natural', true);
-774:   const r = await q;
-775:   const listEl = document.getElementById('productList');
-776:   if(!listEl) return;
-777:   if(r.error) return listEl.innerHTML = msg(r.error.message, true);
-778: 
-779:   listEl.innerHTML = `
-780:     <div class="table-wrap">
-781:       <table class="table">
-782:         <tr>
-783:           <th>Image</th>
-784:           <th>Name (EN)</th>
-785:           <th>Category</th>
-786:           <th>Price</th>
-787:           <th>Stock</th>
-788:           <th>Status</th>
-789:           <th>Actions</th>
-790:         </tr>
-791:         ${(r.data||[]).map(x => `
-792:           <tr>
-793:             <td>${x.image_url ? `<img src="${esc(x.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
-794:             <td><b>${esc(x.name_en)}</b><br><small class="muted">${esc(x.name_ar||'')}</small></td>
-795:             <td>${esc(x.categories?.name_en || '—')}</td>
-796:             <td>$${Number(x.retail_price||0).toFixed(2)}</td>
-797:             <td><b style="color:${x.stock_quantity<5?'#e11d48':'#123B5D'}">${x.stock_quantity||0}</b></td>
-798:             <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Hidden'}</span></td>
-799:             <td>
-800:               <button class="btn outline" onclick="editProduct('${esc(x.id)}')">Edit</button>
-801:               <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button>
-802:             </td>
-803:           </tr>
-804:         `).join('')}
-805:       </table>
-806:     </div>`;
-807: }
-808: 
-809: async function saveProduct(){
-810:   const msgEl = document.getElementById('productMsg');
-811:   const p_name_en = document.getElementById('p_name_en');
-812:   const p_name_ar = document.getElementById('p_name_ar');
-813:   const p_category = document.getElementById('p_category');
-814:   const p_desc_en = document.getElementById('p_desc_en');
-815:   const p_desc_ar = document.getElementById('p_desc_ar');
-816:   const p_price = document.getElementById('p_price');
-817:   const p_stock = document.getElementById('p_stock');
-818:   const p_sort = document.getElementById('p_sort');
-819:   const p_active = document.getElementById('p_active');
-820:   const p_natural = document.getElementById('p_natural');
-821:   const p_image = document.getElementById('p_image');
-822: 
-823:   const name_en = p_name_en ? p_name_en.value.trim() : '';
-824:   if(!name_en) {
-825:     if(msgEl) msgEl.innerHTML = msg('English name required.', true);
-826:     return;
-827:   }
-828: 
-829:   let image_url = null;
-830:   if(p_image && p_image.files.length > 0){
-831:     const file = p_image.files[0];
-832:     const path = `products/${Date.now()}_${file.name}`;
-833:     const up = await sb.storage.from('products').upload(path, file);
-834:     if(up.error) {
-835:       if(msgEl) msgEl.innerHTML = msg('Image upload error: ' + up.error.message, true);
-836:       return;
-837:     }
-838:     const pub = sb.storage.from('products').getPublicUrl(path);
-839:     image_url = pub.data.publicUrl;
-840:   }
-841: 
-842:   const row = {
-843:     name_en,
-844:     name_ar: p_name_ar ? p_name_ar.value.trim() : '',
-845:     category_id: (p_category && p_category.value) ? p_category.value : null,
-846:     description_en: p_desc_en ? p_desc_en.value.trim() : '',
-847:     description_ar: p_desc_ar ? p_desc_ar.value.trim() : '',
-848:     retail_price: p_price ? parseFloat(p_price.value) || 0 : 0,
-849:     stock_quantity: p_stock ? parseInt(p_stock.value) || 0 : 0,
-850:     sort_order: p_sort ? parseInt(p_sort.value) || 0 : 0,
-851:     is_active: p_active ? p_active.value === 'true' : true,
-852:     is_natural: p_natural ? p_natural.value === 'true' : false
-853:   };
-854: 
-855:   if(image_url) row.image_url = image_url;
-856: 
-857:   let r;
-858:   if(editingId){
-859:     r = await sb.from('products').update(row).eq('id', editingId);
-860:   } else {
-861:     r = await sb.from('products').insert(row);
-862:   }
-863: 
-864:   if(r.error) {
-865:     if(msgEl) msgEl.innerHTML = msg(r.error.message, true);
-866:     return;
-867:   }
-868:   if(msgEl) msgEl.innerHTML = msg('Product saved successfully.');
-869:   resetProductForm();
-870:   renderProductsList(p_natural ? p_natural.value === 'true' : false);
-871: }
-872: 
-873: async function editProduct(id){
-874:   const r = await sb.from('products').select('*').eq('id', id).single();
-875:   if(r.error) return alert(r.error.message);
-876:   const p = r.data;
-877:   editingId = p.id;
-878: 
-879:   const p_name_en = document.getElementById('p_name_en');
-880:   const p_name_ar = document.getElementById('p_name_ar');
-881:   const p_category = document.getElementById('p_category');
-882:   const p_desc_en = document.getElementById('p_desc_en');
-883:   const p_desc_ar = document.getElementById('p_desc_ar');
-884:   const p_price = document.getElementById('p_price');
-885:   const p_stock = document.getElementById('p_stock');
-886:   const p_sort = document.getElementById('p_sort');
-887:   const p_active = document.getElementById('p_active');
-888:   const p_natural = document.getElementById('p_natural');
-889:   const saveBtn = document.getElementById('saveBtn');
-890: 
-891:   if(p_name_en) p_name_en.value = p.name_en || '';
-892:   if(p_name_ar) p_name_ar.value = p.name_ar || '';
-893:   if(p_category) p_category.value = p.category_id || '';
-894:   if(p_desc_en) p_desc_en.value = p.description_en || '';
-895:   if(p_desc_ar) p_desc_ar.value = p.description_ar || '';
-896:   if(p_price) p_price.value = p.retail_price || 0;
-897:   if(p_stock) p_stock.value = p.stock_quantity || 0;
-898:   if(p_sort) p_sort.value = p.sort_order || 0;
-899:   if(p_active) p_active.value = p.is_active ? 'true' : 'false';
-900:   if(p_natural) p_natural.value = p.is_natural ? 'true' : 'false';
-901:   if(saveBtn) saveBtn.innerText = 'Update Product';
-902:   window.scrollTo({top:0, behavior:'smooth'});
-903: }
-904: 
-905: function resetProductForm(){
-906:   editingId = null;
-907:   const p_name_en = document.getElementById('p_name_en');
-908:   const p_name_ar = document.getElementById('p_name_ar');
-909:   const p_category = document.getElementById('p_category');
-910:   const p_desc_en = document.getElementById('p_desc_en');
-911:   const p_desc_ar = document.getElementById('p_desc_ar');
-912:   const p_price = document.getElementById('p_price');
-913:   const p_stock = document.getElementById('p_stock');
-914:   const p_sort = document.getElementById('p_sort');
-915:   const p_image = document.getElementById('p_image');
-916:   const saveBtn = document.getElementById('saveBtn');
-917: 
-918:   if(p_name_en) p_name_en.value = '';
-919:   if(p_name_ar) p_name_ar.value = '';
-920:   if(p_category) p_category.value = '';
-921:   if(p_desc_en) p_desc_en.value = '';
-922:   if(p_desc_ar) p_desc_ar.value = '';
-923:   if(p_price) p_price.value = '';
-924:   if(p_stock) p_stock.value = '';
-925:   if(p_sort) p_sort.value = '0';
-926:   if(p_image) p_image.value = '';
-927:   if(saveBtn) saveBtn.innerText = 'Save Product';
-928: }
-929: 
-930: // ------------------------------------------------------------------
-931: // CATEGORIES PAGE
-932: // ------------------------------------------------------------------
-933: async function categoriesPage(){
-934:   const app = document.getElementById('app');
-935:   if(!app) return;
-936:   app.innerHTML = `
-937:     <div class="panel">
-938:       ${renderHeader('Categories Management')}
-939:       <div id="catMsg"></div>
-940:       <div class="grid">
-941:         ${formField('c_name_en','Category Name EN')}
-942:         ${formField('c_name_ar','Category Name AR')}
-943:         ${formField('c_sort','Sort Order','number','value="0"')}
-944:       </div><br>
-945:       <div class="actions">
-946:         <button class="btn" id="catSaveBtn" onclick="saveCategory()">Save Category</button>
-947:       </div>
-948:     </div>
-949:     <div class="panel">
-950:       <h3>Categories List</h3>
-951:       <div id="catTable">Loading categories...</div>
-952:     </div>`;
-953: 
-954:   renderCategoriesList();
-955: }
-956: 
-957: async function renderCategoriesList(){
-958:   const r = await sb.from('categories').select('*').order('sort_order');
-959:   const tableEl = document.getElementById('catTable');
-960:   if(!tableEl) return;
-961:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-962: 
-963:   tableEl.innerHTML = `
-964:     <div class="table-wrap">
-965:       <table class="table">
-966:         <tr><th>Name EN</th><th>Name AR</th><th>Sort Order</th><th>Actions</th></tr>
-967:         ${(r.data||[]).map(x => `
-968:           <tr>
-969:             <td><b>${esc(x.name_en)}</b></td>
-970:             <td>${esc(x.name_ar||'—')}</td>
-970:             <td>${x.sort_order||0}</td>
-971:             <td>
-972:               <button class="btn outline" onclick="editCategory('${esc(x.id)}','${esc(x.name_en)}','${esc(x.name_ar||'')}','${x.sort_order||0}')">Edit</button>
-973:               <button class="btn danger" onclick="deleteRow('categories','${esc(x.id)}')">Delete</button>
-974:             </td>
-975:           </tr>
-976:         `).join('')}
-977:       </table>
-978:     </div>`;
-979: }
-980: 
-981: async function saveCategory(){
-982:   const c_name_en = document.getElementById('c_name_en');
-983:   const c_name_ar = document.getElementById('c_name_ar');
-984:   const c_sort = document.getElementById('c_sort');
-985:   const catMsg = document.getElementById('catMsg');
-986:   const catSaveBtn = document.getElementById('catSaveBtn');
-987: 
-988:   const name_en = c_name_en ? c_name_en.value.trim() : '';
-989:   if(!name_en) {
-990:     if(catMsg) catMsg.innerHTML = msg('Category name required.', true);
-991:     return;
-992:   }
-993: 
-994:   const row = { 
-995:     name_en, 
-996:     name_ar: c_name_ar ? c_name_ar.value.trim() : '', 
-997:     sort_order: c_sort ? parseInt(c_sort.value)||0 : 0 
-998:   };
-999:   
-1000:   let r = editingId ? await sb.from('categories').update(row).eq('id', editingId) : await sb.from('categories').insert(row);
-1001: 
-1002:   if(r.error) {
-1003:     if(catMsg) catMsg.innerHTML = msg(r.error.message, true);
-1004:     return;
-1005:   }
-1006:   editingId = null;
-1007:   if(c_name_en) c_name_en.value = ''; 
-1008:   if(c_name_ar) c_name_ar.value = ''; 
-1009:   if(c_sort) c_sort.value = '0';
-1010:   if(catSaveBtn) catSaveBtn.innerText = 'Save Category';
-1011:   renderCategoriesList();
-1012: }
-1013: 
-1014: function editCategory(id, en, ar, sort){
-1015:   editingId = id;
-1016:   const c_name_en = document.getElementById('c_name_en');
-1017:   const c_name_ar = document.getElementById('c_name_ar');
-1018:   const c_sort = document.getElementById('c_sort');
-1019:   const catSaveBtn = document.getElementById('catSaveBtn');
-1020: 
-1021:   if(c_name_en) c_name_en.value = en; 
-1022:   if(c_name_ar) c_name_ar.value = ar; 
-1023:   if(c_sort) c_sort.value = sort;
-1024:   if(catSaveBtn) catSaveBtn.innerText = 'Update Category';
-1025: }
-1026: 
-1027: // ------------------------------------------------------------------
-1028: // COUNTRIES & DELIVERY FEES
-1029: // ------------------------------------------------------------------
-1030: async function countriesPage(){
-1031:   const app = document.getElementById('app');
-1032:   if(!app) return;
-1033:   app.innerHTML = `
-1034:     <div class="panel">
-1035:       ${renderHeader('Countries Management')}
-1036:       <div id="coMsg"></div>
-1037:       <div class="grid">
-1038:         <div class="field">
-1039:           <label>Select Country</label>
-1040:           <select id="co_select">
-1041:             ${COUNTRY_LIST.map(c => `<option value="${c.code}" data-name="${c.name}">${c.name} (${c.code})</option>`).join('')}
-1042:           </select>
-1043:         </div>
-1044:         ${formField('co_sort','Sort Order','number','value="0"')}
-1045:       </div><br>
-1046:       <div class="actions">
-1047:         <button class="btn" onclick="saveCountry()">Add Country</button>
-1048:       </div>
-1049:     </div>
-1050:     <div class="panel">
-1051:       <h3>Active Supported Countries</h3>
-1052:       <div id="coTable">Loading...</div>
-1053:     </div>`;
-1054: 
-1055:   renderCountriesList();
-1056: }
-1057: 
-1058: async function renderCountriesList(){
-1059:   const r = await sb.from('countries').select('*').order('sort_order');
-1060:   const tableEl = document.getElementById('coTable');
-1061:   if(!tableEl) return;
-1062:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-1063: 
-1064:   tableEl.innerHTML = `
-1065:     <div class="table-wrap">
-1066:       <table class="table">
-1067:         <tr><th>Country Name</th><th>Code</th><th>Sort Order</th><th>Actions</th></tr>
-1068:         ${(r.data||[]).map(x => `
-1069:           <tr>
-1070:             <td><b>${esc(x.name)}</b></td>
-1071:             <td><code>${esc(x.country_code)}</code></td>
-1072:             <td>${x.sort_order||0}</td>
-1073:             <td><button class="btn danger" onclick="deleteRow('countries','${esc(x.id)}')">Delete</button></td>
-1074:           </tr>
-1075:         `).join('')}
-1076:       </table>
-1077:     </div>`;
-1078: }
-1079: 
-1080: async function saveCountry(){
-1081:   const co_select = document.getElementById('co_select');
-1082:   const co_sort = document.getElementById('co_sort');
-1083:   const coMsg = document.getElementById('coMsg');
-1084: 
-1085:   if(!co_select) return;
-1086:   const sel = co_select.options[co_select.selectedIndex];
-1087:   const row = { 
-1088:     name: sel.getAttribute('data-name'), 
-1089:     country_code: sel.value, 
-1090:     sort_order: co_sort ? parseInt(co_sort.value)||0 : 0 
-1091:   };
-1092:   const r = await sb.from('countries').insert(row);
-1093:   if(r.error) {
-1094:     if(coMsg) coMsg.innerHTML = msg(r.error.message, true);
-1095:     return;
-1096:   }
-1097:   renderCountriesList();
-1098: }
-1099: 
-1100: async function deliveryFeesPage(){
-1101:   await loadRefs();
-1102:   const app = document.getElementById('app');
-1103:   if(!app) return;
-1104:   app.innerHTML = `
-1105:     <div class="panel">
-1106:       ${renderHeader('Delivery Fees Configuration')}
-1107:       <div id="delMsg"></div>
-1108:       <div class="grid">
-1109:         <div class="field">
-1110:           <label>Country</label>
-1111:           <select id="d_country">
-1112:             ${countries.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}
-1113:           </select>
-1114:         </div>
-1115:         ${formField('d_city','City / Region')}
-1116:         ${formField('d_fee','Fee ($)','number','step="0.01"')}
-1117:       </div><br>
-1118:       <div class="actions">
-1119:         <button class="btn" onclick="saveDeliveryFee()">Save Delivery Fee</button>
-1120:       </div>
-1121:     </div>
-1122:     <div class="panel">
-1123:       <h3>Active Rates Schedule</h3>
-1124:       <div id="delTable">Loading fees...</div>
-1125:     </div>`;
-1126: 
-1127:   renderDeliveryFeesList();
-1128: }
-1129: 
-1130: async function renderDeliveryFeesList(){
-1131:   const r = await sb.from('delivery_fees').select('*, countries!country_id(name)');
-1132:   const tableEl = document.getElementById('delTable');
-1133:   if(!tableEl) return;
-1134:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-1135: 
-1136:   tableEl.innerHTML = `
-1137:     <div class="table-wrap">
-1138:       <table class="table">
-1139:         <tr><th>Country</th><th>City / Region</th><th>Fee</th><th>Actions</th></tr>
-1140:         ${(r.data||[]).map(x => `
-1141:           <tr>
-1142:             <td><b>${esc(x.countries?.name || '—')}</b></td>
-1143:             <td>${esc(x.city || 'All Cities')}</td>
-1144:             <td>$${Number(x.fee||0).toFixed(2)}</td>
-1145:             <td><button class="btn danger" onclick="deleteRow('delivery_fees','${esc(x.id)}')">Delete</button></td>
-1146:           </tr>
-1147:         `).join('')}
-1148:       </table>
-1149:     </div>`;
-1150: }
-1151: 
-1152: async function saveDeliveryFee(){
-1153:   const d_country = document.getElementById('d_country');
-1154:   const d_city = document.getElementById('d_city');
-1155:   const d_fee = document.getElementById('d_fee');
-1156:   const delMsg = document.getElementById('delMsg');
-1157: 
-1158:   const row = { 
-1159:     country_id: d_country ? d_country.value : null, 
-1160:     city: d_city ? d_city.value.trim() : '', 
-1161:     fee: d_fee ? parseFloat(d_fee.value)||0 : 0 
-1162:   };
-1163:   const r = await sb.from('delivery_fees').insert(row);
-1164:   if(r.error) {
-1165:     if(delMsg) delMsg.innerHTML = msg(r.error.message, true);
-1166:     return;
-1167:   }
-1168:   if(d_city) d_city.value = ''; 
-1169:   if(d_fee) d_fee.value = '';
-1170:   renderDeliveryFeesList();
-1171: }
-1172: 
-1173: // ------------------------------------------------------------------
-1174: // BUNDLES & OFFERS
-1175: // ------------------------------------------------------------------
-1176: async function bundlesPage(){
-1177:   const app = document.getElementById('app');
-1178:   if(!app) return;
-1179:   app.innerHTML = `
-1180:     <div class="panel">
-1181:       ${renderHeader('Bundles & Promotional Offers')}
-1182:       <div id="bunMsg"></div>
-1183:       <div class="grid">
-1184:         ${formField('b_title','Bundle Title')}
-1185:         ${formField('b_desc','Description')}
-1186:         ${formField('b_price','Special Bundle Price ($)','number','step="0.01"')}
-1187:       </div><br>
-1188:       <div class="actions">
-1189:         <button class="btn" onclick="saveBundle()">Create Bundle</button>
-1190:       </div>
-1191:     </div>
-1192:     <div class="panel">
-1193:       <h3>Active Offers List</h3>
-1194:       <div id="bunTable">Loading offers...</div>
-1195:     </div>`;
-1196: 
-1197:   renderBundlesList();
-1198: }
-1199: 
-1200: async function renderBundlesList(){
-1201:   const r = await sb.from('bundles').select('*').order('created_at', {ascending:false});
-1202:   const tableEl = document.getElementById('bunTable');
-1203:   if(!tableEl) return;
-1204:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-1205: 
-1206:   tableEl.innerHTML = `
-1207:     <div class="table-wrap">
-1208:       <table class="table">
-1209:         <tr><th>Title</th><th>Description</th><th>Bundle Price</th><th>Actions</th></tr>
-1210:         ${(r.data||[]).map(x => `
-1211:           <tr>
-1212:             <td><b>${esc(x.title)}</b></td>
-1213:             <td>${esc(x.description||'—')}</td>
-1214:             <td><b style="color:#159A9C">$${Number(x.price||0).toFixed(2)}</b></td>
-1215:             <td><button class="btn danger" onclick="deleteRow('bundles','${esc(x.id)}')">Delete</button></td>
-1216:           </tr>
-1217:         `).join('')}
-1218:       </table>
-1219:     </div>`;
-1220: }
-1221: 
-1222: async function saveBundle(){
-1223:   const b_title = document.getElementById('b_title');
-1224:   const b_desc = document.getElementById('b_desc');
-1225:   const b_price = document.getElementById('b_price');
-1226:   const bunMsg = document.getElementById('bunMsg');
-1227: 
-1228:   const title = b_title ? b_title.value.trim() : '';
-1229:   if(!title) {
-1230:     if(bunMsg) bunMsg.innerHTML = msg('Bundle title required.', true);
-1231:     return;
-1232:   }
-1233: 
-1234:   const row = { 
-1235:     title, 
-1236:     description: b_desc ? b_desc.value.trim() : '', 
-1237:     price: b_price ? parseFloat(b_price.value)||0 : 0 
-1238:   };
-1239:   const r = await sb.from('bundles').insert(row);
-1240:   if(r.error) {
-1241:     if(bunMsg) bunMsg.innerHTML = msg(r.error.message, true);
-1242:     return;
-1243:   }
-1244:   if(b_title) b_title.value = ''; 
-1245:   if(b_desc) b_desc.value = ''; 
-1246:   if(b_price) b_price.value = '';
-1247:   renderBundlesList();
-1248: }
-1249: 
-1250: // ------------------------------------------------------------------
-1251: // PAYMENT METHODS
-1252: // ------------------------------------------------------------------
-1253: async function paymentsPage(){
-1254:   const app = document.getElementById('app');
-1255:   if(!app) return;
-1256:   app.innerHTML = `
-1257:     <div class="panel">
-1258:       ${renderHeader('Payment Gateways & Methods')}
-1259:       <div id="payMsg"></div>
-1260:       <div class="grid">
-1261:         ${formField('pm_name','Payment Name (e.g. Cash on Delivery, Wish Money)')}
-1262:         ${formField('pm_details','Payment Instructions / Account Info')}
-1263:         <div class="field"><label>Active Status</label><select id="pm_active"><option value="true">Active</option><option value="false">Disabled</option></select></div>
-1264:       </div><br>
-1265:       <div class="actions">
-1266:         <button class="btn" onclick="savePaymentMethod()">Add Gateway</button>
-1267:       </div>
-1268:     </div>
-1269:     <div class="panel">
-1270:       <h3>Active Payment Options</h3>
-1271:       <div id="payTable">Loading payment methods...</div>
-1272:     </div>`;
-1273: 
-1274:   renderPaymentsList();
-1275: }
-1276: 
-1277: async function renderPaymentsList(){
-1278:   const r = await sb.from('payment_methods').select('*');
-1279:   const tableEl = document.getElementById('payTable');
-1280:   if(!tableEl) return;
-1281:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-1282: 
-1283:   tableEl.innerHTML = `
-1284:     <div class="table-wrap">
-1285:       <table class="table">
-1286:         <tr><th>Method Name</th><th>Instructions</th><th>Status</th><th>Actions</th></tr>
-1287:         ${(r.data||[]).map(x => `
-1288:           <tr>
-1289:             <td><b>${esc(x.name)}</b></td>
-1290:             <td>${esc(x.details||'—')}</td>
-1291:             <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Disabled'}</span></td>
-1292:             <td><button class="btn danger" onclick="deleteRow('payment_methods','${esc(x.id)}')">Delete</button></td>
-1293:           </tr>
-1294:         `).join('')}
-1295:       </table>
-1296:     </div>`;
-1297: }
-1298: 
-1299: async function savePaymentMethod(){
-1300:   const pm_name = document.getElementById('pm_name');
-1301:   const pm_details = document.getElementById('pm_details');
-1302:   const pm_active = document.getElementById('pm_active');
-1303:   const payMsg = document.getElementById('payMsg');
-1304: 
-1305:   const name = pm_name ? pm_name.value.trim() : '';
-1306:   if(!name) {
-1307:     if(payMsg) payMsg.innerHTML = msg('Payment name required.', true);
-1308:     return;
-1309:   }
-1310: 
-1311:   const row = { 
-1312:     name, 
-1313:     details: pm_details ? pm_details.value.trim() : '', 
-1314:     is_active: pm_active ? pm_active.value === 'true' : true 
-1315:   };
-1316:   const r = await sb.from('payment_methods').insert(row);
-1317:   if(r.error) {
-1318:     if(payMsg) payMsg.innerHTML = msg(r.error.message, true);
-1319:     return;
-1320:   }
-1321:   if(pm_name) pm_name.value = ''; 
-1322:   if(pm_details) pm_details.value = '';
-1323:   renderPaymentsList();
-1324: }
-1325: 
-1326: // ------------------------------------------------------------------
-1327: // CUSTOMERS DIRECTORY
-1328: // ------------------------------------------------------------------
-1329: async function customersPage(){
-1330:   const app = document.getElementById('app');
-1331:   if(!app) return;
-1332:   app.innerHTML = `<div class="panel">${renderHeader('Registered Customer Directory', 'Profiles and purchasing history')}<div id="custTable">Loading customer list...</div></div>`;
-1333: 
-1334:   const r = await sb.from('orders').select('name, phone, address, created_at');
-1335:   const tableEl = document.getElementById('custTable');
-1336:   if(!tableEl) return;
-1337:   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
-1338: 
-1339:   const customerMap = {};
-1340:   (r.data || []).forEach(o => {
-1341:     if(!o.phone) return;
-1342:     if(!customerMap[o.phone]){
-1343:       customerMap[o.phone] = { name: o.name, phone: o.phone, address: o.address, ordersCount: 1, lastOrder: o.created_at };
-1344:     } else {
-1345:       customerMap[o.phone].ordersCount++;
-1346:       if(new Date(o.created_at) > new Date(customerMap[o.phone].lastOrder)){
-1347:         customerMap[o.phone].lastOrder = o.created_at;
-1348:       }
-1349:     }
-1350:   });
-1351: 
-1352:   const customers = Object.values(customerMap);
-1353: 
-1354:   tableEl.innerHTML = `
-1355:     <div class="table-wrap">
-1356:       <table class="table">
-1357:         <tr>
-1358:           <th>Customer Name</th>
-1359:           <th>Phone Number</th>
-1360:           <th>Address</th>
-1361:           <th>Total Orders</th>
-1362:           <th>Last Activity (LB)</th>
-1363:         </tr>
-1364:         ${customers.length ? customers.map(c => `
-1365:           <tr>
-1366:             <td><b>${esc(c.name)}</b></td>
-1367:             <td>${esc(c.phone)}</td>
-1368:             <td>${esc(c.address || '—')}</td>
-1369:             <td><b style="color:#159A9C">${c.ordersCount}</b></td>
-1370:             <td><small>${formatLebanonTime(c.lastOrder)}</small></td>
-1371:           </tr>
-1372:         `).join('') : '<tr><td colspan="5" class="muted">No customer order records found.</td></tr>'}
-1373:       </table>
-1374:     </div>`;
-1375: }
-1376: 
-1377: async function deleteRow(table, id){
-1378:   if(!confirm('Are you sure you want to delete this record?')) return;
-1379:   const r = await sb.from(table).delete().eq('id', id);
-1380:   if(r.error) alert('Delete error: ' + r.error.message);
-1381:   else show(current);
-1382: }
-1383: </script>
-1384: </body>
-1385: </html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smartly Admin - Management Hub</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f4f6f9;color:#1c252e}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.top{background:#123B5D;color:#fff;padding:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.wrap{max-width:1320px;margin:auto;padding:0 18px}
+.login{max-width:420px;margin:10vh auto}
+.panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.panel-title{margin:0;font-size:20px;font-weight:700;color:#123B5D}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#475569;text-transform:uppercase;letter-spacing:0.5px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0f172a}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#159A9C;box-shadow:0 0 0 3px rgba(21,154,156,0.15)}
+.field textarea{min-height:90px;resize:vertical}
+.btn{padding:9px 16px;border:0;border-radius:8px;background:#159A9C;color:#fff;font-weight:600;font-size:14px;transition:all 0.2s}
+.btn:hover{opacity:0.9;transform:translateY(-1px)}
+.btn.dark{background:#123B5D}
+.btn.danger{background:#e11d48}
+.btn.outline{background:transparent;border:1px solid #cbd5e1;color:#475569}
+.btn.outline:hover{background:#f8fafc}
+.btn.success{background:#10b981}
+.muted{color:#64748b}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.tab{padding:9px 14px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;color:#475569;font-weight:600;font-size:13px}
+.tab.active{background:#123B5D;color:#fff;border-color:#123B5D}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.table-wrap{overflow-x:auto;border:1px solid #e2e8f0;border-radius:8px}
+.table{width:100%;border-collapse:collapse;min-width:850px;background:#fff;font-size:14px}
+.table th{background:#f8fafc;padding:12px 10px;border-bottom:2px solid #e2e8f0;text-align:left;color:#475569;font-weight:700}
+.table td{padding:12px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.table tr:hover{background:#f8fafc}
+.status-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block;text-transform:capitalize}
+.status-pending{background:#fef3c7;color:#d97706}
+.status-confirmed,.status-approved{background:#dcfce7;color:#15803d}
+.status-completed{background:#dbeafe;color:#1d4ed8}
+.status-cancelled{background:#fee2e2;color:#b91c1c}
+.hidden{display:none !important}
+.statgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
+.stat span{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase}
+.stat b{display:block;font-size:24px;margin-top:6px;color:#123B5D}
+.bi-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+.progress-bar-bg{background:#e2e8f0;border-radius:6px;height:10px;width:100%;overflow:hidden;margin-top:6px}
+.progress-bar-fill{background:#159A9C;height:100%;border-radius:6px}
+.msg{padding:12px;border-radius:8px;margin:12px 0;font-weight:500}
+.ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.6);display:flex;align-items:center;justify-content:center;z-index:9999}
+.modal-content{background:#fff;border-radius:12px;width:90%;max-width:650px;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}
+@media(max-width:1024px){.statgrid{grid-template-columns:repeat(3,1fr)}.bi-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.grid,.statgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid,.statgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="loginView" class="login panel">
+  <h1 style="margin-top:0;color:#123B5D">Smartly Admin</h1>
+  <p class="muted">Enter authorized administrator credentials.</p>
+  <form onsubmit="event.preventDefault(); login();">
+    <div class="field">
+      <label>Email Address</label>
+      <input id="loginEmail" type="email" autocomplete="email" required>
+    </div><br>
+    <div class="field">
+      <label>Password</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" required>
+    </div><br>
+    <button type="submit" class="btn dark" style="width:100%">Sign In</button>
+  </form>
+  <div id="loginMsg"></div>
+</div>
+
+<div id="adminView" class="hidden">
+  <header class="top">
+    <div class="wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <h2 style="margin:0;font-size:22px">Smartly Operations Control</h2>
+          <small style="opacity:0.8">Beirut Local Timezone: GMT+3</small>
+        </div>
+        <button class="btn danger" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="tabs" id="tabs"></div>
+    <div id="app"></div>
+  </div>
+</div>
+
+<div id="modalContainer" class="hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://nqwsowkcazkfpqmwmsqw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_liFbnyZgnxTgNc2cBHuW8w_oLyoFFqO";
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const COUNTRY_LIST = [
+  { code: 'LB', name: 'Lebanon' }, { code: 'SY', name: 'Syria' },
+  { code: 'JO', name: 'Jordan' }, { code: 'AE', name: 'United Arab Emirates' },
+  { code: 'SA', name: 'Saudi Arabia' }, { code: 'EG', name: 'Egypt' },
+  { code: 'QA', name: 'Qatar' }, { code: 'KW', name: 'Kuwait' },
+  { code: 'BH', name: 'Bahrain' }, { code: 'OM', name: 'Oman' },
+  { code: 'IQ', name: 'Iraq' }, { code: 'PS', name: 'Palestine' },
+  { code: 'TR', name: 'Turkey' }, { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' }, { code: 'CA', name: 'Canada' },
+  { code: 'FR', name: 'France' }, { code: 'DE', name: 'Germany' }
+];
+
+let current = 'dashboard', categories = [], countries = [];
+let editingId = null;
+
+const tabs = [
+  ['dashboard','Dashboard'],
+  ['orders','Orders'],
+  ['products','Products'],
+  ['categories','Categories'],
+  ['countries','Countries'],
+  ['delivery','Delivery Fees'],
+  ['bundles','Bundles & Offers'],
+  ['natural','Natural Products'],
+  ['payments','Payment Methods'],
+  ['reservations','Reservations'],
+  ['reviews','Reviews'],
+  ['special','Special Requests'],
+  ['customers','Customers'],
+  ['settings','Settings']
+];
+
+function esc(v){ return String(v??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+function msg(text, error=false){ return `<div class="msg ${error?'err':'ok'}">${esc(text)}</div>`; }
+
+function formatLebanonTime(isoString){
+  if(!isoString) return '—';
+  try {
+    const d = new Date(isoString);
+    return d.toLocaleString('en-GB', {
+      timeZone: 'Asia/Beirut',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch(e) {
+    return isoString;
+  }
+}
+
+window.addEventListener('DOMContentLoaded', guard);
+
+async function guard(){
+  try {
+    const s = await sb.auth.getSession();
+    if(!s.data?.session) return;
+    const a = await sb.rpc('is_admin');
+    if(!a.error && a.data === true) showAdmin();
+  } catch(e) {
+    console.warn('Auth guard check non-critical failure:', e);
+  }
+}
+
+async function login(){
+  const emailEl = document.getElementById('loginEmail');
+  const passEl = document.getElementById('loginPassword');
+  const msgEl = document.getElementById('loginMsg');
+  
+  const email = emailEl ? emailEl.value.trim() : '';
+  const password = passEl ? passEl.value : '';
+  
+  if(!email || !password) {
+    if(msgEl) msgEl.innerHTML = msg('Email and password required.', true);
+    return;
+  }
+  
+  const r = await sb.auth.signInWithPassword({email, password});
+  if(r.error) {
+    if(msgEl) msgEl.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  
+  const a = await sb.rpc('is_admin');
+  if(a.error || a.data !== true){
+    await sb.auth.signOut();
+    if(msgEl) msgEl.innerHTML = msg('Access denied. Administrator privilege required.', true);
+    return;
+  }
+  showAdmin();
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  location.reload();
+}
+
+function showAdmin(){
+  const loginV = document.getElementById('loginView');
+  const adminV = document.getElementById('adminView');
+  if(loginV) loginV.classList.add('hidden');
+  if(adminV) adminV.classList.remove('hidden');
+  renderTabs();
+  show('dashboard');
+}
+
+function renderTabs(){
+  const tabsEl = document.getElementById('tabs');
+  if(tabsEl) {
+    tabsEl.innerHTML = tabs.map(x => `<button class="tab ${current===x[0]?'active':''}" onclick="show('${x[0]}')">${x[1]}</button>`).join('');
+  }
+}
+
+function show(t){
+  current = t;
+  editingId = null;
+  renderTabs();
+  if(t==='dashboard') return dashboard();
+  if(t==='products'||t==='natural') return productsPage(t==='natural');
+  if(t==='categories') return categoriesPage();
+  if(t==='countries') return countriesPage();
+  if(t==='delivery') return deliveryFeesPage();
+  if(t==='bundles') return bundlesPage();
+  if(t==='payments') return paymentsPage();
+  if(t==='orders') return ordersPage();
+  if(t==='reservations') return reservationsPage();
+  if(t==='reviews') return reviewsPage();
+  if(t==='special') return specialPage();
+  if(t==='customers') return customersPage();
+  if(t==='settings') return settingsPage();
+}
+
+function renderHeader(title, subtitle=''){
+  return `
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">${title}</h2>
+        ${subtitle ? `<small class="muted">${subtitle}</small>` : ''}
+      </div>
+      <button class="btn outline" onclick="show('${current}')">🔄 Refresh Data</button>
+    </div>`;
+}
+
+function formField(id, label, type='text', extra=''){
+  return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" ${extra}></div>`;
+}
+
+// ------------------------------------------------------------------
+// DASHBOARD (BI ANALYTICS)
+// ------------------------------------------------------------------
+async function dashboard(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Executive Dashboard', 'Real-time sales & operational metrics')}<p class="muted">Calculating store statistics...</p></div>`;
+
+  const [pRes, oRes, rRes, sRes, itemsRes] = await Promise.all([
+    sb.from('products').select('id, name_en, retail_price, category_id, stock_quantity'),
+    sb.from('orders').select('id, total, status, created_at'),
+    sb.from('reservations').select('id', {count:'exact'}),
+    sb.from('special_requests').select('id', {count:'exact'}),
+    sb.from('order_items').select('product_id, quantity, unit_price')
+  ]);
+
+  const orders = oRes.data || [];
+  const products = pRes.data || [];
+  const orderItems = itemsRes.data || [];
+
+  const totalGrossRevenue = orders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+  const completedOrders = orders.filter(o => o.status === 'completed');
+  const completedRevenue = completedOrders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+  const avgOrderValue = orders.length ? (totalGrossRevenue / orders.length) : 0;
+
+  const productSalesMap = {};
+  orderItems.forEach(item => {
+    productSalesMap[item.product_id] = (productSalesMap[item.product_id] || 0) + (item.quantity || 1);
+  });
+
+  const topProducts = products
+    .map(p => ({ name: p.name_en || 'Product', sales: productSalesMap[p.id] || 0 }))
+    .sort((a,b) => b.sales - a.sales)
+    .slice(0, 5);
+
+  const maxSales = Math.max(...topProducts.map(p => p.sales), 1);
+
+  const statusCounts = orders.reduce((acc, o) => {
+    acc[o.status] = (acc[o.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  app.innerHTML = `
+    <div class="panel">${renderHeader('Executive Business Intelligence', 'Live telemetry & performative analytics')}</div>
+    <div class="statgrid">
+      <div class="stat"><span>Gross Revenue</span><b>$${totalGrossRevenue.toFixed(2)}</b></div>
+      <div class="stat"><span>Completed Revenue</span><b>$${completedRevenue.toFixed(2)}</b></div>
+      <div class="stat"><span>Average Order Value</span><b>$${avgOrderValue.toFixed(2)}</b></div>
+      <div class="stat"><span>Total Orders</span><b>${orders.length}</b></div>
+      <div class="stat"><span>Pending Inquiries</span><b>${(rRes.count || 0) + (sRes.count || 0)}</b></div>
+    </div>
+
+    <div class="bi-grid">
+      <div class="panel">
+        <h3 style="margin-top:0;color:#123B5D">Top Selling Products</h3>
+        ${topProducts.length ? topProducts.map(tp => `
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600">
+              <span>${esc(tp.name)}</span>
+              <span>${tp.sales} units sold</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:${(tp.sales/maxSales)*100}%"></div>
+            </div>
+          </div>
+        `).join('') : '<p class="muted">No sales data recorded yet.</p>'}
+      </div>
+
+      <div class="panel">
+        <h3 style="margin-top:0;color:#123B5D">Order Pipeline Status</h3>
+        <ul style="list-style:none;padding:0;margin:0">
+          ${['pending','confirmed','preparing','out_for_delivery','completed','cancelled'].map(st => `
+            <li style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9">
+              <span class="status-pill status-${st}">${st.replace(/_/g,' ')}</span>
+              <b>${statusCounts[st] || 0} orders</b>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+// ------------------------------------------------------------------
+// ORDERS MANAGEMENT & BILLING
+// ------------------------------------------------------------------
+async function ordersPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Orders Hub', 'Manage fulfillment, restock on cancel & track billing')}<div id="table">Loading orders...</div></div>`;
+
+  const r = await sb.from('orders').select('*, order_items(*)').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('table');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Items Qt.</th>
+          <th>Subtotal</th>
+          <th>Delivery Fee</th>
+          <th>Total Bill</th>
+          <th>Status</th>
+          <th>Created Date/Time (LB)</th>
+          <th>Actions</th>
+        </tr>
+        ${(r.data||[]).map(x => {
+          const items = x.order_items || [];
+          const totalQty = items.reduce((sum, i) => sum + (Number(i.quantity) || 1), 0);
+          const deliveryFee = Number(x.delivery_fee || 0);
+          const totalBill = Number(x.total || 0);
+          const subtotal = Math.max(0, totalBill - deliveryFee);
+
+          return `
+            <tr>
+              <td><b>${esc(x.order_number || x.id.slice(0,8))}</b></td>
+              <td>${esc(x.name)}</td>
+              <td>${esc(x.phone)}</td>
+              <td><b style="color:#159A9C">${totalQty}</b></td>
+              <td>$${subtotal.toFixed(2)}</td>
+              <td>+$${deliveryFee.toFixed(2)}</td>
+              <td><b style="color:#123B5D">$${totalBill.toFixed(2)}</b></td>
+              <td>
+                <select onchange="handleOrderStatusChange('${esc(x.id)}', '${esc(x.status)}', this.value)">
+                  <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+                  <option value="confirmed" ${x.status==='confirmed'?'selected':''}>Confirmed</option>
+                  <option value="preparing" ${x.status==='preparing'?'selected':''}>Preparing</option>
+                  <option value="out_for_delivery" ${x.status==='out_for_delivery'?'selected':''}>Out for Delivery</option>
+                  <option value="completed" ${x.status==='completed'?'selected':''}>Completed</option>
+                  <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+                </select>
+              </td>
+              <td><small>${formatLebanonTime(x.created_at)}</small></td>
+              <td><button class="btn dark" onclick="viewOrderDetails('${esc(x.id)}')">Invoice / Details</button></td>
+            </tr>`;
+        }).join('')}
+      </table>
+    </div>`;
+}
+
+async function handleOrderStatusChange(orderId, oldStatus, newStatus){
+  if(oldStatus === newStatus) return;
+
+  const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
+  if(r.error) return alert('Failed to update order status: ' + r.error.message);
+
+  if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
+    await adjustOrderInventory(orderId, 'restock');
+  } else if(oldStatus === 'cancelled' && newStatus !== 'cancelled'){
+    await adjustOrderInventory(orderId, 'deduct');
+  }
+
+  ordersPage();
+}
+
+async function adjustOrderInventory(orderId, mode){
+  const itemsRes = await sb.from('order_items').select('product_id, quantity').eq('order_id', orderId);
+  if(itemsRes.error || !itemsRes.data) return;
+
+  for(const item of itemsRes.data){
+    if(!item.product_id) continue;
+    const prodRes = await sb.from('products').select('stock_quantity').eq('id', item.product_id).single();
+    if(prodRes.data){
+      let currentStock = Number(prodRes.data.stock_quantity || 0);
+      let qty = Number(item.quantity || 1);
+      let updatedStock = (mode === 'restock') ? (currentStock + qty) : Math.max(0, currentStock - qty);
+      await sb.from('products').update({ stock_quantity: updatedStock }).eq('id', item.product_id);
+    }
+  }
+}
+
+async function viewOrderDetails(orderId){
+  const [oRes, iRes] = await Promise.all([
+    sb.from('orders').select('*').eq('id', orderId).single(),
+    sb.from('order_items').select('*, products(name_en)').eq('order_id', orderId)
+  ]);
+
+  if(oRes.error) return alert(oRes.error.message);
+  const o = oRes.data;
+  const items = iRes.data || [];
+  const deliveryFee = Number(o.delivery_fee || 0);
+  const total = Number(o.total || 0);
+  const subtotal = Math.max(0, total - deliveryFee);
+
+  const modal = document.getElementById('modalContainer');
+  if(!modal) return;
+  modal.classList.remove('hidden');
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px">
+          <h3 style="margin:0;color:#123B5D">Order Summary #${esc(o.order_number||o.id.slice(0,8))}</h3>
+          <button class="btn danger" onclick="closeModal()">Close</button>
+        </div>
+        <p><b>Customer Name:</b> ${esc(o.name)}</p>
+        <p><b>Phone:</b> ${esc(o.phone)} | <b>Alt:</b> ${esc(o.alternative_phone||'N/A')}</p>
+        <p><b>Delivery Address:</b> ${esc(o.address || o.location || 'N/A')}</p>
+        <p><b>Date Ordered (Lebanon):</b> ${formatLebanonTime(o.created_at)}</p>
+
+        <h4 style="margin-top:20px;border-bottom:1px solid #eee;padding-bottom:6px">Line Items</h4>
+        <table class="table" style="min-width:100%">
+          <tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+          ${items.map(it => `
+            <tr>
+              <td>${esc(it.products?.name_en || it.product_name || 'Product')}</td>
+              <td>${it.quantity}</td>
+              <td>$${Number(it.unit_price || it.price || 0).toFixed(2)}</td>
+              <td>$${(Number(it.quantity||1)*Number(it.unit_price || it.price || 0)).toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </table>
+
+        <div style="margin-top:16px;text-align:right;background:#f8fafc;padding:12px;border-radius:8px">
+          <p style="margin:4px 0">Subtotal: <b>$${subtotal.toFixed(2)}</b></p>
+          <p style="margin:4px 0">Delivery Fee: <b>+$${deliveryFee.toFixed(2)}</b></p>
+          <h3 style="margin:8px 0 0 0;color:#123B5D">Total Customer Bill: $${total.toFixed(2)}</h3>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeModal(){
+  const modal = document.getElementById('modalContainer');
+  if(modal) modal.classList.add('hidden');
+}
+
+// ------------------------------------------------------------------
+// REVIEWS WITH APPROVAL WORKFLOW
+// ------------------------------------------------------------------
+async function reviewsPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Reviews Moderation', 'Approve comments prior to storefront display')}<div id="reviewsTable">Loading reviews...</div></div>`;
+
+  const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('reviewsTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Customer Name</th>
+          <th>Product / Subject</th>
+          <th>Rating</th>
+          <th>Comment</th>
+          <th>Submitted Date (LB)</th>
+          <th>Approved</th>
+          <th>Moderation Actions</th>
+        </tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.customer_name||'Anonymous')}</b></td>
+            <td>${esc(x.product_name||'General')}</td>
+            <td>⭐ ${x.rating || 5}/5</td>
+            <td style="max-width:250px">${esc(x.comment)}</td>
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+            <td><span class="status-pill ${x.approved?'status-approved':'status-pending'}">${x.approved?'Approved':'Pending'}</span></td>
+            <td>
+              <button class="btn ${x.approved?'danger':'success'}" onclick="toggleReviewApproval('${esc(x.id)}', ${!x.approved})">
+                ${x.approved?'Unapprove / Hide':'Approve & Post'}
+              </button>
+              <button class="btn outline" onclick="deleteRow('reviews','${esc(x.id)}')">Delete</button>
+            </td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function toggleReviewApproval(id, newStatus){
+  const r = await sb.from('reviews').update({ approved: newStatus }).eq('id', id);
+  if(r.error) alert('Error updating approval status: ' + r.error.message);
+  else reviewsPage();
+}
+
+// ------------------------------------------------------------------
+// RESERVATIONS & SPECIAL REQUESTS
+// ------------------------------------------------------------------
+async function reservationsPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Product Reservations', 'Manage upcoming stock reservations')}<div id="resTable">Loading...</div></div>`;
+
+  const r = await sb.from('reservations').select('*, products(name_en)').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('resTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Customer Name</th>
+          <th>Phone</th>
+          <th>Product Reserved</th>
+          <th>Quantity</th>
+          <th>Status</th>
+          <th>Date (LB Time)</th>
+          <th>Action</th>
+        </tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.name)}</b></td>
+            <td>${esc(x.phone)}</td>
+            <td>${esc(x.products?.name_en || x.product_id)}</td>
+            <td>${x.quantity || 1}</td>
+            <td>
+              <select onchange="updateRecordStatus('reservations', '${esc(x.id)}', this.value)">
+                <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+                <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
+                <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
+                <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+              </select>
+            </td>
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+            <td><button class="btn danger" onclick="deleteRow('reservations','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function specialPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Special Requests', 'Inbound custom customer requests')}<div id="specTable">Loading...</div></div>`;
+
+  const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
+  const tableEl = document.getElementById('specTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Customer Name</th>
+          <th>Phone</th>
+          <th>Country</th>
+          <th>Requested Item</th>
+          <th>Status</th>
+          <th>Date (LB Time)</th>
+          <th>Action</th>
+        </tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.name)}</b></td>
+            <td>${esc(x.phone)}</td>
+            <td>${esc(x.country || 'Lebanon')}</td>
+            <td>${esc(x.item || x.request_details)}</td>
+            <td>
+              <select onchange="updateRecordStatus('special_requests', '${esc(x.id)}', this.value)">
+                <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
+                <option value="contacted" ${x.status==='contacted'?'selected':''}>Contacted</option>
+                <option value="fulfilled" ${x.status==='fulfilled'?'selected':''}>Fulfilled</option>
+                <option value="cancelled" ${x.status==='cancelled'?'selected':''}>Cancelled</option>
+              </select>
+            </td>
+            <td><small>${formatLebanonTime(x.created_at)}</small></td>
+            <td><button class="btn danger" onclick="deleteRow('special_requests','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function updateRecordStatus(table, id, status){
+  const r = await sb.from(table).update({ status }).eq('id', id);
+  if(r.error) alert('Failed to update status: ' + r.error.message);
+}
+
+// ------------------------------------------------------------------
+// SETTINGS
+// ------------------------------------------------------------------
+async function settingsPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader('Store System Settings & Preferences', 'Configure administrative defaults & maintenance controls')}
+      <div id="settingsMsg"></div>
+      <div class="grid">
+        ${formField('s_store_name', 'Store Front Name', 'text', 'value="Smartly Lebanon"')}
+        ${formField('s_currency', 'Store Currency Symbol', 'text', 'value="$"')}
+        ${formField('s_phone', 'Support WhatsApp Hotline', 'text', 'value="9613080365"')}
+        ${formField('s_tax', 'VAT / Tax Percentage (%)', 'number', 'value="0"')}
+        <div class="field">
+          <label>Maintenance Mode</label>
+          <select id="s_maintenance">
+            <option value="false">Disabled (Store Active)</option>
+            <option value="true">Enabled (Store Offline)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Default Timezone</label>
+          <input type="text" value="Asia/Beirut (GMT+3)" disabled readonly style="background:#f1f5f9">
+        </div>
+      </div>
+      <br>
+      <div class="actions">
+        <button class="btn" onclick="saveStoreSettings()">Save Configurations</button>
+        <button class="btn outline" onclick="localStorage.clear(); alert('Local administrative cache cleared.');">Clear Local Cache</button>
+      </div>
+    </div>`;
+
+    loadStoreSettings();
+}
+
+async function loadStoreSettings(){
+  try {
+    const { data } = await sb.from('settings').select('*').limit(1).maybeSingle();
+    if(data) {
+      const nameEl = document.getElementById('s_store_name');
+      const currEl = document.getElementById('s_currency');
+      const phoneEl = document.getElementById('s_phone');
+      const taxEl = document.getElementById('s_tax');
+      const maintEl = document.getElementById('s_maintenance');
+
+      if(nameEl) nameEl.value = data.store_name || 'Smartly Lebanon';
+      if(currEl) currEl.value = data.currency || '$';
+      if(phoneEl) phoneEl.value = data.whatsapp_phone || '9613080365';
+      if(taxEl) taxEl.value = data.tax_percent || 0;
+      if(maintEl) maintEl.value = data.maintenance_mode ? 'true' : 'false';
+    }
+  } catch(e) {
+    console.log('Settings load fallback active');
+  }
+}
+
+async function saveStoreSettings(){
+  const s_store_name = document.getElementById('s_store_name');
+  const s_currency = document.getElementById('s_currency');
+  const s_phone = document.getElementById('s_phone');
+  const s_tax = document.getElementById('s_tax');
+  const s_maintenance = document.getElementById('s_maintenance');
+
+  const row = {
+    store_name: s_store_name ? s_store_name.value.trim() : 'Smartly Lebanon',
+    currency: s_currency ? s_currency.value.trim() : '$',
+    whatsapp_phone: s_phone ? s_phone.value.trim().replace(/[^0-9]/g, '') : '',
+    tax_percent: s_tax ? Number(s_tax.value || 0) : 0,
+    maintenance_mode: s_maintenance ? s_maintenance.value === 'true' : false
+  };
+
+  const { data: existing } = await sb.from('settings').select('id').limit(1).maybeSingle();
+  let r;
+  if(existing?.id){
+    r = await sb.from('settings').update(row).eq('id', existing.id);
+  } else {
+    r = await sb.from('settings').insert(row);
+  }
+
+  if(r?.error){
+    alert('Could not save to DB, settings saved to local cache fallback: ' + r.error.message);
+    localStorage.setItem('smartly_settings', JSON.stringify(row));
+  } else {
+    alert('System configurations saved successfully.');
+  }
+}
+
+// ------------------------------------------------------------------
+// PRODUCTS, CATEGORIES, COUNTRIES, DELIVERY, BUNDLES, PAYMENTS, CUSTOMERS
+// ------------------------------------------------------------------
+async function loadRefs(){
+  const [c,co] = await Promise.all([
+    sb.from('categories').select('id,name_en,name_ar').order('sort_order'),
+    sb.from('countries').select('id,name,country_code').order('sort_order')
+  ]);
+  categories = c.data || [];
+  countries = co.data || [];
+}
+
+async function productsPage(natural=false){
+  await loadRefs();
+  editingId = null;
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader(natural ? 'Natural Products Management' : 'Products Catalog')}
+      <div id="productMsg"></div>
+      <div class="grid">
+        ${formField('p_name_en','Name EN')}${formField('p_name_ar','Name AR')}
+        <div class="field"><label>Category</label><select id="p_category"><option value="">Select category</option>${categories.map(c=>`<option value="${esc(c.id)}">${esc(c.name_en||c.name_ar)}</option>`).join('')}</select></div>
+        ${formField('p_desc_en','Description EN')}${formField('p_desc_ar','Description AR')}
+        ${formField('p_price','Retail Price ($)','number','step="0.01"')}
+        ${formField('p_stock','Stock Quantity','number','min="0"')}
+        ${formField('p_sort','Sort Order','number','value="0"')}
+        <div class="field"><label>Product Image</label><input id="p_image" type="file" accept="image/*"></div>
+        <div class="field"><label>Active</label><select id="p_active"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="field"><label>Is Natural</label><select id="p_natural"><option value="${natural?'true':'false'}">${natural?'Yes':'No'}</option><option value="${natural?'false':'true'}">${natural?'No':'Yes'}</option></select></div>
+      </div><br>
+      <div class="actions">
+        <button class="btn" id="saveBtn" onclick="saveProduct()">Save Product</button>
+        <button class="btn outline" onclick="resetProductForm()">Clear Form</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Existing Products List</h3>
+      <div id="productList">Loading catalog...</div>
+    </div>`;
+
+  renderProductsList(natural);
+}
+
+async function renderProductsList(natural=false){
+  let q = sb.from('products').select('*, categories(name_en)').order('sort_order');
+  if(natural) q = q.eq('is_natural', true);
+  const r = await q;
+  const listEl = document.getElementById('productList');
+  if(!listEl) return;
+  if(r.error) return listEl.innerHTML = msg(r.error.message, true);
+
+  listEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Image</th>
+          <th>Name (EN)</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td>${x.image_url ? `<img src="${esc(x.image_url)}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">` : '—'}</td>
+            <td><b>${esc(x.name_en)}</b><br><small class="muted">${esc(x.name_ar||'')}</small></td>
+            <td>${esc(x.categories?.name_en || '—')}</td>
+            <td>$${Number(x.retail_price||0).toFixed(2)}</td>
+            <td><b style="color:${x.stock_quantity<5?'#e11d48':'#123B5D'}">${x.stock_quantity||0}</b></td>
+            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Hidden'}</span></td>
+            <td>
+              <button class="btn outline" onclick="editProduct('${esc(x.id)}')">Edit</button>
+              <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button>
+            </td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function saveProduct(){
+  const msgEl = document.getElementById('productMsg');
+  const p_name_en = document.getElementById('p_name_en');
+  const p_name_ar = document.getElementById('p_name_ar');
+  const p_category = document.getElementById('p_category');
+  const p_desc_en = document.getElementById('p_desc_en');
+  const p_desc_ar = document.getElementById('p_desc_ar');
+  const p_price = document.getElementById('p_price');
+  const p_stock = document.getElementById('p_stock');
+  const p_sort = document.getElementById('p_sort');
+  const p_active = document.getElementById('p_active');
+  const p_natural = document.getElementById('p_natural');
+  const p_image = document.getElementById('p_image');
+
+  const name_en = p_name_en ? p_name_en.value.trim() : '';
+  if(!name_en) {
+    if(msgEl) msgEl.innerHTML = msg('English name required.', true);
+    return;
+  }
+
+  let image_url = null;
+  if(p_image && p_image.files.length > 0){
+    const file = p_image.files[0];
+    const path = `products/${Date.now()}_${file.name}`;
+    const up = await sb.storage.from('products').upload(path, file);
+    if(up.error) {
+      if(msgEl) msgEl.innerHTML = msg('Image upload error: ' + up.error.message, true);
+      return;
+    }
+    const pub = sb.storage.from('products').getPublicUrl(path);
+    image_url = pub.data.publicUrl;
+  }
+
+  const row = {
+    name_en,
+    name_ar: p_name_ar ? p_name_ar.value.trim() : '',
+    category_id: (p_category && p_category.value) ? p_category.value : null,
+    description_en: p_desc_en ? p_desc_en.value.trim() : '',
+    description_ar: p_desc_ar ? p_desc_ar.value.trim() : '',
+    retail_price: p_price ? parseFloat(p_price.value) || 0 : 0,
+    stock_quantity: p_stock ? parseInt(p_stock.value) || 0 : 0,
+    sort_order: p_sort ? parseInt(p_sort.value) || 0 : 0,
+    is_active: p_active ? p_active.value === 'true' : true,
+    is_natural: p_natural ? p_natural.value === 'true' : false
+  };
+
+  if(image_url) row.image_url = image_url;
+
+  let r;
+  if(editingId){
+    r = await sb.from('products').update(row).eq('id', editingId);
+  } else {
+    r = await sb.from('products').insert(row);
+  }
+
+  if(r.error) {
+    if(msgEl) msgEl.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(msgEl) msgEl.innerHTML = msg('Product saved successfully.');
+  resetProductForm();
+  renderProductsList(p_natural ? p_natural.value === 'true' : false);
+}
+
+async function editProduct(id){
+  const r = await sb.from('products').select('*').eq('id', id).single();
+  if(r.error) return alert(r.error.message);
+  const p = r.data;
+  editingId = p.id;
+
+  const p_name_en = document.getElementById('p_name_en');
+  const p_name_ar = document.getElementById('p_name_ar');
+  const p_category = document.getElementById('p_category');
+  const p_desc_en = document.getElementById('p_desc_en');
+  const p_desc_ar = document.getElementById('p_desc_ar');
+  const p_price = document.getElementById('p_price');
+  const p_stock = document.getElementById('p_stock');
+  const p_sort = document.getElementById('p_sort');
+  const p_active = document.getElementById('p_active');
+  const p_natural = document.getElementById('p_natural');
+  const saveBtn = document.getElementById('saveBtn');
+
+  if(p_name_en) p_name_en.value = p.name_en || '';
+  if(p_name_ar) p_name_ar.value = p.name_ar || '';
+  if(p_category) p_category.value = p.category_id || '';
+  if(p_desc_en) p_desc_en.value = p.description_en || '';
+  if(p_desc_ar) p_desc_ar.value = p.description_ar || '';
+  if(p_price) p_price.value = p.retail_price || 0;
+  if(p_stock) p_stock.value = p.stock_quantity || 0;
+  if(p_sort) p_sort.value = p.sort_order || 0;
+  if(p_active) p_active.value = p.is_active ? 'true' : 'false';
+  if(p_natural) p_natural.value = p.is_natural ? 'true' : 'false';
+  if(saveBtn) saveBtn.innerText = 'Update Product';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resetProductForm(){
+  editingId = null;
+  const p_name_en = document.getElementById('p_name_en');
+  const p_name_ar = document.getElementById('p_name_ar');
+  const p_category = document.getElementById('p_category');
+  const p_desc_en = document.getElementById('p_desc_en');
+  const p_desc_ar = document.getElementById('p_desc_ar');
+  const p_price = document.getElementById('p_price');
+  const p_stock = document.getElementById('p_stock');
+  const p_sort = document.getElementById('p_sort');
+  const p_image = document.getElementById('p_image');
+  const saveBtn = document.getElementById('saveBtn');
+
+  if(p_name_en) p_name_en.value = '';
+  if(p_name_ar) p_name_ar.value = '';
+  if(p_category) p_category.value = '';
+  if(p_desc_en) p_desc_en.value = '';
+  if(p_desc_ar) p_desc_ar.value = '';
+  if(p_price) p_price.value = '';
+  if(p_stock) p_stock.value = '';
+  if(p_sort) p_sort.value = '0';
+  if(p_image) p_image.value = '';
+  if(saveBtn) saveBtn.innerText = 'Save Product';
+}
+
+// ------------------------------------------------------------------
+// CATEGORIES PAGE
+// ------------------------------------------------------------------
+async function categoriesPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader('Categories Management')}
+      <div id="catMsg"></div>
+      <div class="grid">
+        ${formField('c_name_en','Category Name EN')}
+        ${formField('c_name_ar','Category Name AR')}
+        ${formField('c_sort','Sort Order','number','value="0"')}
+      </div><br>
+      <div class="actions">
+        <button class="btn" id="catSaveBtn" onclick="saveCategory()">Save Category</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Categories List</h3>
+      <div id="catTable">Loading categories...</div>
+    </div>`;
+
+  renderCategoriesList();
+}
+
+async function renderCategoriesList(){
+  const r = await sb.from('categories').select('*').order('sort_order');
+  const tableEl = document.getElementById('catTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr><th>Name EN</th><th>Name AR</th><th>Sort Order</th><th>Actions</th></tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.name_en)}</b></td>
+            <td>${esc(x.name_ar||'—')}</td>
+            <td>${x.sort_order||0}</td>
+            <td>
+              <button class="btn outline" onclick="editCategory('${esc(x.id)}','${esc(x.name_en)}','${esc(x.name_ar||'')}','${x.sort_order||0}')">Edit</button>
+              <button class="btn danger" onclick="deleteRow('categories','${esc(x.id)}')">Delete</button>
+            </td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function saveCategory(){
+  const c_name_en = document.getElementById('c_name_en');
+  const c_name_ar = document.getElementById('c_name_ar');
+  const c_sort = document.getElementById('c_sort');
+  const catMsg = document.getElementById('catMsg');
+  const catSaveBtn = document.getElementById('catSaveBtn');
+
+  const name_en = c_name_en ? c_name_en.value.trim() : '';
+  if(!name_en) {
+    if(catMsg) catMsg.innerHTML = msg('Category name required.', true);
+    return;
+  }
+
+  const row = { 
+    name_en, 
+    name_ar: c_name_ar ? c_name_ar.value.trim() : '', 
+    sort_order: c_sort ? parseInt(c_sort.value)||0 : 0 
+  };
+  
+  let r = editingId ? await sb.from('categories').update(row).eq('id', editingId) : await sb.from('categories').insert(row);
+
+  if(r.error) {
+    if(catMsg) catMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  editingId = null;
+  if(c_name_en) c_name_en.value = ''; 
+  if(c_name_ar) c_name_ar.value = ''; 
+  if(c_sort) c_sort.value = '0';
+  if(catSaveBtn) catSaveBtn.innerText = 'Save Category';
+  renderCategoriesList();
+}
+
+function editCategory(id, en, ar, sort){
+  editingId = id;
+  const c_name_en = document.getElementById('c_name_en');
+  const c_name_ar = document.getElementById('c_name_ar');
+  const c_sort = document.getElementById('c_sort');
+  const catSaveBtn = document.getElementById('catSaveBtn');
+
+  if(c_name_en) c_name_en.value = en; 
+  if(c_name_ar) c_name_ar.value = ar; 
+  if(c_sort) c_sort.value = sort;
+  if(catSaveBtn) catSaveBtn.innerText = 'Update Category';
+}
+
+// ------------------------------------------------------------------
+// COUNTRIES & DELIVERY FEES
+// ------------------------------------------------------------------
+async function countriesPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader('Countries Management')}
+      <div id="coMsg"></div>
+      <div class="grid">
+        <div class="field">
+          <label>Select Country</label>
+          <select id="co_select">
+            ${COUNTRY_LIST.map(c => `<option value="${c.code}" data-name="${c.name}">${c.name} (${c.code})</option>`).join('')}
+          </select>
+        </div>
+        ${formField('co_sort','Sort Order','number','value="0"')}
+      </div><br>
+      <div class="actions">
+        <button class="btn" onclick="saveCountry()">Add Country</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Active Supported Countries</h3>
+      <div id="coTable">Loading...</div>
+    </div>`;
+
+  renderCountriesList();
+}
+
+async function renderCountriesList(){
+  const r = await sb.from('countries').select('*').order('sort_order');
+  const tableEl = document.getElementById('coTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr><th>Country Name</th><th>Code</th><th>Sort Order</th><th>Actions</th></tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.name)}</b></td>
+            <td><code>${esc(x.country_code)}</code></td>
+            <td>${x.sort_order||0}</td>
+            <td><button class="btn danger" onclick="deleteRow('countries','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function saveCountry(){
+  const co_select = document.getElementById('co_select');
+  const co_sort = document.getElementById('co_sort');
+  const coMsg = document.getElementById('coMsg');
+
+  if(!co_select) return;
+  const sel = co_select.options[co_select.selectedIndex];
+  const row = { 
+    name: sel.getAttribute('data-name'), 
+    country_code: sel.value, 
+    sort_order: co_sort ? parseInt(co_sort.value)||0 : 0 
+  };
+  const r = await sb.from('countries').insert(row);
+  if(r.error) {
+    if(coMsg) coMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  renderCountriesList();
+}
+
+async function deliveryFeesPage(){
+  await loadRefs();
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader('Delivery Fees Configuration')}
+      <div id="delMsg"></div>
+      <div class="grid">
+        <div class="field">
+          <label>Country</label>
+          <select id="d_country">
+            ${countries.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}
+          </select>
+        </div>
+        ${formField('d_city','City / Region')}
+        ${formField('d_fee','Fee ($)','number','step="0.01"')}
+      </div><br>
+      <div class="actions">
+        <button class="btn" onclick="saveDeliveryFee()">Save Delivery Fee</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Active Rates Schedule</h3>
+      <div id="delTable">Loading fees...</div>
+    </div>`;
+
+  renderDeliveryFeesList();
+}
+
+async function renderDeliveryFeesList(){
+  const r = await sb.from('delivery_fees').select('*, countries(name)');
+  const tableEl = document.getElementById('delTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr><th>Country</th><th>City / Region</th><th>Fee</th><th>Actions</th></tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.countries?.name || '—')}</b></td>
+            <td>${esc(x.city || 'All Cities')}</td>
+            <td>$${Number(x.fee||0).toFixed(2)}</td>
+            <td><button class="btn danger" onclick="deleteRow('delivery_fees','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function saveDeliveryFee(){
+  const d_country = document.getElementById('d_country');
+  const d_city = document.getElementById('d_city');
+  const d_fee = document.getElementById('d_fee');
+  const delMsg = document.getElementById('delMsg');
+
+  const row = { 
+    country_id: d_country ? d_country.value : null, 
+    city: d_city ? d_city.value.trim() : '', 
+    fee: d_fee ? parseFloat(d_fee.value)||0 : 0 
+  };
+  const r = await sb.from('delivery_fees').insert(row);
+  if(r.error) {
+    if(delMsg) delMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(d_city) d_city.value = ''; 
+  if(d_fee) d_fee.value = '';
+  renderDeliveryFeesList();
+}
+
+// ------------------------------------------------------------------
+// BUNDLES & OFFERS
+// ------------------------------------------------------------------
+async function bundlesPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader('Bundles & Promotional Offers')}
+      <div id="bunMsg"></div>
+      <div class="grid">
+        ${formField('b_title','Bundle Title')}
+        ${formField('b_desc','Description')}
+        ${formField('b_price','Special Bundle Price ($)','number','step="0.01"')}
+      </div><br>
+      <div class="actions">
+        <button class="btn" onclick="saveBundle()">Create Bundle</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Active Offers List</h3>
+      <div id="bunTable">Loading offers...</div>
+    </div>`;
+
+  renderBundlesList();
+}
+
+async function renderBundlesList(){
+  const r = await sb.from('bundles').select('*').order('created_at', {ascending:false});
+  const tableEl = document.getElementById('bunTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr><th>Title</th><th>Description</th><th>Bundle Price</th><th>Actions</th></tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.title)}</b></td>
+            <td>${esc(x.description||'—')}</td>
+            <td><b style="color:#159A9C">$${Number(x.price||0).toFixed(2)}</b></td>
+            <td><button class="btn danger" onclick="deleteRow('bundles','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function saveBundle(){
+  const b_title = document.getElementById('b_title');
+  const b_desc = document.getElementById('b_desc');
+  const b_price = document.getElementById('b_price');
+  const bunMsg = document.getElementById('bunMsg');
+
+  const title = b_title ? b_title.value.trim() : '';
+  if(!title) {
+    if(bunMsg) bunMsg.innerHTML = msg('Bundle title required.', true);
+    return;
+  }
+
+  const row = { 
+    title, 
+    description: b_desc ? b_desc.value.trim() : '', 
+    price: b_price ? parseFloat(b_price.value)||0 : 0 
+  };
+  const r = await sb.from('bundles').insert(row);
+  if(r.error) {
+    if(bunMsg) bunMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(b_title) b_title.value = ''; 
+  if(b_desc) b_desc.value = ''; 
+  if(b_price) b_price.value = '';
+  renderBundlesList();
+}
+
+// ------------------------------------------------------------------
+// PAYMENT METHODS
+// ------------------------------------------------------------------
+async function paymentsPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `
+    <div class="panel">
+      ${renderHeader('Payment Gateways & Methods')}
+      <div id="payMsg"></div>
+      <div class="grid">
+        ${formField('pm_name','Payment Name (e.g. Cash on Delivery, Wish Money)')}
+        ${formField('pm_details','Payment Instructions / Account Info')}
+        <div class="field"><label>Active Status</label><select id="pm_active"><option value="true">Active</option><option value="false">Disabled</option></select></div>
+      </div><br>
+      <div class="actions">
+        <button class="btn" onclick="savePaymentMethod()">Add Gateway</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Active Payment Options</h3>
+      <div id="payTable">Loading payment methods...</div>
+    </div>`;
+
+  renderPaymentsList();
+}
+
+async function renderPaymentsList(){
+  const r = await sb.from('payment_methods').select('*');
+  const tableEl = document.getElementById('payTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr><th>Method Name</th><th>Instructions</th><th>Status</th><th>Actions</th></tr>
+        ${(r.data||[]).map(x => `
+          <tr>
+            <td><b>${esc(x.name)}</b></td>
+            <td>${esc(x.details||'—')}</td>
+            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Disabled'}</span></td>
+            <td><button class="btn danger" onclick="deleteRow('payment_methods','${esc(x.id)}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>`;
+}
+
+async function savePaymentMethod(){
+  const pm_name = document.getElementById('pm_name');
+  const pm_details = document.getElementById('pm_details');
+  const pm_active = document.getElementById('pm_active');
+  const payMsg = document.getElementById('payMsg');
+
+  const name = pm_name ? pm_name.value.trim() : '';
+  if(!name) {
+    if(payMsg) payMsg.innerHTML = msg('Payment name required.', true);
+    return;
+  }
+
+  const row = { 
+    name, 
+    details: pm_details ? pm_details.value.trim() : '', 
+    is_active: pm_active ? pm_active.value === 'true' : true 
+  };
+  const r = await sb.from('payment_methods').insert(row);
+  if(r.error) {
+    if(payMsg) payMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(pm_name) pm_name.value = ''; 
+  if(pm_details) pm_details.value = '';
+  renderPaymentsList();
+}
+
+// ------------------------------------------------------------------
+// CUSTOMERS DIRECTORY
+// ------------------------------------------------------------------
+async function customersPage(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Registered Customer Directory', 'Profiles and purchasing history')}<div id="custTable">Loading customer list...</div></div>`;
+
+  const r = await sb.from('orders').select('name, phone, address, created_at');
+  const tableEl = document.getElementById('custTable');
+  if(!tableEl) return;
+  if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
+
+  const customerMap = {};
+  (r.data || []).forEach(o => {
+    if(!o.phone) return;
+    if(!customerMap[o.phone]){
+      customerMap[o.phone] = { name: o.name, phone: o.phone, address: o.address, ordersCount: 1, lastOrder: o.created_at };
+    } else {
+      customerMap[o.phone].ordersCount++;
+      if(new Date(o.created_at) > new Date(customerMap[o.phone].lastOrder)){
+        customerMap[o.phone].lastOrder = o.created_at;
+      }
+    }
+  });
+
+  const customers = Object.values(customerMap);
+
+  tableEl.innerHTML = `
+    <div class="table-wrap">
+      <table class="table">
+        <tr>
+          <th>Customer Name</th>
+          <th>Phone Number</th>
+          <th>Address</th>
+          <th>Total Orders</th>
+          <th>Last Activity (LB)</th>
+        </tr>
+        ${customers.length ? customers.map(c => `
+          <tr>
+            <td><b>${esc(c.name)}</b></td>
+            <td>${esc(c.phone)}</td>
+            <td>${esc(c.address || '—')}</td>
+            <td><b style="color:#159A9C">${c.ordersCount}</b></td>
+            <td><small>${formatLebanonTime(c.lastOrder)}</small></td>
+          </tr>
+        `).join('') : '<tr><td colspan="5" class="muted">No customer order records found.</td></tr>'}
+      </table>
+    </div>`;
+}
+
+async function deleteRow(table, id){
+  if(!confirm('Are you sure you want to delete this record?')) return;
+  const r = await sb.from(table).delete().eq('id', id);
+  if(r.error) alert('Delete error: ' + r.error.message);
+  else show(current);
+}
+</script>
+</body>
+</html>
