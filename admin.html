@@ -173,15 +173,29 @@ async function guard(){
 }
 
 async function login(){
-  const email = loginEmail.value.trim();
-  const password = loginPassword.value;
-  if(!email || !password) return loginMsg.innerHTML = msg('Email and password required.', true);
+  const emailEl = document.getElementById('loginEmail');
+  const passEl = document.getElementById('loginPassword');
+  const msgEl = document.getElementById('loginMsg');
+  
+  const email = emailEl ? emailEl.value.trim() : '';
+  const password = passEl ? passEl.value : '';
+  
+  if(!email || !password) {
+    if(msgEl) msgEl.innerHTML = msg('Email and password required.', true);
+    return;
+  }
+  
   const r = await sb.auth.signInWithPassword({email, password});
-  if(r.error) return loginMsg.innerHTML = msg(r.error.message, true);
+  if(r.error) {
+    if(msgEl) msgEl.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  
   const a = await sb.rpc('is_admin');
   if(a.error || a.data !== true){
     await sb.auth.signOut();
-    return loginMsg.innerHTML = msg('Access denied. Administrator privilege required.', true);
+    if(msgEl) msgEl.innerHTML = msg('Access denied. Administrator privilege required.', true);
+    return;
   }
   showAdmin();
 }
@@ -192,14 +206,19 @@ async function logout(){
 }
 
 function showAdmin(){
-  loginView.classList.add('hidden');
-  adminView.classList.remove('hidden');
+  const loginV = document.getElementById('loginView');
+  const adminV = document.getElementById('adminView');
+  if(loginV) loginV.classList.add('hidden');
+  if(adminV) adminV.classList.remove('hidden');
   renderTabs();
   show('dashboard');
 }
 
 function renderTabs(){
-  document.getElementById('tabs').innerHTML = tabs.map(x => `<button class="tab ${current===x[0]?'active':''}" onclick="show('${x[0]}')">${x[1]}</button>`).join('');
+  const tabsEl = document.getElementById('tabs');
+  if(tabsEl) {
+    tabsEl.innerHTML = tabs.map(x => `<button class="tab ${current===x[0]?'active':''}" onclick="show('${x[0]}')">${x[1]}</button>`).join('');
+  }
 }
 
 function show(t){
@@ -241,6 +260,7 @@ function formField(id, label, type='text', extra=''){
 // ------------------------------------------------------------------
 async function dashboard(){
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `<div class="panel">${renderHeader('Executive Dashboard', 'Real-time sales & operational metrics')}<p class="muted">Calculating store statistics...</p></div>`;
 
   const [pRes, oRes, rRes, sRes, itemsRes] = await Promise.all([
@@ -260,7 +280,6 @@ async function dashboard(){
   const completedRevenue = completedOrders.reduce((acc, o) => acc + (Number(o.total) || 0), 0);
   const avgOrderValue = orders.length ? (totalGrossRevenue / orders.length) : 0;
 
-  // Product sales velocity
   const productSalesMap = {};
   orderItems.forEach(item => {
     productSalesMap[item.product_id] = (productSalesMap[item.product_id] || 0) + (item.quantity || 1);
@@ -273,7 +292,6 @@ async function dashboard(){
 
   const maxSales = Math.max(...topProducts.map(p => p.sales), 1);
 
-  // Status distribution
   const statusCounts = orders.reduce((acc, o) => {
     acc[o.status] = (acc[o.status] || 0) + 1;
     return acc;
@@ -325,10 +343,12 @@ async function dashboard(){
 // ------------------------------------------------------------------
 async function ordersPage(){
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `<div class="panel">${renderHeader('Customer Orders Hub', 'Manage fulfillment, restock on cancel & track billing')}<div id="table">Loading orders...</div></div>`;
 
   const r = await sb.from('orders').select('*, order_items(*)').order('created_at', {ascending:false}).limit(200);
   const tableEl = document.getElementById('table');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -386,7 +406,6 @@ async function handleOrderStatusChange(orderId, oldStatus, newStatus){
   const r = await sb.from('orders').update({status: newStatus}).eq('id', orderId);
   if(r.error) return alert('Failed to update order status: ' + r.error.message);
 
-  // Auto Inventory Stock Restoration on Cancellation
   if(newStatus === 'cancelled' && oldStatus !== 'cancelled'){
     await adjustOrderInventory(orderId, 'restock');
   } else if(oldStatus === 'cancelled' && newStatus !== 'cancelled'){
@@ -426,6 +445,7 @@ async function viewOrderDetails(orderId){
   const subtotal = Math.max(0, total - deliveryFee);
 
   const modal = document.getElementById('modalContainer');
+  if(!modal) return;
   modal.classList.remove('hidden');
   modal.innerHTML = `
     <div class="modal">
@@ -463,7 +483,8 @@ async function viewOrderDetails(orderId){
 }
 
 function closeModal(){
-  document.getElementById('modalContainer').classList.add('hidden');
+  const modal = document.getElementById('modalContainer');
+  if(modal) modal.classList.add('hidden');
 }
 
 // ------------------------------------------------------------------
@@ -471,10 +492,12 @@ function closeModal(){
 // ------------------------------------------------------------------
 async function reviewsPage(){
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel">${renderHeader('Customer Reviews Moderation', 'Approve comments prior to storefront display')}<div id="table">Loading reviews...</div></div>`;
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Customer Reviews Moderation', 'Approve comments prior to storefront display')}<div id="reviewsTable">Loading reviews...</div></div>`;
 
   const r = await sb.from('reviews').select('*').order('created_at', {ascending:false}).limit(200);
-  const tableEl = document.getElementById('table');
+  const tableEl = document.getElementById('reviewsTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -520,10 +543,12 @@ async function toggleReviewApproval(id, newStatus){
 // ------------------------------------------------------------------
 async function reservationsPage(){
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel">${renderHeader('Product Reservations', 'Manage upcoming stock reservations')}<div id="table">Loading...</div></div>`;
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Product Reservations', 'Manage upcoming stock reservations')}<div id="resTable">Loading...</div></div>`;
 
   const r = await sb.from('reservations').select('*, products(name_en)').order('created_at', {ascending:false}).limit(200);
-  const tableEl = document.getElementById('table');
+  const tableEl = document.getElementById('resTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -562,10 +587,12 @@ async function reservationsPage(){
 
 async function specialPage(){
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel">${renderHeader('Special Requests', 'Inbound custom customer requests')}<div id="table">Loading...</div></div>`;
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Special Requests', 'Inbound custom customer requests')}<div id="specTable">Loading...</div></div>`;
 
   const r = await sb.from('special_requests').select('*').order('created_at', {ascending:false}).limit(200);
-  const tableEl = document.getElementById('table');
+  const tableEl = document.getElementById('specTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -612,6 +639,7 @@ async function updateRecordStatus(table, id, status){
 // ------------------------------------------------------------------
 async function settingsPage(){
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `
     <div class="panel">
       ${renderHeader('Store System Settings & Preferences', 'Configure administrative defaults & maintenance controls')}
@@ -647,11 +675,17 @@ async function loadStoreSettings(){
   try {
     const { data } = await sb.from('settings').select('*').limit(1).maybeSingle();
     if(data) {
-      if(document.getElementById('s_store_name')) s_store_name.value = data.store_name || 'Smartly Lebanon';
-      if(document.getElementById('s_currency')) s_currency.value = data.currency || '$';
-      if(document.getElementById('s_phone')) s_phone.value = data.whatsapp_phone || '9613080365';
-      if(document.getElementById('s_tax')) s_tax.value = data.tax_percent || 0;
-      if(document.getElementById('s_maintenance')) s_maintenance.value = data.maintenance_mode ? 'true' : 'false';
+      const nameEl = document.getElementById('s_store_name');
+      const currEl = document.getElementById('s_currency');
+      const phoneEl = document.getElementById('s_phone');
+      const taxEl = document.getElementById('s_tax');
+      const maintEl = document.getElementById('s_maintenance');
+
+      if(nameEl) nameEl.value = data.store_name || 'Smartly Lebanon';
+      if(currEl) currEl.value = data.currency || '$';
+      if(phoneEl) phoneEl.value = data.whatsapp_phone || '9613080365';
+      if(taxEl) taxEl.value = data.tax_percent || 0;
+      if(maintEl) maintEl.value = data.maintenance_mode ? 'true' : 'false';
     }
   } catch(e) {
     console.log('Settings load fallback active');
@@ -659,12 +693,18 @@ async function loadStoreSettings(){
 }
 
 async function saveStoreSettings(){
+  const s_store_name = document.getElementById('s_store_name');
+  const s_currency = document.getElementById('s_currency');
+  const s_phone = document.getElementById('s_phone');
+  const s_tax = document.getElementById('s_tax');
+  const s_maintenance = document.getElementById('s_maintenance');
+
   const row = {
-    store_name: s_store_name.value.trim(),
-    currency: s_currency.value.trim(),
-    whatsapp_phone: s_phone.value.trim().replace(/[^0-9]/g, ''),
-    tax_percent: Number(s_tax.value || 0),
-    maintenance_mode: s_maintenance.value === 'true'
+    store_name: s_store_name ? s_store_name.value.trim() : 'Smartly Lebanon',
+    currency: s_currency ? s_currency.value.trim() : '$',
+    whatsapp_phone: s_phone ? s_phone.value.trim().replace(/[^0-9]/g, '') : '',
+    tax_percent: s_tax ? Number(s_tax.value || 0) : 0,
+    maintenance_mode: s_maintenance ? s_maintenance.value === 'true' : false
   };
 
   const { data: existing } = await sb.from('settings').select('id').limit(1).maybeSingle();
@@ -699,6 +739,7 @@ async function productsPage(natural=false){
   await loadRefs();
   editingId = null;
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `
     <div class="panel">
       ${renderHeader(natural ? 'Natural Products Management' : 'Products Catalog')}
@@ -732,6 +773,7 @@ async function renderProductsList(natural=false){
   if(natural) q = q.eq('is_natural', true);
   const r = await q;
   const listEl = document.getElementById('productList');
+  if(!listEl) return;
   if(r.error) return listEl.innerHTML = msg(r.error.message, true);
 
   listEl.innerHTML = `
@@ -766,30 +808,48 @@ async function renderProductsList(natural=false){
 
 async function saveProduct(){
   const msgEl = document.getElementById('productMsg');
-  const name_en = p_name_en.value.trim();
-  if(!name_en) return msgEl.innerHTML = msg('English name required.', true);
+  const p_name_en = document.getElementById('p_name_en');
+  const p_name_ar = document.getElementById('p_name_ar');
+  const p_category = document.getElementById('p_category');
+  const p_desc_en = document.getElementById('p_desc_en');
+  const p_desc_ar = document.getElementById('p_desc_ar');
+  const p_price = document.getElementById('p_price');
+  const p_stock = document.getElementById('p_stock');
+  const p_sort = document.getElementById('p_sort');
+  const p_active = document.getElementById('p_active');
+  const p_natural = document.getElementById('p_natural');
+  const p_image = document.getElementById('p_image');
+
+  const name_en = p_name_en ? p_name_en.value.trim() : '';
+  if(!name_en) {
+    if(msgEl) msgEl.innerHTML = msg('English name required.', true);
+    return;
+  }
 
   let image_url = null;
-  if(p_image.files.length > 0){
+  if(p_image && p_image.files.length > 0){
     const file = p_image.files[0];
     const path = `products/${Date.now()}_${file.name}`;
     const up = await sb.storage.from('products').upload(path, file);
-    if(up.error) return msgEl.innerHTML = msg('Image upload error: ' + up.error.message, true);
+    if(up.error) {
+      if(msgEl) msgEl.innerHTML = msg('Image upload error: ' + up.error.message, true);
+      return;
+    }
     const pub = sb.storage.from('products').getPublicUrl(path);
     image_url = pub.data.publicUrl;
   }
 
   const row = {
     name_en,
-    name_ar: p_name_ar.value.trim(),
-    category_id: p_category.value || null,
-    description_en: p_desc_en.value.trim(),
-    description_ar: p_desc_ar.value.trim(),
-    retail_price: parseFloat(p_price.value) || 0,
-    stock_quantity: parseInt(p_stock.value) || 0,
-    sort_order: parseInt(p_sort.value) || 0,
-    is_active: p_active.value === 'true',
-    is_natural: p_natural.value === 'true'
+    name_ar: p_name_ar ? p_name_ar.value.trim() : '',
+    category_id: (p_category && p_category.value) ? p_category.value : null,
+    description_en: p_desc_en ? p_desc_en.value.trim() : '',
+    description_ar: p_desc_ar ? p_desc_ar.value.trim() : '',
+    retail_price: p_price ? parseFloat(p_price.value) || 0 : 0,
+    stock_quantity: p_stock ? parseInt(p_stock.value) || 0 : 0,
+    sort_order: p_sort ? parseInt(p_sort.value) || 0 : 0,
+    is_active: p_active ? p_active.value === 'true' : true,
+    is_natural: p_natural ? p_natural.value === 'true' : false
   };
 
   if(image_url) row.image_url = image_url;
@@ -801,10 +861,13 @@ async function saveProduct(){
     r = await sb.from('products').insert(row);
   }
 
-  if(r.error) return msgEl.innerHTML = msg(r.error.message, true);
-  msgEl.innerHTML = msg('Product saved successfully.');
+  if(r.error) {
+    if(msgEl) msgEl.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(msgEl) msgEl.innerHTML = msg('Product saved successfully.');
   resetProductForm();
-  renderProductsList(p_natural.value === 'true');
+  renderProductsList(p_natural ? p_natural.value === 'true' : false);
 }
 
 async function editProduct(id){
@@ -812,26 +875,56 @@ async function editProduct(id){
   if(r.error) return alert(r.error.message);
   const p = r.data;
   editingId = p.id;
-  p_name_en.value = p.name_en || '';
-  p_name_ar.value = p.name_ar || '';
-  p_category.value = p.category_id || '';
-  p_desc_en.value = p.description_en || '';
-  p_desc_ar.value = p.description_ar || '';
-  p_price.value = p.retail_price || 0;
-  p_stock.value = p.stock_quantity || 0;
-  p_sort.value = p.sort_order || 0;
-  p_active.value = p.is_active ? 'true' : 'false';
-  p_natural.value = p.is_natural ? 'true' : 'false';
-  saveBtn.innerText = 'Update Product';
+
+  const p_name_en = document.getElementById('p_name_en');
+  const p_name_ar = document.getElementById('p_name_ar');
+  const p_category = document.getElementById('p_category');
+  const p_desc_en = document.getElementById('p_desc_en');
+  const p_desc_ar = document.getElementById('p_desc_ar');
+  const p_price = document.getElementById('p_price');
+  const p_stock = document.getElementById('p_stock');
+  const p_sort = document.getElementById('p_sort');
+  const p_active = document.getElementById('p_active');
+  const p_natural = document.getElementById('p_natural');
+  const saveBtn = document.getElementById('saveBtn');
+
+  if(p_name_en) p_name_en.value = p.name_en || '';
+  if(p_name_ar) p_name_ar.value = p.name_ar || '';
+  if(p_category) p_category.value = p.category_id || '';
+  if(p_desc_en) p_desc_en.value = p.description_en || '';
+  if(p_desc_ar) p_desc_ar.value = p.description_ar || '';
+  if(p_price) p_price.value = p.retail_price || 0;
+  if(p_stock) p_stock.value = p.stock_quantity || 0;
+  if(p_sort) p_sort.value = p.sort_order || 0;
+  if(p_active) p_active.value = p.is_active ? 'true' : 'false';
+  if(p_natural) p_natural.value = p.is_natural ? 'true' : 'false';
+  if(saveBtn) saveBtn.innerText = 'Update Product';
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function resetProductForm(){
   editingId = null;
-  p_name_en.value = ''; p_name_ar.value = ''; p_category.value = '';
-  p_desc_en.value = ''; p_desc_ar.value = ''; p_price.value = '';
-  p_stock.value = ''; p_sort.value = '0'; p_image.value = '';
-  saveBtn.innerText = 'Save Product';
+  const p_name_en = document.getElementById('p_name_en');
+  const p_name_ar = document.getElementById('p_name_ar');
+  const p_category = document.getElementById('p_category');
+  const p_desc_en = document.getElementById('p_desc_en');
+  const p_desc_ar = document.getElementById('p_desc_ar');
+  const p_price = document.getElementById('p_price');
+  const p_stock = document.getElementById('p_stock');
+  const p_sort = document.getElementById('p_sort');
+  const p_image = document.getElementById('p_image');
+  const saveBtn = document.getElementById('saveBtn');
+
+  if(p_name_en) p_name_en.value = '';
+  if(p_name_ar) p_name_ar.value = '';
+  if(p_category) p_category.value = '';
+  if(p_desc_en) p_desc_en.value = '';
+  if(p_desc_ar) p_desc_ar.value = '';
+  if(p_price) p_price.value = '';
+  if(p_stock) p_stock.value = '';
+  if(p_sort) p_sort.value = '0';
+  if(p_image) p_image.value = '';
+  if(saveBtn) saveBtn.innerText = 'Save Product';
 }
 
 // ------------------------------------------------------------------
@@ -839,6 +932,7 @@ function resetProductForm(){
 // ------------------------------------------------------------------
 async function categoriesPage(){
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `
     <div class="panel">
       ${renderHeader('Categories Management')}
@@ -863,6 +957,7 @@ async function categoriesPage(){
 async function renderCategoriesList(){
   const r = await sb.from('categories').select('*').order('sort_order');
   const tableEl = document.getElementById('catTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -885,23 +980,49 @@ async function renderCategoriesList(){
 }
 
 async function saveCategory(){
-  const name_en = c_name_en.value.trim();
-  if(!name_en) return catMsg.innerHTML = msg('Category name required.', true);
+  const c_name_en = document.getElementById('c_name_en');
+  const c_name_ar = document.getElementById('c_name_ar');
+  const c_sort = document.getElementById('c_sort');
+  const catMsg = document.getElementById('catMsg');
+  const catSaveBtn = document.getElementById('catSaveBtn');
 
-  const row = { name_en, name_ar: c_name_ar.value.trim(), sort_order: parseInt(c_sort.value)||0 };
+  const name_en = c_name_en ? c_name_en.value.trim() : '';
+  if(!name_en) {
+    if(catMsg) catMsg.innerHTML = msg('Category name required.', true);
+    return;
+  }
+
+  const row = { 
+    name_en, 
+    name_ar: c_name_ar ? c_name_ar.value.trim() : '', 
+    sort_order: c_sort ? parseInt(c_sort.value)||0 : 0 
+  };
+  
   let r = editingId ? await sb.from('categories').update(row).eq('id', editingId) : await sb.from('categories').insert(row);
 
-  if(r.error) return catMsg.innerHTML = msg(r.error.message, true);
+  if(r.error) {
+    if(catMsg) catMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
   editingId = null;
-  c_name_en.value = ''; c_name_ar.value = ''; c_sort.value = '0';
-  catSaveBtn.innerText = 'Save Category';
+  if(c_name_en) c_name_en.value = ''; 
+  if(c_name_ar) c_name_ar.value = ''; 
+  if(c_sort) c_sort.value = '0';
+  if(catSaveBtn) catSaveBtn.innerText = 'Save Category';
   renderCategoriesList();
 }
 
 function editCategory(id, en, ar, sort){
   editingId = id;
-  c_name_en.value = en; c_name_ar.value = ar; c_sort.value = sort;
-  catSaveBtn.innerText = 'Update Category';
+  const c_name_en = document.getElementById('c_name_en');
+  const c_name_ar = document.getElementById('c_name_ar');
+  const c_sort = document.getElementById('c_sort');
+  const catSaveBtn = document.getElementById('catSaveBtn');
+
+  if(c_name_en) c_name_en.value = en; 
+  if(c_name_ar) c_name_ar.value = ar; 
+  if(c_sort) c_sort.value = sort;
+  if(catSaveBtn) catSaveBtn.innerText = 'Update Category';
 }
 
 // ------------------------------------------------------------------
@@ -909,6 +1030,7 @@ function editCategory(id, en, ar, sort){
 // ------------------------------------------------------------------
 async function countriesPage(){
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `
     <div class="panel">
       ${renderHeader('Countries Management')}
@@ -937,6 +1059,7 @@ async function countriesPage(){
 async function renderCountriesList(){
   const r = await sb.from('countries').select('*').order('sort_order');
   const tableEl = document.getElementById('coTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -956,16 +1079,29 @@ async function renderCountriesList(){
 }
 
 async function saveCountry(){
+  const co_select = document.getElementById('co_select');
+  const co_sort = document.getElementById('co_sort');
+  const coMsg = document.getElementById('coMsg');
+
+  if(!co_select) return;
   const sel = co_select.options[co_select.selectedIndex];
-  const row = { name: sel.getAttribute('data-name'), country_code: sel.value, sort_order: parseInt(co_sort.value)||0 };
+  const row = { 
+    name: sel.getAttribute('data-name'), 
+    country_code: sel.value, 
+    sort_order: co_sort ? parseInt(co_sort.value)||0 : 0 
+  };
   const r = await sb.from('countries').insert(row);
-  if(r.error) return coMsg.innerHTML = msg(r.error.message, true);
+  if(r.error) {
+    if(coMsg) coMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
   renderCountriesList();
 }
 
 async function deliveryFeesPage(){
   await loadRefs();
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `
     <div class="panel">
       ${renderHeader('Delivery Fees Configuration')}
@@ -995,6 +1131,7 @@ async function deliveryFeesPage(){
 async function renderDeliveryFeesList(){
   const r = await sb.from('delivery_fees').select('*, countries(name)');
   const tableEl = document.getElementById('delTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -1014,10 +1151,23 @@ async function renderDeliveryFeesList(){
 }
 
 async function saveDeliveryFee(){
-  const row = { country_id: d_country.value, city: d_city.value.trim(), fee: parseFloat(d_fee.value)||0 };
+  const d_country = document.getElementById('d_country');
+  const d_city = document.getElementById('d_city');
+  const d_fee = document.getElementById('d_fee');
+  const delMsg = document.getElementById('delMsg');
+
+  const row = { 
+    country_id: d_country ? d_country.value : null, 
+    city: d_city ? d_city.value.trim() : '', 
+    fee: d_fee ? parseFloat(d_fee.value)||0 : 0 
+  };
   const r = await sb.from('delivery_fees').insert(row);
-  if(r.error) return delMsg.innerHTML = msg(r.error.message, true);
-  d_city.value = ''; d_fee.value = '';
+  if(r.error) {
+    if(delMsg) delMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(d_city) d_city.value = ''; 
+  if(d_fee) d_fee.value = '';
   renderDeliveryFeesList();
 }
 
@@ -1026,6 +1176,7 @@ async function saveDeliveryFee(){
 // ------------------------------------------------------------------
 async function bundlesPage(){
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `
     <div class="panel">
       ${renderHeader('Bundles & Promotional Offers')}
@@ -1050,6 +1201,7 @@ async function bundlesPage(){
 async function renderBundlesList(){
   const r = await sb.from('bundles').select('*').order('created_at', {ascending:false});
   const tableEl = document.getElementById('bunTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -1069,13 +1221,30 @@ async function renderBundlesList(){
 }
 
 async function saveBundle(){
-  const title = b_title.value.trim();
-  if(!title) return bunMsg.innerHTML = msg('Bundle title required.', true);
+  const b_title = document.getElementById('b_title');
+  const b_desc = document.getElementById('b_desc');
+  const b_price = document.getElementById('b_price');
+  const bunMsg = document.getElementById('bunMsg');
 
-  const row = { title, description: b_desc.value.trim(), price: parseFloat(b_price.value)||0 };
+  const title = b_title ? b_title.value.trim() : '';
+  if(!title) {
+    if(bunMsg) bunMsg.innerHTML = msg('Bundle title required.', true);
+    return;
+  }
+
+  const row = { 
+    title, 
+    description: b_desc ? b_desc.value.trim() : '', 
+    price: b_price ? parseFloat(b_price.value)||0 : 0 
+  };
   const r = await sb.from('bundles').insert(row);
-  if(r.error) return bunMsg.innerHTML = msg(r.error.message, true);
-  b_title.value = ''; b_desc.value = ''; b_price.value = '';
+  if(r.error) {
+    if(bunMsg) bunMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(b_title) b_title.value = ''; 
+  if(b_desc) b_desc.value = ''; 
+  if(b_price) b_price.value = '';
   renderBundlesList();
 }
 
@@ -1084,6 +1253,7 @@ async function saveBundle(){
 // ------------------------------------------------------------------
 async function paymentsPage(){
   const app = document.getElementById('app');
+  if(!app) return;
   app.innerHTML = `
     <div class="panel">
       ${renderHeader('Payment Gateways & Methods')}
@@ -1108,6 +1278,7 @@ async function paymentsPage(){
 async function renderPaymentsList(){
   const r = await sb.from('payment_methods').select('*');
   const tableEl = document.getElementById('payTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
   tableEl.innerHTML = `
@@ -1127,13 +1298,29 @@ async function renderPaymentsList(){
 }
 
 async function savePaymentMethod(){
-  const name = pm_name.value.trim();
-  if(!name) return payMsg.innerHTML = msg('Payment name required.', true);
+  const pm_name = document.getElementById('pm_name');
+  const pm_details = document.getElementById('pm_details');
+  const pm_active = document.getElementById('pm_active');
+  const payMsg = document.getElementById('payMsg');
 
-  const row = { name, details: pm_details.value.trim(), is_active: pm_active.value === 'true' };
+  const name = pm_name ? pm_name.value.trim() : '';
+  if(!name) {
+    if(payMsg) payMsg.innerHTML = msg('Payment name required.', true);
+    return;
+  }
+
+  const row = { 
+    name, 
+    details: pm_details ? pm_details.value.trim() : '', 
+    is_active: pm_active ? pm_active.value === 'true' : true 
+  };
   const r = await sb.from('payment_methods').insert(row);
-  if(r.error) return payMsg.innerHTML = msg(r.error.message, true);
-  pm_name.value = ''; pm_details.value = '';
+  if(r.error) {
+    if(payMsg) payMsg.innerHTML = msg(r.error.message, true);
+    return;
+  }
+  if(pm_name) pm_name.value = ''; 
+  if(pm_details) pm_details.value = '';
   renderPaymentsList();
 }
 
@@ -1142,13 +1329,14 @@ async function savePaymentMethod(){
 // ------------------------------------------------------------------
 async function customersPage(){
   const app = document.getElementById('app');
-  app.innerHTML = `<div class="panel">${renderHeader('Registered Customer Directory', 'Profiles and purchasing history')}<div id="table">Loading customer list...</div></div>`;
+  if(!app) return;
+  app.innerHTML = `<div class="panel">${renderHeader('Registered Customer Directory', 'Profiles and purchasing history')}<div id="custTable">Loading customer list...</div></div>`;
 
   const r = await sb.from('orders').select('name, phone, address, created_at');
-  const tableEl = document.getElementById('table');
+  const tableEl = document.getElementById('custTable');
+  if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
 
-  // Group unique customer records by phone number
   const customerMap = {};
   (r.data || []).forEach(o => {
     if(!o.phone) return;
