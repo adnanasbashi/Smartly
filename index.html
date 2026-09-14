@@ -774,6 +774,16 @@ function cartModal(){
 
   const lines = Object.entries(cart).map(([id,q])=>{
 
+    if(id.startsWith('bundle_')) {
+
+      const bId = id.replace('bundle_', '');
+
+      const b = bundles.find(x=>String(x.id)===bId);
+
+      return b ? `<p style="margin:6px 0"><b>Bundle: ${esc(b.title||b.name)}</b> × ${q} — $${(Number(b.price||0)*q).toFixed(2)}</p>` : '';
+
+    }
+
     const p = products.find(x=>String(x.id)===id);
 
     return p ? `<p style="margin:6px 0"><b>${esc(p.name_en||p.name_ar)}</b> × ${q} — $${(Number(p.retail_price||0)*q).toFixed(2)}</p>` : '';
@@ -878,11 +888,27 @@ function updateCartFeeSummary(){
 
   for(const [id,q] of Object.entries(cart)){
 
-    const x = products.find(y=>String(y.id)===id);
+    if(id.startsWith('bundle_')){
 
-    if(x){
+      const bId = id.replace('bundle_', '');
 
-      subtotal += Number(x.retail_price||0) * q;
+      const b = bundles.find(y=>String(y.id)===bId);
+
+      if(b){
+
+        subtotal += Number(b.price||0) * q;
+
+      }
+
+    } else {
+
+      const x = products.find(y=>String(y.id)===id);
+
+      if(x){
+
+        subtotal += Number(x.retail_price||0) * q;
+
+      }
 
     }
 
@@ -968,23 +994,41 @@ async function checkout(){
 
   
 
-  let subtotal = 0, items = [];
+  let subtotal = 0, items = [], bundleItems = [];
 
   for(const [id,q] of Object.entries(cart)){
 
-    const x = products.find(y=>String(y.id)===id);
+    if(id.startsWith('bundle_')){
 
-    if(x){
+      const bId = id.replace('bundle_', '');
 
-      subtotal += Number(x.retail_price||0) * q;
+      const b = bundles.find(y=>String(y.id)===bId);
 
-      items.push({product_id: x.id, quantity: q, unit_price: x.retail_price});
+      if(b){
+
+        subtotal += Number(b.price||0) * q;
+
+        bundleItems.push({bundle_id: b.id, quantity: q, unit_price: b.price, title: b.title||b.name});
+
+      }
+
+    } else {
+
+      const x = products.find(y=>String(y.id)===id);
+
+      if(x){
+
+        subtotal += Number(x.retail_price||0) * q;
+
+        items.push({product_id: x.id, quantity: q, unit_price: x.retail_price});
+
+      }
 
     }
 
   }
 
-  if(!items.length) return toast('Your cart is empty');
+  if(!items.length && !bundleItems.length) return toast('Your cart is empty');
 
   
 
@@ -1028,9 +1072,13 @@ async function checkout(){
 
   
 
-  const oi = await sb.from('order_items').insert(items.map(x=>({...x, order_id: o.data.id})));
+  if(items.length){
 
-  if(oi.error) return toast(oi.error.message);
+    const oi = await sb.from('order_items').insert(items.map(x=>({...x, order_id: o.data.id})));
+
+    if(oi.error) return toast(oi.error.message);
+
+  }
 
 
 
@@ -1054,7 +1102,25 @@ async function checkout(){
 
   
 
-  const text = `Hello Smartly, I want to order.\n\nOrder: ${order_number}\nName: ${n}\nPhone: ${p}\nAlternative: ${cap.value}\nCountry: ${selectedCountryName}\nCity/Region: ${selectedCity}\nLocation: ${loc}\nPayment: ${selectedPayment}\nSubtotal: $${subtotal.toFixed(2)}\nDelivery Fee: $${deliveryFee.toFixed(2)}\nTotal Amount: $${grandTotal.toFixed(2)}`;
+  let cartDescriptionList = items.map(i => {
+
+    const prod = products.find(p => p.id === i.product_id);
+
+    return prod ? `${prod.name_en || prod.name_ar} (x${i.quantity})` : '';
+
+  }).filter(Boolean);
+
+
+
+  bundleItems.forEach(b => {
+
+    cartDescriptionList.push(`Bundle: ${b.title} (x${b.quantity})`);
+
+  });
+
+
+
+  const text = `Hello Smartly, I want to order.\n\nOrder: ${order_number}\nItems:\n- ${cartDescriptionList.join('\n- ')}\n\nName: ${n}\nPhone: ${p}\nAlternative: ${cap.value}\nCountry: ${selectedCountryName}\nCity/Region: ${selectedCity}\nLocation: ${loc}\nPayment: ${selectedPayment}\nSubtotal: $${subtotal.toFixed(2)}\nDelivery Fee: $${deliveryFee.toFixed(2)}\nTotal Amount: $${grandTotal.toFixed(2)}`;
 
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(text), '_blank');
 
