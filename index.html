@@ -64,6 +64,7 @@
     <div class="feature" style="max-width:600px;margin:0 auto">
       <h3 style="margin-top:0">Leave your feedback</h3>
       <div class="field" style="margin-bottom:10px"><label>Your Name</label><input id="revName" placeholder="John Doe"></div>
+      <div class="field" style="margin-bottom:10px"><label>Rating</label><select id="revRating"><option value="5">⭐⭐⭐⭐⭐ (5/5)</option><option value="4">⭐⭐⭐⭐ (4/5)</option><option value="3">⭐⭐⭐ (3/5)</option><option value="2">⭐⭐ (2/5)</option><option value="1">⭐ (1/5)</option></select></div>
       <div class="field" style="margin-bottom:10px"><label>Comment</label><textarea id="revComment" placeholder="Write your experience here..."></textarea></div>
       <button class="btn primary full" onclick="submitReview()">Submit Review</button>
     </div>
@@ -195,6 +196,10 @@ function authModal(){
         <label>Full Name</label>
         <input id="authName" type="text" placeholder="John Doe">
       </div>
+      <div id="phoneField" class="field" style="display:none;margin-bottom:10px">
+        <label>Phone Number</label>
+        <input id="authPhone" type="tel" placeholder="+961 3 000 000">
+      </div>
       <div class="field" style="margin-bottom:10px">
         <label>Email Address</label>
         <input id="authEmail" type="email" required placeholder="name@example.com">
@@ -222,17 +227,20 @@ let authMode = 'login';
 function switchAuthTab(mode){
   authMode = mode;
   const nameField = document.getElementById('fullNameField');
+  const phoneField = document.getElementById('phoneField');
   const btn = document.getElementById('authSubmitBtn');
   const tabLogin = document.getElementById('tabLogin');
   const tabSignup = document.getElementById('tabSignup');
 
   if(mode === 'signup'){
     nameField.style.display = 'block';
+    phoneField.style.display = 'block';
     btn.textContent = 'Create Account';
     tabLogin.classList.remove('primary');
     tabSignup.classList.add('primary');
   } else {
     nameField.style.display = 'none';
+    phoneField.style.display = 'none';
     btn.textContent = 'Sign In';
     tabSignup.classList.remove('primary');
     tabLogin.classList.add('primary');
@@ -244,14 +252,16 @@ async function handleAuth(e){
   const email = authEmail.value.trim();
   const password = authPassword.value;
   const name = authName.value.trim();
+  const phone = authPhone.value.trim();
 
   if(!email || !password) return toast('Please enter both email and password.');
 
   if(authMode === 'signup'){
+    if(!phone) return toast('Please enter your phone number.');
     const { data, error } = await sb.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } }
+      options: { data: { full_name: name, phone: phone } }
     });
     if(error) return toast(error.message);
     toast('Account created successfully!');
@@ -341,7 +351,7 @@ function reserveModal(id){
     <div class="formgrid">
       <div class="field"><label>Number of Items Requested</label><input id="resQty" type="number" min="1" value="${initQty}"></div>
       <div class="field"><label>Your Name</label><input id="resName" value="${esc(currentUser?.user_metadata?.full_name||'')}"></div>
-      <div class="field"><label>Phone / WhatsApp</label><input id="resPhone"></div>
+      <div class="field"><label>Phone / WhatsApp</label><input id="resPhone" value="${esc(currentUser?.user_metadata?.phone||'')}"></div>
       <div class="field"><label>Country</label><select id="resCountry">${countries.map(c=>`<option>${esc(c.name||c.name_en)}</option>`).join('')}</select></div>
     </div>
     <div class="field">
@@ -452,7 +462,7 @@ function cartModal(){
     <h3>Customer information</h3>
     <div class="formgrid">
       <div class="field"><label>Name</label><input id="cn" value="${esc(currentUser?.user_metadata?.full_name||'')}"></div>
-      <div class="field"><label>Phone</label><input id="cp"></div>
+      <div class="field"><label>Phone</label><input id="cp" value="${esc(currentUser?.user_metadata?.phone||'')}"></div>
       <div class="field"><label>Alternative phone</label><input id="cap"></div>
       <div class="field"><label>Email</label><input id="ce" type="email" value="${esc(currentUser?.email||'')}"></div>
       <div class="field"><label>Country</label><select id="cc" onchange="updateCityOptions()">${countries.map(c=>`<option value="${esc(c.id)}">${esc(c.name||c.name_en)}</option>`).join('')}</select></div>
@@ -533,7 +543,7 @@ function updateCartFeeSummary(){
   
   const pmLower = selectedPayment.toLowerCase();
   
-  const isZeroDelivery = pmLower.includes('pickup') || pmLower.includes('omt') || pmLower.includes('whish') || pmLower.includes('bank transfer');
+  const isZeroDelivery = pmLower.includes('pickup');
   const deliveryFee = isZeroDelivery ? 0.00 : cityFee;
   const grandTotal = subtotal + deliveryFee;
 
@@ -598,9 +608,18 @@ function proceedToConfirmation(){
   const cityFee = selectedOption ? parseFloat(selectedOption.getAttribute('data-fee') || '0') : 0;
   
   const pmLower = selectedPayment.toLowerCase();
-  const isZeroDelivery = pmLower.includes('pickup') || pmLower.includes('omt') || pmLower.includes('whish') || pmLower.includes('bank transfer');
+  const isZeroDelivery = pmLower.includes('pickup');
   const deliveryFee = isZeroDelivery ? 0.00 : cityFee;
   const grandTotal = subtotal + deliveryFee;
+
+  let detailsDescriptionList = items.map(i => {
+    const prod = products.find(p => p.id === i.product_id);
+    return prod ? `${prod.name_en || prod.name_ar} (x${i.quantity})` : '';
+  }).filter(Boolean);
+
+  bundleItems.forEach(b => {
+    detailsDescriptionList.push(`Bundle: ${b.title} (x${b.quantity})`);
+  });
 
   pendingOrderData = {
     order_number: 'ORD-' + Date.now(),
@@ -617,6 +636,7 @@ function proceedToConfirmation(){
     grandTotal,
     items,
     bundleItems,
+    detailsText: detailsDescriptionList.join(', '),
     proofFile: proofOfPaymentFile
   };
 
@@ -660,10 +680,10 @@ function proceedToConfirmation(){
 
 async function finalizeCheckout(){
   if(!pendingOrderData) return;
-  const { order_number, name, phone, alternative_phone, email, country, city, location, payment_method, subtotal, deliveryFee, grandTotal, items, bundleItems } = pendingOrderData;
+  const { order_number, name, phone, alternative_phone, email, country, city, location, payment_method, subtotal, deliveryFee, grandTotal, items, bundleItems, detailsText } = pendingOrderData;
 
   const o = await sb.from('orders').insert({
-    order_number, name, phone, alternative_phone, email, country, location:`${city} - ${location}`, payment_method, total:grandTotal, status:'pending'
+    order_number, name, phone, alternative_phone, email, country, location:`${city} - ${location}`, payment_method, details: detailsText, delivery_fee: deliveryFee, subtotal: subtotal, total:grandTotal, status:'pending'
   }).select().single();
   
   if(o.error) return toast(o.error.message);
@@ -731,22 +751,28 @@ function addBundleToCart(bundleId) {
 
 function renderReviews(){
   const rGrid = document.getElementById('reviewsGrid');
-  rGrid.innerHTML = reviews.length ? reviews.map(r=>`
+  rGrid.innerHTML = reviews.length ? reviews.map(r=>{
+    const starsNum = Number(r.rating || r.stars || 5);
+    const starString = '⭐'.repeat(Math.max(1, Math.min(5, starsNum)));
+    return `
     <div class="feature">
-      <b>⭐ ${esc(r.customer_name||r.name||'Customer')}</b>
+      <b>${starString} ${esc(r.customer_name||r.name||'Customer')}</b>
       <p>"${esc(r.comment||r.feedback||'')}"</p>
-    </div>
-  `).join('') : '<p class="muted">No reviews yet.</p>';
+    </div>`;
+  }).join('') : '<p class="muted">No reviews yet.</p>';
 }
 
 async function submitReview(){
   const name = document.getElementById('revName').value.trim();
+  const rating = parseInt(document.getElementById('revRating').value) || 5;
   const comment = document.getElementById('revComment').value.trim();
   if(!name || !comment) return toast('Please provide both name and comment.');
 
   const { data, error } = await sb.from('reviews').insert([{
     customer_name: name,
     name: name,
+    rating: rating,
+    stars: rating,
     comment: comment,
     feedback: comment,
     approved: true
