@@ -1094,9 +1094,33 @@ function renderBundles(){
 
       <div class="price">$${Number(b.price||0).toFixed(2)}</div>
 
+      <div style="margin-top:12px">
+
+        <button class="btn primary full" onclick="addBundleToCart('${esc(b.id)}')">Add Bundle to Cart</button>
+
+      </div>
+
     </div>
 
   `).join('') : '<p class="muted">No special offers available.</p>';
+
+}
+
+
+
+function addBundleToCart(bundleId) {
+
+  const b = bundles.find(x => String(x.id) === String(bundleId));
+
+  if (!b) return;
+
+  const bKey = 'bundle_' + b.id;
+
+  cart[bKey] = (cart[bKey] || 0) + 1;
+
+  count.textContent = Object.values(cart).reduce((a, b) => a + b, 0);
+
+  toast('Bundle added to cart');
 
 }
 
@@ -1110,7 +1134,7 @@ function renderReviews(){
 
     <div class="feature">
 
-      <b>${esc(r.customer_name||'Customer')}</b>
+      <b>⭐ ${esc(r.customer_name||'Customer')}</b>
 
       <p>"${esc(r.comment||'')}"</p>
 
