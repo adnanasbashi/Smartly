@@ -373,7 +373,7 @@ async function sendReservation(id){
 
   if(!name || !phone) return toast('Please provide your name and phone number');
 
-  const { data, error } = await sb.from('reservations').insert([{
+  await sb.from('reservations').insert([{
     customer_name: name,
     name: name,
     phone: phone,
@@ -384,10 +384,6 @@ async function sendReservation(id){
     location: loc,
     country: country
   }]);
-
-  if(error) {
-    console.error('Reservation insert error:', error);
-  }
 
   const text = `Hello Smartly, I want to RESERVE an out-of-stock item.\n\nItem: ${p.name_en||p.name_ar}\nQuantity Requested: ${qty}\nName: ${name}\nPhone: ${phone}\nCountry: ${country}\nLocation: ${loc}`;
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(text), '_blank');
@@ -404,7 +400,7 @@ async function specialOrder(){
 
   if(!item || !name || !phone) return toast('Item description, name, and phone are required.');
 
-  const { data, error } = await sb.from('special_requests').insert([{
+  await sb.from('special_requests').insert([{
     customer_name: name,
     name: name,
     phone: phone,
@@ -414,10 +410,6 @@ async function specialOrder(){
     quantity: qty,
     status: 'pending'
   }]);
-
-  if(error) {
-    console.error('Special request insert error:', error);
-  }
 
   const text = `Hello Smartly, I have a SPECIAL REQUEST for sourcing an item.\n\nProduct/Link: ${item}\nQuantity Requested: ${qty}\nName: ${name}\nPhone: ${phone}\nCountry: ${country}`;
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(text), '_blank');
@@ -542,7 +534,6 @@ function updateCartFeeSummary(){
   const cityFee = selectedOption ? parseFloat(selectedOption.getAttribute('data-fee') || '0') : 0;
   
   const pmLower = selectedPayment.toLowerCase();
-  
   const isZeroDelivery = pmLower.includes('pickup');
   const deliveryFee = isZeroDelivery ? 0.00 : cityFee;
   const grandTotal = subtotal + deliveryFee;
@@ -728,16 +719,24 @@ function fillCountries(){
 
 function renderBundles(){
   const bGrid = document.getElementById('bundlesGrid');
-  bGrid.innerHTML = bundles.length ? bundles.map(b=>`
+  bGrid.innerHTML = bundles.length ? bundles.map(b=>{
+    const bStock = Number(b.stock_quantity ?? b.stock ?? 10);
+    return `
     <div class="bundle">
-      <h3>${esc(b.title||b.name||'Bundle')}</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>${esc(b.title||b.name||'Bundle')}</h3>
+        <span class="badge" style="position:static;">${bStock > 0 ? bStock + ' in stock' : 'Out of stock'}</span>
+      </div>
       <p class="muted">${esc(b.description||'')}</p>
       <div class="price">$${Number(b.price||0).toFixed(2)}</div>
       <div style="margin-top:12px">
-        <button class="btn primary full" onclick="addBundleToCart('${esc(b.id)}')">Add Bundle to Cart</button>
+        ${bStock > 0 
+          ? `<button class="btn primary full" onclick="addBundleToCart('${esc(b.id)}')">Add Bundle to Cart</button>`
+          : `<button class="btn red full" disabled>Out of Stock</button>`
+        }
       </div>
     </div>
-  `).join('') : '<p class="muted">No special offers available.</p>';
+  `;}).join('') : '<p class="muted">No special offers available.</p>';
 }
 
 function addBundleToCart(bundleId) {
