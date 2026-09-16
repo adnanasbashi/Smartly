@@ -87,7 +87,10 @@ button{cursor:pointer}
           <h2 style="margin:0;font-size:22px">Smartly Operations Control</h2>
           <small style="opacity:0.8">Beirut Local Timezone: GMT+3</small>
         </div>
-        <button class="btn danger" onclick="logout()">Sign Out</button>
+        <div>
+          <button class="btn outline" onclick="window.open('index.html', '_blank')" style="color:#fff;border-color:rgba(255,255,255,0.3);margin-right:8px">🛍️ View Storefront</button>
+          <button class="btn danger" onclick="logout()">Sign Out</button>
+        </div>
       </div>
     </div>
   </header>
@@ -255,9 +258,7 @@ function formField(id, label, type='text', extra=''){
   return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" ${extra}></div>`;
 }
 
-// ------------------------------------------------------------------
 // DASHBOARD (BI ANALYTICS)
-// ------------------------------------------------------------------
 async function dashboard(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -338,9 +339,7 @@ async function dashboard(){
   `;
 }
 
-// ------------------------------------------------------------------
 // ORDERS MANAGEMENT & BILLING
-// ------------------------------------------------------------------
 async function ordersPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -487,9 +486,7 @@ function closeModal(){
   if(modal) modal.classList.add('hidden');
 }
 
-// ------------------------------------------------------------------
 // REVIEWS WITH APPROVAL WORKFLOW
-// ------------------------------------------------------------------
 async function reviewsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -538,9 +535,7 @@ async function toggleReviewApproval(id, newStatus){
   else reviewsPage();
 }
 
-// ------------------------------------------------------------------
 // RESERVATIONS & SPECIAL REQUESTS
-// ------------------------------------------------------------------
 async function reservationsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -565,9 +560,9 @@ async function reservationsPage(){
         </tr>
         ${(r.data||[]).map(x => `
           <tr>
-            <td><b>${esc(x.name)}</b></td>
+            <td><b>${esc(x.name || x.customer_name)}</b></td>
             <td>${esc(x.phone)}</td>
-            <td>${esc(x.products?.name_en || x.product_id)}</td>
+            <td>${esc(x.products?.name_en || x.product_name || x.product_id)}</td>
             <td>${x.quantity || 1}</td>
             <td>
               <select onchange="updateRecordStatus('reservations', '${esc(x.id)}', this.value)">
@@ -609,10 +604,10 @@ async function specialPage(){
         </tr>
         ${(r.data||[]).map(x => `
           <tr>
-            <td><b>${esc(x.name)}</b></td>
+            <td><b>${esc(x.name || x.customer_name)}</b></td>
             <td>${esc(x.phone)}</td>
             <td>${esc(x.country || 'Lebanon')}</td>
-            <td>${esc(x.item || x.request_details)}</td>
+            <td>${esc(x.item || x.requested_item || x.request_details)}</td>
             <td>
               <select onchange="updateRecordStatus('special_requests', '${esc(x.id)}', this.value)">
                 <option value="pending" ${x.status==='pending'?'selected':''}>Pending</option>
@@ -634,9 +629,7 @@ async function updateRecordStatus(table, id, status){
   if(r.error) alert('Failed to update status: ' + r.error.message);
 }
 
-// ------------------------------------------------------------------
 // SETTINGS
-// ------------------------------------------------------------------
 async function settingsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -664,7 +657,6 @@ async function settingsPage(){
       <br>
       <div class="actions">
         <button class="btn" onclick="saveStoreSettings()">Save Configurations</button>
-        <button class="btn outline" onclick="localStorage.clear(); alert('Local administrative cache cleared.');">Clear Local Cache</button>
       </div>
     </div>`;
 
@@ -716,16 +708,13 @@ async function saveStoreSettings(){
   }
 
   if(r?.error){
-    alert('Could not save to DB, settings saved to local cache fallback: ' + r.error.message);
-    localStorage.setItem('smartly_settings', JSON.stringify(row));
+    alert('Could not save to DB: ' + r.error.message);
   } else {
     alert('System configurations saved successfully.');
   }
 }
 
-// ------------------------------------------------------------------
 // PRODUCTS, CATEGORIES, COUNTRIES, DELIVERY, BUNDLES, PAYMENTS, CUSTOMERS
-// ------------------------------------------------------------------
 async function loadRefs(){
   const [c,co] = await Promise.all([
     sb.from('categories').select('id,name_en,name_ar').order('sort_order'),
@@ -798,7 +787,7 @@ async function renderProductsList(natural=false){
             <td>${esc(x.categories?.name_en || '—')}</td>
             <td>$${Number(x.retail_price||0).toFixed(2)}</td>
             <td><b style="color:${x.stock_quantity<5?'#e11d48':'#123B5D'}">${x.stock_quantity||0}</b></td>
-            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Hidden'}</span></td>
+            <td><span class="status-pill ${x.is_active!==false?'status-approved':'status-cancelled'}">${x.is_active!==false?'Active':'Hidden'}</span></td>
             <td>
               <button class="btn outline" onclick="editProduct('${esc(x.id)}')">Edit</button>
               <button class="btn danger" onclick="deleteRow('products','${esc(x.id)}')">Delete</button>
@@ -901,7 +890,7 @@ async function editProduct(id){
   if(p_price) p_price.value = p.retail_price || 0;
   if(p_stock) p_stock.value = p.stock_quantity || 0;
   if(p_sort) p_sort.value = p.sort_order || 0;
-  if(p_active) p_active.value = p.is_active ? 'true' : 'false';
+  if(p_active) p_active.value = p.is_active !== false ? 'true' : 'false';
   if(p_natural) p_natural.value = p.is_natural ? 'true' : 'false';
   if(saveBtn) saveBtn.innerText = 'Update Product';
   window.scrollTo({top:0, behavior:'smooth'});
@@ -932,9 +921,7 @@ function resetProductForm(){
   if(saveBtn) saveBtn.innerText = 'Save Product';
 }
 
-// ------------------------------------------------------------------
 // CATEGORIES PAGE
-// ------------------------------------------------------------------
 async function categoriesPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1030,9 +1017,7 @@ function editCategory(id, en, ar, sort){
   if(catSaveBtn) catSaveBtn.innerText = 'Update Category';
 }
 
-// ------------------------------------------------------------------
 // COUNTRIES & DELIVERY FEES
-// ------------------------------------------------------------------
 async function countriesPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1093,7 +1078,8 @@ async function saveCountry(){
   const row = { 
     name: sel.getAttribute('data-name'), 
     country_code: sel.value, 
-    sort_order: co_sort ? parseInt(co_sort.value)||0 : 0 
+    sort_order: co_sort ? parseInt(co_sort.value)||0 : 0,
+    active: true
   };
   const r = await sb.from('countries').insert(row);
   if(r.error) {
@@ -1176,9 +1162,7 @@ async function saveDeliveryFee(){
   renderDeliveryFeesList();
 }
 
-// ------------------------------------------------------------------
 // BUNDLES & OFFERS
-// ------------------------------------------------------------------
 async function bundlesPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1190,6 +1174,7 @@ async function bundlesPage(){
         ${formField('b_title','Bundle Title')}
         ${formField('b_desc','Description')}
         ${formField('b_price','Special Bundle Price ($)','number','step="0.01"')}
+        ${formField('b_sort','Sort Order','number','value="0"')}
       </div><br>
       <div class="actions">
         <button class="btn" onclick="saveBundle()">Create Bundle</button>
@@ -1204,7 +1189,7 @@ async function bundlesPage(){
 }
 
 async function renderBundlesList(){
-  const r = await sb.from('bundles').select('*').order('created_at', {ascending:false});
+  const r = await sb.from('bundles').select('*').order('sort_order');
   const tableEl = document.getElementById('bunTable');
   if(!tableEl) return;
   if(r.error) return tableEl.innerHTML = msg(r.error.message, true);
@@ -1229,6 +1214,7 @@ async function saveBundle(){
   const b_title = document.getElementById('b_title');
   const b_desc = document.getElementById('b_desc');
   const b_price = document.getElementById('b_price');
+  const b_sort = document.getElementById('b_sort');
   const bunMsg = document.getElementById('bunMsg');
 
   const title = b_title ? b_title.value.trim() : '';
@@ -1240,7 +1226,9 @@ async function saveBundle(){
   const row = { 
     title, 
     description: b_desc ? b_desc.value.trim() : '', 
-    price: b_price ? parseFloat(b_price.value)||0 : 0 
+    price: b_price ? parseFloat(b_price.value)||0 : 0,
+    sort_order: b_sort ? parseInt(b_sort.value)||0 : 0,
+    active: true
   };
   const r = await sb.from('bundles').insert(row);
   if(r.error) {
@@ -1253,9 +1241,7 @@ async function saveBundle(){
   renderBundlesList();
 }
 
-// ------------------------------------------------------------------
 // PAYMENT METHODS
-// ------------------------------------------------------------------
 async function paymentsPage(){
   const app = document.getElementById('app');
   if(!app) return;
@@ -1294,7 +1280,7 @@ async function renderPaymentsList(){
           <tr>
             <td><b>${esc(x.name)}</b></td>
             <td>${esc(x.details||'—')}</td>
-            <td><span class="status-pill ${x.is_active?'status-approved':'status-cancelled'}">${x.is_active?'Active':'Disabled'}</span></td>
+            <td><span class="status-pill ${x.is_active!==false?'status-approved':'status-cancelled'}">${x.is_active!==false?'Active':'Disabled'}</span></td>
             <td><button class="btn danger" onclick="deleteRow('payment_methods','${esc(x.id)}')">Delete</button></td>
           </tr>
         `).join('')}
@@ -1329,9 +1315,7 @@ async function savePaymentMethod(){
   renderPaymentsList();
 }
 
-// ------------------------------------------------------------------
 // CUSTOMERS DIRECTORY
-// ------------------------------------------------------------------
 async function customersPage(){
   const app = document.getElementById('app');
   if(!app) return;
